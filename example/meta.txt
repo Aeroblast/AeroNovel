@@ -1,0 +1,8 @@
+﻿  <metadata xmlns:opf="http://www.idpf.org/2007/opf" xmlns:dc="http://purl.org/dc/elements/1.1/">
+    <dc:title>样例</dc:title>
+    <dc:creator opf:role="aut">Aeroblast</dc:creator>
+    <dc:language>zh-CN</dc:language>
+    <dc:contributor opf:role="bkp">AeroNovelTool</dc:contributor>
+    <dc:identifier id="BookId" opf:scheme="UUID">{urn:uuid}</dc:identifier>
+    <meta name="cover" content="cover.jpg" />
+  </metadata>

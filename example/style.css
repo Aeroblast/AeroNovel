@@ -1,0 +1,47 @@
+p{
+    font-family: serif;
+}
+.afont,.afont>p{
+    font-family: sans-serif;
+}
+.paper{
+    border: 1px;
+    background: #f5f5f5;
+}
+.paper:after {
+    position: absolute;
+    content: '';
+    right: -7px;
+    top: -7px;
+    border-width: 0 15px 15px 0;
+    border-style: solid;
+    border-color: #f5f5f5 #ffffff #f5f5f5;
+    box-shadow: -1px 1px 1px rgba(50, 50, 50, 0.2);
+}
+.banner{
+    width: 100%;
+    text-indent: 0;
+}
+.banner>img{
+    width: 100%;
+}
+.radio>p{
+    display: table;
+    text-indent: 0!important;
+    margin-bottom: 0.8em;
+}
+.radio>.aligned{
+    display: block;
+}
+.talk{
+    display: table-cell;
+    vertical-align:top;
+    text-indent: -1em;
+    padding-left: 1em;
+}
+.radio>p>.imgchar{
+    height: 2em;
+}
+.aligned>p{
+    text-indent: 0;
+}

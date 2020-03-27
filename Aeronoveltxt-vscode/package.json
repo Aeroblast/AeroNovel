@@ -1,0 +1,25 @@
+{
+    "name": "aeronoveltxt",
+    "displayName": "AeroNovelTxt",
+    "description": "",
+    "version": "0.0.1",
+    "engines": {
+        "vscode": "^1.37.0"
+    },
+    "categories": [
+        "Programming Languages"
+    ],
+    "contributes": {
+        "languages": [{
+            "id": "aeronoveltxt",
+            "aliases": ["AeroNovelTxt", "aeronoveltxt"],
+            "extensions": [".atxt"],
+            "configuration": "./language-configuration.json"
+        }],
+        "grammars": [{
+            "language": "aeronoveltxt",
+            "scopeName": "text.bbcode",
+            "path": "./syntaxes/aeronoveltxt.tmLanguage.json"
+        }]
+    }
+}

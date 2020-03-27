@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="utf-8"?>
+<package version="2.0" unique-identifier="BookId" xmlns="http://www.idpf.org/2007/opf">
+{0}
+  <manifest>
+    <item id="ncx" href="toc.ncx" media-type="application/x-dtbncx+xml"/>
+    <item id="Style.css" href="Styles/Style.css" media-type="text/css"/>
+{1}
+  </manifest>
+  <spine toc="ncx">
+{2}
+  </spine>
+  <guide>
+  </guide>
+</package>
