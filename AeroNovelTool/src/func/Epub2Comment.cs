@@ -1,4 +1,5 @@
 using System.IO;
+using System.Xml;
 using System.Text.RegularExpressions;
 public class Epub2Comment
 {
@@ -23,49 +24,159 @@ public class Epub2Comment
     {
         Log.log("[Info]" + i.fullName);
         string name = Path.GetFileNameWithoutExtension(i.fullName);
-        string r = i.data.Replace("\r", "").Replace("\n", "");
-        Match m = Regex.Match(r, "<body(.*)</body>");
-        if (!m.Success) { Log.log("[Error]body?"); return; }
-        r = m.Groups[0].Value;
-        XFragment f = new XFragment(r, 0);
+        XmlDocument doc = new XmlDocument();
+        doc.LoadXml(i.data);
+        var body = doc.GetElementsByTagName("body")[0];
         string txt = "";
         string counter = "";
-        string temp = "";
-        foreach (var p in f.parts)
+        string lineTemp = "", rubyTemp = "";
+        XmlNode p = body.FirstChild;
+
+        bool closingElement = false;
+        while (true)
         {
-            if (p.GetType() == typeof(XText))
+            bool toNext = false;
+            if (closingElement)
             {
-                string trimed = Util.Trim(p.originalText);
-                txt += trimed;
-                counter += trimed;
-                if (trimed.Length > 0)
+                closingElement = false;
+                toNext = true;
+                switch (p.Name)
                 {
-                    temp = "";
-                    if (trimed.Contains('「'))
-                        temp += "「」";
-                    if (trimed.Contains('『'))
-                        temp += "『』";
-                }
-                else
-                {
-                    temp = "";
+                    case "p":
+                        txt += "##" + lineTemp + rubyTemp + "\n" + RemainSigns(lineTemp) + "\n" + "##————————————————\n";
+                        counter += lineTemp;
+                        lineTemp = "";
+                        rubyTemp = "";
+                        break;
+                    default:
+                        lineTemp += "</" + p.Name + ">";
+                        break;
                 }
             }
-            if (p.GetType() == typeof(XTag))
+            else
+                switch (p.NodeType)
+                {
+                    case XmlNodeType.Text:
+                        lineTemp += p.Value;
+                        break;
+                    case XmlNodeType.Element:
+                        switch (p.Name)
+                        {
+                            case "ruby":
+                                string a = "", b = "";
+                                Ruby2Text((XmlElement)p, ref a, ref b);
+                                lineTemp += a;
+                                rubyTemp += "|" + b;
+                                toNext = true;
+                                break;
+                            case "p":
+                                break;
+                            case "img":
+                                lineTemp += $"<img src=\"{((XmlElement)p).GetAttribute("src")}\" alt={((XmlElement)p).GetAttribute("alt")}>";
+                                break;
+                            case "image":
+                                lineTemp += $"<image href=\"{((XmlElement)p).GetAttribute("href", "xlink")}\">";
+                                break;
+                            default:
+                                if (p.HasChildNodes)
+                                    lineTemp += "<" + p.Name + ">";
+                                else
+                                    lineTemp += "<" + p.Name + "/>";
+                                break;
+                        }
+                        break;
+                }
+            //move to next
+            if (p.HasChildNodes && !toNext)
             {
-                XTag p0 = (XTag)p;
-                if (p0.tagname == "img") { txt += p0.originalText; }
-                if (p.type == PartType.tag_start && p0.tagname == "rt") { txt += "("; }
-                if (p.type == PartType.tag_end && p0.tagname == "rt") { txt += ")"; }
-                if (p.type == PartType.tag_start && p0.tagname == "p") { txt += "##"; }
-                if (p.type == PartType.tag_end && p0.tagname == "p") { txt += "\r\n" + temp + "\r\n##——————\r\n"; }
-                if (p.type == PartType.tag_end && p0.tagname == "div") { txt += "\r\n\r\n##——————\r\n"; }
+                p = p.FirstChild;
             }
+            else
+            if (p.NextSibling == null)
+            {
+                p = p.ParentNode;
+                closingElement = true;
+                if (p == body) break;
+            }
+            else p = p.NextSibling;
         }
+        txt += lineTemp;
         if (Util.Trim(counter).Length > 0)
             File.WriteAllText("epub2comment_output/" + name + ".txt", txt);
 
 
+    }
+    static void Ruby2Text(XmlElement ruby, ref string textonly, ref string textwithruby)
+    {
+        XmlNode p = ruby.FirstChild;
+        textonly = "";
+        textwithruby = "";
+        bool inrt = false;
+        bool closingElement = false;
+        while (true)
+        {
+            bool toNext = false;
+            if (closingElement)
+            {
+                closingElement = false;
+                toNext = true;
+                switch (p.Name)
+                {
+                    case "rt":
+                        textwithruby += ")";
+                        inrt = false;
+                        break;
+                }
+            }
+            else
+                switch (p.NodeType)
+                {
+                    case XmlNodeType.Text:
+                        if (!inrt) textonly += p.Value;
+                        textwithruby += p.Value;
+                        break;
+                    case XmlNodeType.Element:
+                        switch (p.Name)
+                        {
+                            case "rt":
+                                textwithruby += "(";
+                                inrt = true;
+                                break;
+                        }
+                        break;
+                }
+            //move to next
+            if (p.HasChildNodes && !toNext)
+            {
+                p = p.FirstChild;
+            }
+            else
+            if (p.NextSibling == null)
+            {
+                p = p.ParentNode;
+                closingElement = true;
+                if (p == ruby) break;
+            }
+            else p = p.NextSibling;
+        }
+    }
+
+    static string RemainSigns(string s)
+    {
+        string r = "";
+        foreach (char c in s)
+        {
+            switch (c)
+            {
+                case '「':
+                case '」':
+                case '『':
+                case '』':
+                    r += c;
+                    break;
+            }
+        }
+        return r;
     }
 
 

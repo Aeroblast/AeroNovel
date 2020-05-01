@@ -2,24 +2,67 @@
     "name": "aeronoveltxt",
     "displayName": "AeroNovelTxt",
     "description": "",
-    "version": "0.0.1",
+    "version": "0.0.2",
     "engines": {
         "vscode": "^1.37.0"
     },
     "categories": [
         "Programming Languages"
     ],
+    "activationEvents": [
+        "onCommand:aeronoveltxt.search",
+        "onCommand:aeronoveltxt.weblio"
+    ],
+    "main": "./extension.js",
     "contributes": {
-        "languages": [{
-            "id": "aeronoveltxt",
-            "aliases": ["AeroNovelTxt", "aeronoveltxt"],
-            "extensions": [".atxt"],
-            "configuration": "./language-configuration.json"
-        }],
-        "grammars": [{
-            "language": "aeronoveltxt",
-            "scopeName": "text.bbcode",
-            "path": "./syntaxes/aeronoveltxt.tmLanguage.json"
-        }]
+        "languages": [
+            {
+                "id": "aeronoveltxt",
+                "aliases": [
+                    "AeroNovelTxt",
+                    "aeronoveltxt"
+                ],
+                "extensions": [
+                    ".atxt"
+                ],
+                "configuration": "./language-configuration.json"
+            }
+        ],
+        "grammars": [
+            {
+                "language": "aeronoveltxt",
+                "scopeName": "text.bbcode",
+                "path": "./syntaxes/aeronoveltxt.tmLanguage.json"
+            }
+        ],
+        "commands": [
+            {
+                "command": "aeronoveltxt.search",
+                "title": "搜这玩意"
+            },
+            {
+                "command": "aeronoveltxt.weblio",
+                "title": "试试Weblio"
+            }
+        ],
+        "menus": {
+            "editor/context": [
+                {
+                    "command": "aeronoveltxt.search",
+                    "group": "navigation"
+                },
+                {
+                    "command": "aeronoveltxt.weblio",
+                    "group": "navigation"
+                }
+            ]
+        }
+    },
+    "devDependencies": {
+        "@types/mocha": "^2.2.42",
+        "@types/node": "^7.0.43",
+        "eslint": "^4.11.0",
+        "request-promise": "^4.2.2",
+        "vscode": "^1.1.6"
     }
 }
