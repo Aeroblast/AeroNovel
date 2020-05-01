@@ -2,7 +2,7 @@ using System.IO;
 using System.Text.RegularExpressions;
 public class Epub2Atxt
 {
-    const string output_dir = "epub2atxt_output/";
+    const string output_dir = "output_epub2atxt/";
     public static void Proc(string path)
     {
         Directory.CreateDirectory(output_dir);

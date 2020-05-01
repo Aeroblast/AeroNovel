@@ -6,13 +6,21 @@ using System.IO.Compression;
 using System.Collections.Generic;
 class GenBbcode
 {
+    const string output_path = "output_bbcode/";
     static List<int> cat_page = new List<int>();
     static Dictionary<string, string> web_images;
     static string[] additional_msg;
+    public static void Proc(string path)
+    {
+        string[] lines = File.ReadAllLines(path);
+        string body = Body(lines);
+        string outpath = "output_bbcode.txt";
+        File.WriteAllText(outpath, body);
+    }
     public static void Gen(string dir)
     {
         string[] files = Directory.GetFiles(dir);
-        Directory.CreateDirectory("bbcode_output");
+        Directory.CreateDirectory(output_path);
         ReadWebImages(dir);
         ReadConfig(dir);
         foreach (string f in files)
@@ -23,7 +31,7 @@ class GenBbcode
             string chaptitle = m.Groups[2].Value;
             string[] lines = File.ReadAllLines(f);
             string body = Body(lines);
-            string outpath = "bbcode_output\\" + Path.GetFileNameWithoutExtension(f) + ".txt";
+            string outpath = output_path + Path.GetFileNameWithoutExtension(f) + ".txt";
             File.WriteAllText(outpath, body);
             Console.WriteLine(outpath);
         }

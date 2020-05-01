@@ -7,11 +7,6 @@ class Program
     {
         if (args.Length >= 2)
         {
-            if (!Directory.Exists(args[1])&&!File.Exists(args[1]))
-            {
-                Console.WriteLine("not exsits:" + args[1]);
-                return;
-            }
             switch (args[0].ToLower())
             {
                 case "epub":
@@ -32,17 +27,27 @@ class Program
                 case "bbcode":
                     GenBbcode.Gen(args[1]);
                     break;
-                case "restore":
-                    Publish.Restore(args[1]);
-                    break;
                 case "epub2comment":
                     Epub2Comment.Proc(args[1]);
                     break;
                 case "epub2atxt":
                     Epub2Atxt.Proc(args[1]);
                     break;
+                case "html2comment":
+                    Html2Comment.Proc(args[1]);
+                    break;
+                case "atxt2bbcode":
+                    GenBbcode.Proc(args[1]);
+                    break;
+                case "kakuyomu2comment":
+                    {
+                        var xhtml = WebSource.KakuyomuEpisodes(args[1]);
+                        var atxt = Html2Comment.ProcXHTML(xhtml);
+                        File.WriteAllText("output_kakuyomu2comment.txt", atxt);
+                    }
+                    break;
                 default:
-                    Log.log("[Warn]Nothing happens. Usage:epub/txt/bbcode/restore/epub2comment");
+                    Log.log("[Warn]Nothing happens. Usage:epub/txt/bbcode/epub2comment/epub2atxt/html2comment/atxt2bbcode");
                     break;
             }
         }
