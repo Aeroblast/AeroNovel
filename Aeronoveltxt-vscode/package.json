@@ -2,7 +2,7 @@
     "name": "aeronoveltxt",
     "displayName": "AeroNovelTxt",
     "description": "",
-    "version": "0.0.2",
+    "version": "0.0.3",
     "engines": {
         "vscode": "^1.37.0"
     },
@@ -11,6 +11,7 @@
     ],
     "activationEvents": [
         "onCommand:aeronoveltxt.search",
+        "onCommand:aeronoveltxt.searchp1",
         "onCommand:aeronoveltxt.weblio"
     ],
     "main": "./extension.js",
@@ -41,6 +42,10 @@
                 "title": "搜这玩意"
             },
             {
+                "command": "aeronoveltxt.searchp1",
+                "title": "+意思 搜这玩意"
+            },
+            {
                 "command": "aeronoveltxt.weblio",
                 "title": "试试Weblio"
             }
@@ -48,12 +53,19 @@
         "menus": {
             "editor/context": [
                 {
+                    "when": "resourceLangId == aeronoveltxt",
                     "command": "aeronoveltxt.search",
-                    "group": "navigation"
+                    "group": "navigation@1"
                 },
                 {
+                    "when": "resourceLangId == aeronoveltxt",
                     "command": "aeronoveltxt.weblio",
-                    "group": "navigation"
+                    "group": "navigation@2"
+                },
+                {
+                    "when": "resourceLangId == aeronoveltxt",
+                    "command": "aeronoveltxt.searchp1",
+                    "group": "navigation@3"
                 }
             ]
         }
