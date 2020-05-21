@@ -65,8 +65,8 @@ class Util
     }
     public static string TrimTag(string str)
     {
-        Regex regex=new Regex("<.*?>");
-        return regex.Replace(str,"");
+        Regex regex = new Regex("<.*?>");
+        return regex.Replace(str, "");
     }
     public static string Number(int number, int length = 4)
     {
@@ -120,6 +120,21 @@ class Util
         return Uri.UnescapeDataString(s);
     }
     public static bool Contains(string[] c, string s) { if (c != null) foreach (string x in c) if (x == s) return true; return false; }
+
+    public static string FilenameCheck(string s)
+    {
+        return s
+        .Replace('?', '？')
+        .Replace('\\', '＼')
+        .Replace('/', '／')
+        .Replace(':', '：')
+        .Replace('*', '＊')
+        .Replace('"', '＂')
+        .Replace('|', '｜')
+        .Replace('<', '＜')
+        .Replace('>', '＞')
+        ;
+    }
 
 }
 

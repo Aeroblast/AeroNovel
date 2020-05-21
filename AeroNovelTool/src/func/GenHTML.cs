@@ -26,6 +26,9 @@ namespace AeroNovelEpub
             Dictionary<string, string> reg_dic = new Dictionary<string, string>
             {
                 {"^\\[align=(.*?)\\](.*?)\\[\\/align\\]$","<p class=\"aligned\" style=\"text-align:$1\">$2</p>"},
+                {"^\\[center\\](.*?)\\[\\/center\\]$","<p class=\"aligned\" style=\"text-align:center\">$1</p>"},
+                {"^\\[right\\](.*?)\\[\\/right\\]$","<p class=\"aligned\" style=\"text-align:right\">$1</p>"},
+                {"^\\[left\\](.*?)\\[\\/left\\]$","<p class=\"aligned\" style=\"text-align:left\">$1</p>"},
                 {reg_noteref,""},
                 {reg_notecontent,""},
                 {reg_img,""},

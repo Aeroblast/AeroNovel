@@ -9,13 +9,14 @@ class GenBbcode
     const string output_path = "output_bbcode/";
     static List<int> cat_page = new List<int>();
     static Dictionary<string, string> web_images;
-    static string[] additional_msg;
+    static string[] additional_msg=new string[]{};
     public static void Proc(string path)
     {
         string[] lines = File.ReadAllLines(path);
         string body = Body(lines);
         string outpath = "output_bbcode.txt";
         File.WriteAllText(outpath, body);
+        Log.log("[Info]"+outpath);
     }
     public static void Gen(string dir)
     {
@@ -138,6 +139,9 @@ class GenBbcode
         Dictionary<string, string> reg_dic = new Dictionary<string, string>
             {
                 //{"\\[align=(.*?)\\](.*?)\\[\\/align\\]","<p class=\"aligned\" style=\"text-align:$1\">$2</p>"},
+                {"^\\[center\\](.*?)\\[\\/center\\]$","[align=center]$1[/align]"},
+                {"^\\[right\\](.*?)\\[\\/right\\]$","[align=right]$1[/align]"},
+                {"^\\[left\\](.*?)\\[\\/left\\]$","[align=left]$1[/align]"},
                 {reg_noteref,"[color=#00ffff][sup]注[/sup][/color]"},
                 {reg_notecontent,"\r\n[align=right][size=1][color=#00ffff]$1[/color][/size][/align]"},
                 {reg_img,""},
