@@ -43,39 +43,21 @@
 
 这部分比较复杂而且没人用，真的有需求就自己看源码吧（
 
-## aeronoveltxt-vscode
+## VSCode
 
-VSCode插件，可以给文本着色。（其实写得很简单）
-将整个文件夹放入`C:\Users\username\.vscode\extensions`，重启VSCode即可。
+### 插件
+VSCode插件，可以给文本着色。另有几个右键搜索命令。
+将整个`Aeronoveltxt-vscode`文件夹放入`C:\Users\username\.vscode\extensions`，重启VSCode即可。
 
 ### VSCode设置
-建议设置一下，否则会跳出来补全，不好用。可以在工作目录下设置仅目录范围，或在vscode的user settings设置全局项目。
+建议设置一下，否则问题比较多。默认设置下有几个问题：
++ 跳出来补全
++ Word Warp比较诡异
 
-工作目录\.vscode\settings.json
+可以在工作目录下设置仅目录范围，或在vscode的user settings设置全局项目。
 
-```
-{
-    "[plaintext]": {
-        "editor.wordWrap": "on",
-        "editor.fontSize": 18,
-        "editor.lineHeight": 26,
-        "editor.wordBasedSuggestions": false,
-        "editor.fontFamily":"宋体",
-        "editor.minimap.enabled":false
+建议把`vscode-settings.json`重命名，放到工作目录，即`\.vscode\settings.json`。
 
-    },
-    "[aeronoveltxt]": {
-        "editor.wordWrap": "on",
-        "editor.fontSize": 18,
-        "editor.lineHeight": 26,
-        "editor.wordBasedSuggestions": false,
-        "editor.fontFamily":"宋体",
-        "editor.minimap.enabled":false,
-
-    },
-
-}
-```
 
 ## AeroNovelTool
 
@@ -89,11 +71,15 @@ VSCode插件，可以给文本着色。（其实写得很简单）
 
 `bbcode 文件夹`在运行目录生成bbcode，以前是按章节，现在是使用index系统。各种论坛细微设定很乱，有错没办法（摊手）
 
-`restore 文件夹`没用了别管。
+`epub2comment epub文件`在运行目录生成txt，输出在文件夹。将epub内容按xhtml生成txt，每个段落生成一行`##`注释，然后加一行空行。用于翻译。
 
-`epub2comment epub文件`在运行目录生成txt，输出在epub2comment_output文件夹。将epub内容按xhtml生成txt，每个段落生成一行`##`注释，然后加一行空行。用于翻译。
+`epub2atxt epub文件` 在运行目录生成txt，输出在文件夹。将epub内容按xhtml生成txt，每个段落生成一行文本。用于重新校对。
 
-`epub2atxt epub文件` 在运行目录生成txt，输出在epub2atxt_output文件夹。将epub内容按xhtml生成txt，每个段落生成一行文本。用于重新校对。
+`html2comment`
+
+`atxt2bbcode`
+
+下载类功能暂时变动中
 
 
 
