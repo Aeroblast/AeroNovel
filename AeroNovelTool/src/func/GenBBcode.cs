@@ -6,7 +6,7 @@ using System.IO.Compression;
 using System.Collections.Generic;
 class GenBbcode
 {
-    const string output_path = "output_bbcode/";
+    public static string output_path = "output_bbcode/";
     static List<int> cat_page = new List<int>();
     static Dictionary<string, string> web_images;
     static string[] additional_msg=new string[]{};
@@ -133,6 +133,7 @@ class GenBbcode
         const string reg_notecontent = "\\[note=(.*?)\\]";
         const string reg_img = "\\[img\\]((?!http).*?)\\[\\/img\\]";
         const string reg_illu = "\\[illu\\]((?!http).*?)\\[\\/illu\\]";
+        const string reg_illu2 = "^#illu:(.*)";
         const string reg_imgchar = "\\[imgchar\\]((?!http).*?)\\[\\/imgchar\\]";
         const string reg_class = "\\[class=(.*?)\\](.*?)\\[\\/class\\]";
         const string reg_chapter = "\\[chapter=(.*?)\\](.*?)\\[\\/chapter\\]";
@@ -142,15 +143,20 @@ class GenBbcode
                 {"^\\[center\\](.*?)\\[\\/center\\]$","[align=center]$1[/align]"},
                 {"^\\[right\\](.*?)\\[\\/right\\]$","[align=right]$1[/align]"},
                 {"^\\[left\\](.*?)\\[\\/left\\]$","[align=left]$1[/align]"},
+                {"^#left:(.*)","[align=left]$1[/align]"},
+                {"^#center:(.*)","[align=center]$1[/align]"},
+                {"^#right:(.*)","[align=right]$1[/align]"},
                 {reg_noteref,"[color=#00ffff][sup]注[/sup][/color]"},
                 {reg_notecontent,"\r\n[align=right][size=1][color=#00ffff]$1[/color][/size][/align]"},
                 {reg_img,""},
                 {reg_illu,""},
+                {reg_illu2,""},
                 {reg_imgchar,""},
                 {reg_class,"$2"},
                 {reg_chapter,"$2"},
                 //{"\\[b\\](.*?)\\[\\/b\\]","<b>$1</b>"},
                 {"\\[title\\](.*?)\\[\\/title\\]","[size=5]$1[/size]"},
+                {"^#title:(.*)","[size=5]$1[/size]"},
                 //{"\\[ruby=(.*?)\\](.*?)\\[\\/ruby\\]","<ruby>$2<rt>$1</rt></ruby>"},
                 {"\\[pagebreak\\]",""},
                 {"/\\*.*?\\*/",""},
@@ -181,6 +187,7 @@ class GenBbcode
                         {
                             case reg_img:
                             case reg_illu:
+                            case reg_illu2:
                             case reg_imgchar:
                                 {
                                     var a = m.Groups[1].Value;

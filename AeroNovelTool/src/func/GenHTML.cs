@@ -20,6 +20,7 @@ namespace AeroNovelEpub
             const string reg_notecontent = "\\[note=(.*?)\\]";
             const string reg_img = "\\[img\\](.*?)\\[\\/img\\]";
             const string reg_illu = "^\\[illu\\](.*?)\\[\\/illu\\]$";
+            const string reg_illu2 = "^#illu:(.*)";
             const string reg_imgchar = "\\[imgchar\\](.*?)\\[\\/imgchar\\]";
             const string reg_class = "\\[class=(.*?)\\](.*?)\\[\\/class\\]";
             const string reg_chapter = "\\[chapter=(.*?)\\](.*?)\\[\\/chapter\\]";
@@ -29,15 +30,20 @@ namespace AeroNovelEpub
                 {"^\\[center\\](.*?)\\[\\/center\\]$","<p class=\"aligned\" style=\"text-align:center\">$1</p>"},
                 {"^\\[right\\](.*?)\\[\\/right\\]$","<p class=\"aligned\" style=\"text-align:right\">$1</p>"},
                 {"^\\[left\\](.*?)\\[\\/left\\]$","<p class=\"aligned\" style=\"text-align:left\">$1</p>"},
+                {"^#center:(.*)","<p class=\"aligned\" style=\"text-align:center\">$1</p>"},
+                {"^#right:(.*)","<p class=\"aligned\" style=\"text-align:right\">$1</p>"},
+                {"^#left:(.*)","<p class=\"aligned\" style=\"text-align:left\">$1</p>"},
                 {reg_noteref,""},
                 {reg_notecontent,""},
                 {reg_img,""},
+                {reg_illu2,""},
                 {reg_illu,""},
                 {reg_imgchar,""},
                 {reg_class,""},
                 {reg_chapter,""},
                 {"\\[b\\](.*?)\\[\\/b\\]","<b>$1</b>"},
                 {"^\\[title\\](.*?)\\[\\/title\\]$","<p class=\"tagtitle\">$1</p>"},
+                {"^#title:(.*)","<p class=\"tagtitle\">$1</p>"},
                 {"\\[ruby=(.*?)\\](.*?)\\[\\/ruby\\]","<ruby>$2<rt>$1</rt></ruby>"},
                 {"^\\[pagebreak\\]$","<p class=\"pagebreak\"><br/></p>"},
                 {"/\\*.*?\\*/",""},
@@ -107,6 +113,7 @@ namespace AeroNovelEpub
                                     }
 
                                     break;
+                                case reg_illu2:
                                 case reg_illu://illu
                                     {
                                         string img_name = Path.GetFileName(m.Groups[1].Value);

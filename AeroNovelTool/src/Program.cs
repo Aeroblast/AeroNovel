@@ -19,7 +19,11 @@ class Program
 
                         Epub e = gen.Gen(args[1]);
                         e.filename = "[" + e.creator + "] " + e.title;
-                        e.Save("");
+                        if (args.Length >= 3 && DirectoryExist(args[2]))
+                            e.Save(args[2]);
+                        else
+                            e.Save("");
+
                     }
                     break;
                 case "txt":
@@ -28,6 +32,9 @@ class Program
                     break;
                 case "bbcode":
                     if (!DirectoryExist(args[1])) return;
+                    if (args.Length >= 3)
+                        if (DirectoryExist(args[2]))
+                            GenBbcode.output_path = Path.Combine(args[2], GenBbcode.output_path);
                     GenBbcode.Gen(args[1]);
                     break;
                 case "epub2comment":

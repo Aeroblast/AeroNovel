@@ -50,6 +50,7 @@ namespace AeroNovelEpub
 
             string meta = File.ReadAllText(Path.Combine(dir, "meta.txt"));
             meta = meta.Replace("{urn:uuid}", uid);
+            meta = meta.Replace("{date}", DateTime.Today.ToString("yyyy-MM-dd"));
             if (cc != null)
             {
                 meta = cc.Convert(meta);

@@ -3,3 +3,4 @@ bin
 obj
 *.epub
 *output*
+AeroNovelTool/kindlegen.bat
