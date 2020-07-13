@@ -57,7 +57,7 @@ namespace AeroNovelEpub
             }
             if (cc_option == ChineseConvertOption.T2S)
             {
-                meta=meta.Replace("<dc:language>zh-tw</dc:language>", "<dc:language>zh</dc:language>", true, null);
+                meta = meta.Replace("<dc:language>zh-tw</dc:language>", "<dc:language>zh</dc:language>", true, null);
             }
             string title = Regex.Match(meta, "<dc:title.*?>(.*?)</dc:title>").Groups[1].Value;
 
@@ -83,7 +83,7 @@ namespace AeroNovelEpub
                 string chaptitle = m.Groups[2].Value;
                 string name = "atxt" + no + ".xhtml";
                 string txtname = Path.GetFileNameWithoutExtension(f);
-                chaptitle=Util.UrlDecode(chaptitle);
+                chaptitle = Util.UrlDecode(chaptitle);
                 if (Regex.Match(txtname, "^[a-zA-Z0-9]*$").Success)
                 {
                     name = "atxt" + txtname + ".xhtml";
@@ -168,14 +168,14 @@ namespace AeroNovelEpub
                             if (
                                 int.TryParse(xx[1], out line_num)
                              && line_num <= lines.Length
-                             && line_num>0
+                             && line_num > 0
                              )
                             {
-                                string target=cc.Convert(xx[2]);
-                                int c=Util.CountMatches(lines[line_num-1],target);
-                                lines[line_num-1]=lines[line_num-1].Replace(target,xx[3]);
-                                if(c==0)Log.log("[Warn]Cannot Find cc patch target:"+xx[2]);
-                                else Log.log(string.Format("[Info]CC patched {0} times for {1}",c,xx[2]));
+                                string target = cc.Convert(xx[2]);
+                                int c = Util.CountMatches(lines[line_num - 1], target);
+                                lines[line_num - 1] = lines[line_num - 1].Replace(target, xx[3]);
+                                if (c == 0) Log.log("[Warn]Cannot Find cc patch target:" + xx[2]);
+                                else Log.log(string.Format("[Info]CC patched {0} times for {1}", c, xx[2]));
                             }
                             else
                             { Log.log("[Warn]Bad Line Number:" + xx[1]); }
@@ -295,13 +295,16 @@ namespace AeroNovelEpub
                     continue;
                 }
 
-                m = Regex.Match(line, "([0-9][0-9])");
+                m = Regex.Match(line, "([0-9][0-9])(.*)");
                 if (m.Success)
                 {
                     count++;
                     int index = txt_nums.IndexOf(m.Groups[1].Value);
                     string link = "Text/" + xhtml_names[index];
-                    r += string.Format("<navPoint id=\"navPoint-{0}\" playOrder=\"{0}\"><navLabel><text>{1}</text></navLabel><content src=\"{2}\"/></navPoint>\n", count, txt_titles[index], link);
+                    string navTitle = Util.Trim(m.Groups[2].Value);
+                    if (navTitle.Length == 0)
+                        navTitle = txt_titles[index];
+                    r += string.Format("<navPoint id=\"navPoint-{0}\" playOrder=\"{0}\"><navLabel><text>{1}</text></navLabel><content src=\"{2}\"/></navPoint>\n", count, navTitle, link);
                     r = r.Replace("dummylink", link);
                 }
 

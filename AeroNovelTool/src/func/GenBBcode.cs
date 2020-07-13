@@ -7,16 +7,17 @@ using System.Collections.Generic;
 class GenBbcode
 {
     public static string output_path = "output_bbcode/";
+    public static string output_path_single = "output_bbcode_single.txt";
     static List<int> cat_page = new List<int>();
     static Dictionary<string, string> web_images;
-    static string[] additional_msg=new string[]{};
+    static string[] additional_msg = new string[] { };
     public static void Proc(string path)
     {
         string[] lines = File.ReadAllLines(path);
         string body = Body(lines);
         string outpath = "output_bbcode.txt";
         File.WriteAllText(outpath, body);
-        Log.log("[Info]"+outpath);
+        Log.log("[Info]" + outpath);
     }
     public static void Gen(string dir)
     {
@@ -37,7 +38,7 @@ class GenBbcode
             Console.WriteLine(outpath);
         }
     }
-    public static void Gen2(string dir)
+    public static void GenSingle(string dir)
     {
         string[] files = Directory.GetFiles(dir);
         ReadWebImages(dir);
@@ -53,7 +54,7 @@ class GenBbcode
         atxt.Sort();
 
         int index = 0;
-        string toc = "";
+        //string toc = "";
         foreach (var f in atxt)
         {
             Match m = Regex.Match(Path.GetFileName(f), AeroNovel.filename_reg);
@@ -67,13 +68,15 @@ class GenBbcode
             if (!contains)
             {
                 index++;
-                toc += string.Format("[#{0}]【{0}】{1}\r\n", index, chaptitle);
-                result += "[page]\r\n";
-                result += "【第" + (index + 1) + "页】\r\n";
+                //toc += string.Format("[#{0}]【{0}】{1}\r\n", index, chaptitle);
+                //result += "[page]\r\n";
+                //result += "【第" + (index + 1) + "页】\r\n";
+                result += "======================\r\n";
             }
 
         }
-        File.WriteAllText("bbcode_output.txt", "[index]\r\n" + toc + "[/index]\r\n" + result);
+        //File.WriteAllText("bbcode_output.txt", "[index]\r\n" + toc + "[/index]\r\n" + result);
+        File.WriteAllText(output_path_single, result);
 
     }
     static void ReadWebImages(string dir)
@@ -197,7 +200,8 @@ class GenBbcode
                                     }
                                     else
                                     {
-                                        r = r.Replace(m.Value, "【没传图床的图片：" + a + "】");
+                                        //r = r.Replace(m.Value, "【没传图床的图片：" + a + "】");
+                                        r = r.Replace(m.Value, "");
                                         Log.log("[Warn]" + "没传图床的图片：" + a);
                                     }
                                 }

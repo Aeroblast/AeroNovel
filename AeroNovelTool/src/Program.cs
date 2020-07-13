@@ -34,8 +34,11 @@ class Program
                     if (!DirectoryExist(args[1])) return;
                     if (args.Length >= 3)
                         if (DirectoryExist(args[2]))
+                        {
                             GenBbcode.output_path = Path.Combine(args[2], GenBbcode.output_path);
-                    GenBbcode.Gen(args[1]);
+                            GenBbcode.output_path_single = Path.Combine(args[2], GenBbcode.output_path_single);
+                        }
+                    GenBbcode.GenSingle(args[1]);
                     break;
                 case "epub2comment":
                     if (!FileExist(args[1])) return;
