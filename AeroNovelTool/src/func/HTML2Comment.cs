@@ -1,13 +1,14 @@
 using System.IO;
 using System.Xml;
+using System.Collections.Generic;
 using System.Text.RegularExpressions;
 public class Html2Comment
 {
     public static void Proc(string path)
     {
-        string html=File.ReadAllText(path);
-        string atxt=ProcXHTML(html);
-        File.WriteAllText("output_html2comment.txt",atxt);
+        string html = File.ReadAllText(path);
+        string atxt = ProcXHTML(html);
+        File.WriteAllText("output_html2comment.txt", atxt);
         Log.log("[Info]HTML2Comment Saved");
     }
     public static string ProcXHTML(string html)
@@ -21,6 +22,7 @@ public class Html2Comment
         XmlNode p = body.FirstChild;
 
         bool closingElement = false;
+        List<bool> normalTagOutput = new List<bool>();
         while (true)
         {
             bool toNext = false;
@@ -37,7 +39,10 @@ public class Html2Comment
                         rubyTemp = "";
                         break;
                     default:
-                        lineTemp += "</" + p.Name + ">";
+                        bool tagOutput = normalTagOutput[normalTagOutput.Count - 1];
+                        normalTagOutput.RemoveAt(normalTagOutput.Count - 1);
+                        if (tagOutput)
+                            lineTemp += "</" + p.Name + ">";
                         break;
                 }
             }
@@ -63,14 +68,34 @@ public class Html2Comment
                                 lineTemp += $"<img src=\"{((XmlElement)p).GetAttribute("src")}\" alt={((XmlElement)p).GetAttribute("alt")}>";
                                 break;
                             case "image":
-                                lineTemp += $"<image href=\"{((XmlElement)p).GetAttribute("href", "xlink")}\">";
+                                lineTemp += $"<image href=\"{((XmlElement)p).GetAttribute("href", "http://www.w3.org/1999/xlink")}\">";
                                 break;
                             default:
-                                if (p.HasChildNodes)
-                                    lineTemp += "<" + p.Name + ">";
-                                else
-                                    lineTemp += "<" + p.Name + "/>";
-                                break;
+                                {
+                                    string classTemp = ((XmlElement)p).GetAttribute("class");
+                                    bool tagOutput = true;
+                                    switch (classTemp)
+                                    {
+                                        case "tcy"://合并竖排标点符号
+                                        case "main":
+                                        case "word-break-break-all":
+                                            tagOutput = false;
+                                            break;
+                                    }
+                                    if (p.HasChildNodes)
+                                        normalTagOutput.Add(tagOutput);
+                                    if (tagOutput)
+                                    {
+                                        if (classTemp.Length > 0) classTemp = " class=" + classTemp;
+
+                                        if (p.HasChildNodes)
+                                            lineTemp += "<" + p.Name + classTemp + ">";
+                                        else
+                                            lineTemp += "<" + p.Name + classTemp + "/>";
+                                    }
+
+                                    break;
+                                }
                         }
                         break;
                 }
