@@ -3,6 +3,7 @@ using System.IO;
 using System.Text.RegularExpressions;
 using System.IO.Compression;
 using System.Collections.Generic;
+using AeroEpubViewer.Epub;
 namespace AeroNovelEpub
 {
     public class GenEpub
@@ -14,7 +15,7 @@ namespace AeroNovelEpub
         public string dir;
         string spine = "";
         string items = "";
-        Epub epub = new Epub("template.zip");
+        EpubFile epub = new EpubFile("template.zip");
         string uid = "urn:uuid:" + Guid.NewGuid().ToString();
         string xhtml_temp;
 
@@ -35,11 +36,11 @@ namespace AeroNovelEpub
                 cc.Prepare();
             }
 
-            TextItem t = epub.GetItem<TextItem>("OEBPS/Text/template.xhtml");
-            xhtml_temp = t.data;
+            TextEpubItemFile t = epub.GetFile<TextEpubItemFile>("OEBPS/Text/template.xhtml");
+            xhtml_temp = t.text;
             epub.items.Remove(t);
         }
-        public Epub Gen(string dir)
+        public EpubFile Gen(string dir)
         {
             this.dir = dir;
 
@@ -61,11 +62,11 @@ namespace AeroNovelEpub
             }
             string title = Regex.Match(meta, "<dc:title.*?>(.*?)</dc:title>").Groups[1].Value;
 
-            TextItem toc = epub.GetItem<TextItem>("OEBPS/toc.ncx");
-            toc.data = GenTOC(File.ReadAllLines(Path.Combine(dir, "toc.txt")), uid, title, toc.data);
+            TextEpubItemFile toc = epub.GetFile<TextEpubItemFile>("OEBPS/toc.ncx");
+            toc.text = GenTOC(File.ReadAllLines(Path.Combine(dir, "toc.txt")), uid, title, toc.text);
 
-            TextItem opf = epub.GetItem<TextItem>("OEBPS/content.opf");
-            opf.data = string.Format(opf.data, meta, items, spine);
+            TextEpubItemFile opf = epub.GetFile<TextEpubItemFile>("OEBPS/content.opf");
+            opf.text = string.Format(opf.text, meta, items, spine);
 
             epub.ReadMeta();
 
@@ -194,7 +195,7 @@ namespace AeroNovelEpub
                     //File.WriteAllText("info.txt",body);
                 }
                 string xhtml = xhtml_temp.Replace("{❤title}", txt_titles[i]).Replace("{❤body}", body);
-                TextItem item = new TextItem("OEBPS/Text/" + xhtml_names[i], xhtml);
+                TextEpubItemFile item = new TextEpubItemFile("OEBPS/Text/" + xhtml_names[i], xhtml);
                 epub.items.Add(item);
                 Log.log("[Info]Add xhtml: " + item + " (title:" + txt_titles[i] + ")");
             }
@@ -215,7 +216,7 @@ namespace AeroNovelEpub
                     string fn = Path.GetFileName(f);
                     if (imgtype.ContainsKey(ext))
                     {
-                        NormalItem i = new NormalItem("OEBPS/Images/" + fn, File.ReadAllBytes(f));
+                        EpubItemFile i = new EpubItemFile("OEBPS/Images/" + fn, File.ReadAllBytes(f));
                         epub.items.Add(i);
                         items += string.Format("    <item id=\"{0}\" href=\"Images/{0}\" media-type=\"{1}\"/>\n", fn, imgtype[ext]);
                         if (!img_names.Contains(fn))
@@ -236,15 +237,13 @@ namespace AeroNovelEpub
                         foreach (var f in Directory.GetFiles(patch_img_dir))
                         {
                             string fn = Path.GetFileName(f);
-                            NormalItem img = epub.GetItem<NormalItem>("OEBPS/Images/" + fn);
+                            EpubItemFile img = epub.GetFile<EpubItemFile>("OEBPS/Images/" + fn);
                             if (img != null)
                             {
                                 img.data = File.ReadAllBytes(f);
                                 Log.log("[Info]T2S:Image Replaced:" + fn);
                             }
                         }
-
-
 
             }
 
@@ -254,8 +253,8 @@ namespace AeroNovelEpub
             var css = Directory.GetFiles(dir, "*.css");
             if (css.Length > 0)
             {
-                TextItem cssi = epub.GetItem<TextItem>("OEBPS/Styles/Style.css");
-                cssi.data += "\r\n\r\n" + File.ReadAllText(css[0]);
+                TextEpubItemFile cssi = epub.GetFile<TextEpubItemFile>("OEBPS/Styles/Style.css");
+                cssi.text += "\r\n\r\n" + File.ReadAllText(css[0]);
                 Log.log("[Info]Css added:" + css[0]);
             }
         }

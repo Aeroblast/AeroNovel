@@ -1,6 +1,7 @@
 ﻿using System;
 using System.IO;
-
+using System.Collections.Generic;
+using AeroEpubViewer.Epub;
 class Program
 {
     static void Main(string[] args)
@@ -17,8 +18,10 @@ class Program
                             if (args[2] == "t2s")
                                 gen = new AeroNovelEpub.GenEpub(AeroNovelEpub.ChineseConvertOption.T2S);
 
-                        Epub e = gen.Gen(args[1]);
-                        e.filename = "[" + e.creator + "] " + e.title;
+                        EpubFile e = gen.Gen(args[1]);
+                        List<string> creators = new List<string>();
+                        e.dc_creators.ForEach((x) => creators.Add(x.value));
+                        e.filename = "[" + string.Join(",", creators) + "] " + e.title;
                         if (args.Length >= 3 && DirectoryExist(args[2]))
                             e.Save(args[2]);
                         else
@@ -59,14 +62,14 @@ class Program
                 case "kakuyomu2comment":
                     {
                         var xhtml = WebSource.KakuyomuEpisode(args[1]);
-                        var atxt = Html2Comment.ProcXHTML(xhtml.data);
+                        var atxt = Html2Comment.ProcXHTML(xhtml.text);
                         File.WriteAllText("output_kakuyomu2comment.txt", atxt);
                         Log.log("[Info]output_kakuyomu2comment.txt");
                     }
                     break;
                 case "websrc":
                     {
-                        TextItem[] xhtmls;
+                        TextEpubItemFile[] xhtmls;
                         string dirname = "output_websrc_";
                         if (args[1].Contains("kakuyomu.jp"))
                         {
@@ -110,10 +113,10 @@ class Program
         Log.log("[Error]Dir not exist:" + path);
         return false;
     }
-    static void Save(TextItem i, string dir)
+    static void Save(TextEpubItemFile i, string dir)
     {
         string p = dir + "/" + i.fullName;
-        File.WriteAllText(p, i.data);
+        File.WriteAllText(p, i.text);
         Log.log("[Info]Saved:" + p);
     }
 }

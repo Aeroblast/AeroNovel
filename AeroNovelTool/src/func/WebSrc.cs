@@ -3,8 +3,8 @@ using System.Net;
 using System;
 using System.IO;
 using System.Text.RegularExpressions;
-
-
+using AeroEpubViewer.Epub;
+using AeroEpubViewer.Xml;
 class WebSource
 {
     const string xhtml =
@@ -20,7 +20,7 @@ class WebSource
 </body>
 </html>";
 
-    public static TextItem KakuyomuEpisode(string url)
+    public static TextEpubItemFile KakuyomuEpisode(string url)
     {
         Log.log("[Info]Kakuyomu Episode");
         string raw = GetSource(url);
@@ -34,9 +34,9 @@ class WebSource
         string updateDate = info.root.childs[7].childs[0].tag.GetAttribute("datetime");
         Log.log($"[Info]{title}, Upload:{uploadDate}, Update:{updateDate}");
         string meta = $"    <title>{title}</title>\n    <meta name=\"Source\" content=\"{url}\" />\n    <meta name=\"Upload Date\" content=\"{uploadDate}\"/>\n    <meta name=\"Update Date\" content=\"{updateDate}\"/>";
-        return new TextItem(Util.FilenameCheck(title) + ".xhtml", string.Format(xhtml, meta, part));
+        return new TextEpubItemFile(Util.FilenameCheck(title) + ".xhtml", string.Format(xhtml, meta, part));
     }
-    public static TextItem[] KakuyomuWork(string url)
+    public static TextEpubItemFile[] KakuyomuWork(string url)
     {
         Log.log("[Info]Kakuyomu Work");
         string raw = GetSource(url);
@@ -44,7 +44,7 @@ class WebSource
         Log.log("[Info]" + title);
         XFragment toc = new XFragment(raw, raw.IndexOf("<div id=\"table-of-contents\">"));
         var list = toc.root.childs[0].childs[1].childs[0];
-        TextItem[] xhtmls = new TextItem[list.childs.Count];
+        TextEpubItemFile[] xhtmls = new TextEpubItemFile[list.childs.Count];
         for (int i = 0; i < xhtmls.Length; i++)
         {
             xhtmls[i] = KakuyomuEpisode("https://kakuyomu.jp" + list.childs[i].childs[0].tag.GetAttribute("href"));
@@ -52,14 +52,14 @@ class WebSource
         }
         return xhtmls;
     }
-    public static TextItem[] KakuyomuAuto(string url)
+    public static TextEpubItemFile[] KakuyomuAuto(string url)
     {
         Uri uri = new Uri(url);
         string[] path = uri.AbsolutePath.Split('/');
         if (path.Length == 5 && path[3] == "episodes")
         {
             Log.log("[Info]Detected: Kakuyomu Single Episode");
-            return new TextItem[] { KakuyomuEpisode(url) };
+            return new TextEpubItemFile[] { KakuyomuEpisode(url) };
         }
         else if (path.Length == 3 && path[1] == "works")
         {

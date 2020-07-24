@@ -1,5 +1,7 @@
 using System.IO;
 using System.Text.RegularExpressions;
+using AeroEpubViewer.Epub;
+using AeroEpubViewer.Xml;
 public class Epub2Atxt
 {
     const string output_dir = "output_epub2atxt/";
@@ -11,20 +13,20 @@ public class Epub2Atxt
             Log.log("[Error]File not exits!");
             return;
         }
-        Epub e = new Epub(path);
+        EpubFile e = new EpubFile(path);
         e.items.ForEach(
             (i) =>
             {
-                if (typeof(TextItem) == i.GetType() && i.fullName.EndsWith(".xhtml"))
-                { ProcXHTML((TextItem)i); }
+                if (typeof(TextEpubItemFile) == i.GetType() && i.fullName.EndsWith(".xhtml"))
+                { ProcXHTML((TextEpubItemFile)i); }
             }
             );
     }
-    static void ProcXHTML(TextItem i)
+    static void ProcXHTML(TextEpubItemFile i)
     {
         Log.log("[Info]" + i.fullName);
         string name = Path.GetFileNameWithoutExtension(i.fullName);
-        string r = i.data.Replace("\r", "").Replace("\n", "");
+        string r = i.text.Replace("\r", "").Replace("\n", "");
         Match m = Regex.Match(r, "<body(.*)</body>");
         if (!m.Success) { Log.log("[Error]body?"); return; }
         r = m.Groups[0].Value;

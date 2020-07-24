@@ -1,9 +1,12 @@
 using System.IO;
 using System.Xml;
+using System.Collections.Generic;
 using System.Text.RegularExpressions;
+using AeroEpubViewer.Epub;
 public class Epub2Comment
 {
-    const string output_path="output_epub2comment/";
+    const string output_path = "output_epub2comment/";
+    static EpubFile epub;
     public static void Proc(string path)
     {
         Log.log("[Info]Epub2Comment");
@@ -13,20 +16,140 @@ public class Epub2Comment
             Log.log("[Error]File not exits!");
             return;
         }
-        Epub e = new Epub(path);
-        e.items.ForEach(
-            (i) =>
+        epub = new EpubFile(path);
+        Parse2(epub);
+        var plain = GetPlainStruct();
+        for (int i = 0; i < plain.Length; i++)
+        {
+            var t = epub.spine[i].item.GetFile() as TextEpubItemFile;
+            var txt = Html2Comment.ProcXHTML(t.text);
+            var p = output_path + Path.GetFileNameWithoutExtension(t.fullName) + plain[i] + ".txt";
+            File.WriteAllText(p, txt);
+            Log.log("[Info]" + p);
+        }
+    }
+    static TocItem tocTree;
+    static string tocPath;
+    static void Parse2(EpubFile e)
+    {
+        var f = e.toc.GetFile() as TextEpubItemFile;
+        tocPath = f.fullName;
+        XmlDocument xml = new XmlDocument();
+        xml.LoadXml(f.text);
+        var root = xml.GetElementsByTagName("navMap")[0];
+        tocTree = new TocItem();
+        tocTree.children = new List<TocItem>();
+        Parse2Helper(root, tocTree);
+
+    }
+    static void Parse2Helper(XmlNode px, TocItem pt)
+    {
+        foreach (XmlNode e in px.ChildNodes)
+        {
+            switch (e.Name)
             {
-                if (typeof(TextItem) == i.GetType() && i.fullName.EndsWith(".xhtml"))
+                case "navLabel":
+                    {
+                        pt.name = e.InnerText;
+                    }
+                    break;
+                case "content":
+                    {
+                        pt.url = Util.ReferPath(tocPath, e.Attributes["src"].Value);
+                    }
+                    break;
+                case "navPoint":
+                    {
+                        var n = pt.AddChild();
+                        Parse2Helper(e, n);
+                    }
+                    break;
+            }
+        }
+    }
+    static public string[] GetPlainStruct()
+    {
+        List<string> urls = new List<string>();
+        foreach (SpineItemref i in epub.spine)
+        {
+            if (!i.linear) continue;
+            urls.Add(i.href);
+        }
+        string[] plain = new string[urls.Count];
+        GetPlainStructHelper(urls, tocTree, ref plain);
+        return plain;
+    }
+    static void GetPlainStructHelper(List<string> urls, TocItem p, ref string[] plain, string intro = "")
+    {
+        foreach (TocItem i in p.children)
+        {
+            if (i.url != null)
+            {
+                string u = i.url.Split('#')[0];
+                int index = urls.IndexOf(u);
+                if (index >= 0)
                 {
-                    var t = (TextItem)i;
-                    var txt = Html2Comment.ProcXHTML(t.data);
-                    var p = output_path + Path.GetFileNameWithoutExtension(i.fullName) + ".txt";
-                    File.WriteAllText(p, txt);
-                    Log.log("[Info]" + p);
+                    if (plain[index] == null)
+                        plain[index] = intro + i.name;
                 }
             }
-            );
+            if (i.children != null)
+                GetPlainStructHelper(urls, i, ref plain, intro + i.name + " > ");
+        }
+    }
+
+    private class TocItem
+    {
+        public List<TocItem> children;
+        public TocItem parent;
+        string _name = "";
+        public string name
+        {
+            get { return _name; }
+            set { _name = Util.Trim(value); }
+        }
+        string _url;
+        public string url
+        {
+            set
+            {
+                _url = value;
+                int i = 0;
+                var spl = _url.Split('#');
+                var path = spl[0];
+                foreach (SpineItemref itemref in epub.spine)
+                {
+                    if (itemref.href == path)
+                    {
+                        docIndex = i;
+                        return;
+                    }
+                    i++;
+                }
+                throw new EpubErrorException("Error at parse toc");
+            }
+            get { return _url; }
+        }
+        public int docIndex;
+        public TocItem AddChild()
+        {
+            if (children == null) children = new List<TocItem>();
+            TocItem n = new TocItem();
+            n.parent = this;
+            children.Add(n);
+            return n;
+        }
+        public override string ToString()
+        {
+            string s = name;
+            if (parent != null)
+            {
+                var t = parent.ToString();
+                if (t.Length > 0)
+                    s = parent.ToString() + " > " + s;
+            }
+            return s;
+        }
     }
 
 }

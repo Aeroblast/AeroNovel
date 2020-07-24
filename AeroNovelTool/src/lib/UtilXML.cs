@@ -1,7 +1,8 @@
 using System.Collections.Generic;
 using System.Text.RegularExpressions;
 
-
+namespace AeroEpubViewer.Xml
+{
     //System.Xml太抠规范了，还是自己简易糊个吧。
     public class XFragment
     {
@@ -22,19 +23,19 @@ using System.Text.RegularExpressions;
         {
             if (text[start] != '<') throw new XMLException("XFragment Error:Unexpect Start.");
             indexInSource = start;
-            Regex reg_tag = new Regex("<[^\\!]*?>");
+            Regex reg_tag = new Regex("<[\\s\\S]*?>");
             int count = 0, pos = start;
             Match m;
             do
             {
                 m = reg_tag.Match(text, pos);
                 if (!m.Success) { new XMLException("XFragment Error:Unexpect end."); }
-                XTag tag = new XTag(m.Value);
+                XTag tag = new XTag(text,m);
                 if (tag.type == PartType.tag_start) count++;
                 if (tag.type == PartType.tag_end) count--;
                 if (m.Index > pos) { parts.Add(new XText(text.Substring(pos, m.Index - pos))); }
                 parts.Add(tag);
-                pos = m.Index + m.Value.Length;
+                pos = m.Index + tag.originalText.Length;
             }
             while (count > 0);
             originalLength = m.Index - start + m.Value.Length;
@@ -94,7 +95,7 @@ using System.Text.RegularExpressions;
             }
             for (int i = start + 1; i < doc.parts.Count; i++)
             {
-                if (doc.parts[i].type == PartType.tag_start)
+                if (doc.parts[i].type == PartType.tag_start|| doc.parts[i].type == PartType.tag_single)
                 {
                     XELement ele = new XELement(doc, i);
                     ele.parent = this;
@@ -152,7 +153,7 @@ using System.Text.RegularExpressions;
 
     public enum PartType
     {
-        text, tag_start, tag_end, tag_single
+        text, tag_start, tag_end, tag_single,comment
     }
     public class XText : XPart
     {
@@ -174,14 +175,14 @@ using System.Text.RegularExpressions;
         /// <param name="pos">找到Tag之后，Tag的起始位置</param>
         public static XTag FindTag(string tagName, string text, ref int pos)
         {
-            Regex reg1 = new Regex("<" + tagName + "[^a-zA-Z]");
-            Regex reg2 = new Regex("<" + tagName + ".*?>");
-            Match m = reg1.Match(text, pos);
-            if (m.Success)
+            Regex reg1 = new Regex("<" + tagName + "[\\s]");
+            Regex reg2 = new Regex("<" + tagName + "[\\s\\S]*?>");
+            Match m1 = reg1.Match(text, pos);
+            if (m1.Success)
             {
-                m = reg2.Match(text, m.Index);
-                XTag tag = new XTag(m.Value);
-                pos = m.Index;
+                Match m2 = reg2.Match(text, m1.Index);
+                XTag tag = new XTag(text,m2);
+                pos = m2.Index;
                 return tag;
             }
             return null;
@@ -194,6 +195,7 @@ using System.Text.RegularExpressions;
 
         public string tagname;
         public List<XAttribute> attributes;
+        public bool isComment = false;
         public string GetAttribute(string name)
         {
             foreach (var att in attributes)
@@ -247,30 +249,42 @@ using System.Text.RegularExpressions;
             }
         }
 
-        public XTag(string text)
+        public XTag(string text,Match m)
         {
+            originalText = m.Value;
 
-            originalText = text;
-            attributes = new List<XAttribute>();
-            string intag = text.Substring(1, text.Length - 2);
-            if (intag[intag.Length - 1] == '/')
+            if (originalText.StartsWith("<!--"))
             {
-                type = PartType.tag_single;
-                intag = intag.Substring(0, intag.Length - 1);
+                Regex reg_comm = new Regex("<!--[\\S\\s]*?-->");
+                m = reg_comm.Match(text, m.Index);
+                originalText = m.Value;
+                type = PartType.comment;
             }
-            string[] x = intag.Split(" ");
-            tagname = x[0];
-            string t = "";
-            for (int i = 1; i < x.Length; i++)
+            else 
             {
-                if (x[i].Length == 0) continue;
-                t += x[i];
-                if (_CountSep(t) != 2) { t += ' '; continue; }
-                attributes.Add(new XAttribute(t));
-                t = "";
+                attributes = new List<XAttribute>();
+                string intag = originalText.Substring(1, originalText.Length - 2);
+                if (intag[intag.Length - 1] == '/')
+                {
+                    type = PartType.tag_single;
+                    intag = intag.Substring(0, intag.Length - 1);
+                }
+                string[] x = intag.Split(' ');
+                tagname = x[0];
+                string t = "";
+                for (int i = 1; i < x.Length; i++)
+                {
+                    x[i] = Util.Trim(x[i]);
+                    if (x[i].Length == 0) continue;
+                    t += x[i];
+                    if (_CountSep(t) != 2) { t += ' '; continue; }
+                    attributes.Add(new XAttribute(t));
+                    t = "";
+                }
+                if (tagname[0] == '/') { type = PartType.tag_end; tagname = tagname.Substring(1); }
+                else if (type != PartType.tag_single) type = PartType.tag_start;
             }
-            if (tagname[0] == '/') { type = PartType.tag_end; tagname = tagname.Substring(1); }
-            else if (type != PartType.tag_single) type = PartType.tag_start;
+
 
         }
         private int _CountSep(string s){int c=0;int p=0;while(p<s.Length){if(s[p]=='"')c++;p++;}return c;}
@@ -306,3 +320,4 @@ using System.Text.RegularExpressions;
     {
         public XMLException(string s) : base(s) { }
     }
+}
