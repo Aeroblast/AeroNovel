@@ -90,5 +90,6 @@ a{text-decoration: none;}
     background: transparent;
     height:     1em;
     width:auto;
+    vertical-align: text-bottom;
 }
 .afont{font-family: sans-serif;}

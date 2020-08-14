@@ -21,12 +21,11 @@ class Program
                         EpubFile e = gen.Gen(args[1]);
                         List<string> creators = new List<string>();
                         e.dc_creators.ForEach((x) => creators.Add(x.value));
-                        e.filename = "[" + string.Join(",", creators) + "] " + e.title;
+                        e.filename = $"[{string.Join(",", creators)}] {e.title} [{ DateTime.Today.ToString("yyyyMMdd")}]";
                         if (args.Length >= 3 && DirectoryExist(args[2]))
                             e.Save(args[2]);
                         else
                             e.Save("");
-
                     }
                     break;
                 case "txt":
