@@ -82,10 +82,23 @@ class GenBbcode
     static void ReadWebImages(string dir)
     {
         web_images = new Dictionary<string, string>();
-        string path = Path.Combine(dir, "web_images.txt");
-        if (File.Exists(path))
+        string path = Path.Combine(dir, "web_images");
+        if (File.Exists(path + ".md"))
         {
-            string[] a = File.ReadAllLines(path);
+            string[] a = File.ReadAllLines(path + ".md");
+            Regex md_img = new Regex("\\((.*?)\\)\\[(.*?)\\]");
+            foreach (var x in a)
+            {
+                var b = md_img.Match(x);
+                if (b.Success)
+                {
+                    web_images.Add(b.Groups[1].Value, b.Groups[2].Value);
+                }
+            }
+        }
+        if (File.Exists(path + ".txt"))
+        {
+            string[] a = File.ReadAllLines(path + ".txt");
             foreach (var x in a)
             {
                 var b = x.Split(' ');
