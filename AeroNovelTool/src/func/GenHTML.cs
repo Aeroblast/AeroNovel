@@ -258,9 +258,19 @@ namespace AeroNovelEpub
 
 
         }
+        static Regex entityWarn=new Regex("&[#0-9a-z]*?;");
         public static string EncodeHTML(string s)
         {
-            return s.Replace("&", "&amp;");
+            if(s.Contains("&"))
+            {
+                if(!entityWarn.Match(s).Success)
+                {
+                    Log.log("[Warn]not entity charater '&' detect.");
+                    s=s.Replace("&","&amp;");
+                    //这里十分不严谨
+                }
+            }
+            return s;
         }
     }
 }
