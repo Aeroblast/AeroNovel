@@ -1,3 +1,4 @@
+using System;
 using System.IO;
 using System.Xml;
 using System.Collections.Generic;
@@ -17,7 +18,23 @@ public class Epub2Comment
             return;
         }
         epub = new EpubFile(path);
-        Parse2(epub);
+        try
+        {
+            if (epub.toc.mediaType == "application/x-dtbncx+xml")
+            {
+                Parse2(epub);
+            }
+            else
+            {
+                Parse3(epub);
+            }
+        }
+        catch (Exception)
+        {
+            Log.log("[Warn]尝试序列化失败。");
+            tocTree = null;
+        }
+
         var plain = GetPlainStruct();
         for (int i = 0; i < plain.Length; i++)
         {
@@ -32,7 +49,7 @@ public class Epub2Comment
     static string tocPath;
     static void Parse2(EpubFile e)
     {
-        var f = e.toc.GetFile() as TextEpubItemFile;
+        var f = epub.toc.GetFile() as TextEpubItemFile;
         tocPath = f.fullName;
         XmlDocument xml = new XmlDocument();
         xml.LoadXml(f.text);
@@ -67,6 +84,62 @@ public class Epub2Comment
             }
         }
     }
+    //http://idpf.org/epub/30/spec/epub30-contentdocs.html#sec-xhtml-nav-def-model
+    public static void Parse3(EpubFile e)
+    {
+        var f = e.toc.GetFile() as TextEpubItemFile;
+
+        tocPath = f.fullName;
+        XmlDocument xml = new XmlDocument();
+        xml.LoadXml(f.text);
+        var navs = xml.GetElementsByTagName("nav");
+        foreach (XmlElement nav in navs)
+        {
+            if (nav.GetAttribute("epub:type") == "toc")
+            {
+                tocTree = new TocItem();
+                tocTree.children = new List<TocItem>();
+                var root = nav.GetElementsByTagName("ol")[0];
+                Parse3Helper(root, tocTree);
+                return;
+            }
+        }
+        //We have <nav>, but no epub:type is toc, so last try:
+        if (navs.Count > 0)
+        {
+            var nav = navs[0] as XmlElement;
+            tocTree = new TocItem();
+            tocTree.children = new List<TocItem>();
+            var root = nav.GetElementsByTagName("ol")[0];
+            Parse3Helper(root, tocTree);
+        }
+    }
+    static void Parse3Helper(XmlNode px, TocItem pt)
+    {
+        foreach (XmlNode e in px.ChildNodes)
+            if (e.Name == "li")
+            {
+                var node = pt.AddChild();
+                foreach (XmlNode a in e.ChildNodes)
+                {
+                    if (a.Name == "a" && node.name == "")
+                    {
+                        node.name = a.InnerText;
+                        node.url = Util.ReferPath(tocPath, ((XmlElement)a).GetAttribute("href"));
+                        continue;
+                    }
+                    if (a.Name == "span" && node.name == "")
+                    {
+                        node.name = a.InnerText;
+                        continue;
+                    }
+                    if (a.Name == "ol")
+                    {
+                        Parse3Helper(a, node);
+                    }
+                }
+            }
+    }
     static public string[] GetPlainStruct()
     {
         List<string> urls = new List<string>();
@@ -76,6 +149,11 @@ public class Epub2Comment
             urls.Add(i.href);
         }
         string[] plain = new string[urls.Count];
+        if (tocTree == null)
+        {
+            for (int i = 0; i < plain.Length; i++) plain[i] = "";
+            return plain;
+        }
         GetPlainStructHelper(urls, tocTree, ref plain);
         return plain;
     }
