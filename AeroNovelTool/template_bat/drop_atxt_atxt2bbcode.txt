@@ -1,0 +1,4 @@
+%~d0
+cd %~dp0
+AeroNovelTool atxt2bbcode %1
+pause
