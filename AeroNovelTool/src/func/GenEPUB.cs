@@ -120,30 +120,38 @@ namespace AeroNovelEpub
                         {"目錄","toc"},
                         {"目录","toc"}
                     };
+                bool nameDicSuccess = false;
                 foreach (var k in name_dic)
                 {
                     if (txtname.Contains(k.Key))
                     {
-                        name = "atxt" + no + "" + k.Value + ".xhtml"; break;
+                        name = "atxt" + no + "_" + k.Value + ".xhtml";
+                        nameDicSuccess = true;
+                        break;
                     }
                 }
+                if (!nameDicSuccess)
                 {
                     string t = chaptitle;
                     string[] chapterNumberPatterns = new string[]{
-                        "^第([一二三四五六七八九十百零]{1,10})",
-                        "([一二三四五六七八九十百零]{1,10})\\s",
-                        "([一二三四五六七八九十百零]{1,10})章"
+                        "^第([一二三四五六七八九十百零0-9]{1,10})",
+                        "([一二三四五六七八九十百零0-9]{1,10})\\s",
+                        "([一二三四五六七八九十百零0-9]{1,10})章"
                         };
                     foreach (string pattern in chapterNumberPatterns)
                     {
                         var m_num = Regex.Match(t, pattern);
                         if (m_num.Success)
                         {
-                            t = t.Remove(m_num.Index, m_num.Length).Insert(m_num.Index, "_chapter" + Util.FromChineseNumber(m_num.Groups[1].Value) + ' ');
+                            string chapterNumber = m_num.Groups[1].Value;
+                            if (!char.IsDigit(chapterNumber[0])) chapterNumber = "" + Util.FromChineseNumber(chapterNumber);
+
+                            t = t.Remove(m_num.Index, m_num.Length).Insert(m_num.Index, "_chapter" + chapterNumber + ' ');
+
                             break;
                         }
                     }
-                    name = "atxt" + no;
+                    name = "_";
                     for (int i = 0; i < t.Length; i++)
                     {
                         if (t[i] < 128)
@@ -154,11 +162,12 @@ namespace AeroNovelEpub
                                 if (name.EndsWith('_')) continue;
                                 name += '_'; continue;
                             }
+                            if (t[i] == '_' && name.EndsWith('_')) continue;
                             name += t[i];
                         }
                     }
                     if (name.EndsWith('_')) name = name.Substring(0, name.Length - 1);
-                    name += ".xhtml";
+                    name = "atxt" + no + name + ".xhtml";
                 }
 
                 items += string.Format("    <item id=\"{0}\" href=\"Text/{0}\" media-type=\"application/xhtml+xml\"/>\n", name);
