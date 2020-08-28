@@ -11,6 +11,12 @@ public class Html2Comment
         File.WriteAllText("output_html2comment.txt", atxt);
         Log.log("[Info]HTML2Comment Saved");
     }
+    static string [] notOutputClassNames=new string[]{
+        "tcy",//合并竖排标点符号
+        "upright",//GAGAGA 似乎调整字的竖排对齐的
+        "word-break-break-all",
+        "main"
+        };
     public static string ProcXHTML(string html)
     {
         XmlDocument doc = new XmlDocument();
@@ -74,13 +80,13 @@ public class Html2Comment
                                 {
                                     string classTemp = ((XmlElement)p).GetAttribute("class");
                                     bool tagOutput = true;
-                                    switch (classTemp)
+                                    foreach(string classname in notOutputClassNames)
                                     {
-                                        case "tcy"://合并竖排标点符号
-                                        case "main":
-                                        case "word-break-break-all":
-                                            tagOutput = false;
+                                        if(classTemp==classname)
+                                        {
+                                            tagOutput=false;
                                             break;
+                                        }
                                     }
                                     if (p.HasChildNodes)
                                         normalTagOutput.Add(tagOutput);
