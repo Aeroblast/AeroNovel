@@ -222,10 +222,15 @@ namespace AeroNovelEpub
                 if (f.EndsWith("info.txt") || f.EndsWith("info.atxt"))
                 {
                     body = Regex.Replace(body, "<p>(.*?：)", "<p class=\"keyvalue\">$1");
-                    body = "<div class=\"info\" epub:type=\"acknowledgements\">" + body + "<p>AeroNovelTool EPUB生成器by AE " + DateTime.Now + "</p>" +
-                    "<p class=\"keyvalue\">已验证阅读器:<br/>Apple Books<br/>Kindle(使用Kindlegen 转换)<br/>AeroEpubViewer<br/></p>" +
+                    body = "<div class=\"info\" epub:type=\"acknowledgements\">" + body + "<p>AeroNovelTool EPUB生成器 by AE 生成于" + DateTime.Now + "</p>" +
+                    //"<p class=\"keyvalue\">已验证阅读器:<br/>Apple Books<br/>Kindle(使用Kindlegen 转换)<br/>AeroEpubViewer<br/></p>" +
                     "</div>";
                     //File.WriteAllText("info.txt",body);
+                }
+                if (f.EndsWith("EOB.txt") || f.EndsWith("EOB.atxt"))
+                {
+                    body = "<div class=\"info\">" + body +
+                    "</div>";
                 }
                 string xhtml = xhtml_temp.Replace("{❤title}", txt_titles[i]).Replace("{❤body}", body);
                 TextEpubItemFile item = new TextEpubItemFile("OEBPS/Text/" + xhtml_names[i], xhtml);
