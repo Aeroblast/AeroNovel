@@ -201,7 +201,7 @@ namespace AeroNovelEpub
                 if (r.Length == 0) { r = "<br/>"; }
                 bool addp = true;
                 string[] dont_addp_list = new string[]
-                {"p","div","h1","h2","h3","h4","h5","h6"};
+                {"p","div","/div","h1","h2","h3","h4","h5","h6"};
                 foreach (var a in dont_addp_list)
                     if (Regex.Match(r, "<" + a + ".*>").Success)
                         addp = false;

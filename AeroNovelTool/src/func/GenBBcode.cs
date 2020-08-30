@@ -182,6 +182,8 @@ class GenBbcode
                 //{"\\[i\\](.*?)\\[\\/i\\]","<i>$1</i>"},
                 //{"\\[color=(.*?)\\](.*?)\\[\\/color\\]","<span style=\"color:$1\">$2</span>"},
                 //{"\\[size=(.*?)\\](.*?)\\[\\/size\\]","<span style=\"font-size:$1em\">$2</span>"}
+                {"^#class:(.*)",""},
+                {"^#/class",""},
             };
         string bbcode = "";
         int addmessagecount = 0;
@@ -213,7 +215,8 @@ class GenBbcode
                                     }
                                     else
                                     {
-                                        //r = r.Replace(m.Value, "【没传图床的图片：" + a + "】");
+                                        if (kv.Key == reg_illu2 || kv.Key == reg_illu)
+                                            r = r.Replace(m.Value, "【没传图床的图片：" + a + "】");
                                         r = r.Replace(m.Value, "");
                                         Log.log("[Warn]" + "没传图床的图片：" + a);
                                     }
