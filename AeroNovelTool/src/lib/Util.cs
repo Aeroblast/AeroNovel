@@ -123,6 +123,7 @@ class Util
 
     public static string FilenameCheck(string s)
     {
+        if (s == null) return "";
         return s
         .Replace('?', '？')
         .Replace('\\', '＼')

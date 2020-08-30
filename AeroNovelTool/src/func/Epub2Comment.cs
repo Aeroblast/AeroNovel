@@ -40,7 +40,7 @@ public class Epub2Comment
         {
             var t = epub.spine[i].item.GetFile() as TextEpubItemFile;
             var txt = Html2Comment.ProcXHTML(t.text);
-            var p = output_path + Path.GetFileNameWithoutExtension(t.fullName) + plain[i] + ".txt";
+            var p = output_path + Path.GetFileNameWithoutExtension(t.fullName) + Util.FilenameCheck(plain[i]) + ".txt";
             File.WriteAllText(p, txt);
             Log.log("[Info]" + p);
         }
