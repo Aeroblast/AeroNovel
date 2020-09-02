@@ -86,7 +86,7 @@ class GenBbcode
         if (File.Exists(path + ".md"))
         {
             string[] a = File.ReadAllLines(path + ".md");
-            Regex md_img = new Regex("\\((.*?)\\)\\[(.*?)\\]");
+            Regex md_img = new Regex("\\[(.+?)\\]\\((.+?)\\)");
             foreach (var x in a)
             {
                 var b = md_img.Match(x);
