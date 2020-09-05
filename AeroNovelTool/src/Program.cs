@@ -14,8 +14,8 @@ class Program
                     {
                         if (!DirectoryExist(args[1])) return;
                         var gen = new AeroNovelEpub.GenEpub();
-                        if (args.Length >= 3)
-                            if (args[2] == "t2s")
+                        for (int i = 2; i < args.Length; i++)
+                            if (args[i] == "t2s")
                                 gen = new AeroNovelEpub.GenEpub(AeroNovelEpub.ChineseConvertOption.T2S);
 
                         EpubFile e = gen.Gen(args[1]);
