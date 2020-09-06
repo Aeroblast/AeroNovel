@@ -21,7 +21,20 @@ class Program
                         EpubFile e = gen.Gen(args[1]);
                         List<string> creators = new List<string>();
                         string dateString = DateTime.Today.ToString("yyyyMMdd");
-                        e.dc_creators.ForEach((x) => creators.Add(x.value));
+                        e.dc_creators.ForEach((x) =>
+                        {
+                            if (x.refines.Count > 0)
+                            {
+                                foreach (var refine in x.refines)
+                                {
+                                    if (refine.name == "role")
+                                    {
+                                        if (refine.value != "aut") return;
+                                    }
+                                }
+                            }
+                            creators.Add(x.value);
+                        });
                         e.meta.ForEach((x) => { if (x.name == "dcterms:modified") dateString = x.value.Replace("-", "").Substring(0, 8); });
                         e.filename = $"[{string.Join(",", creators)}] {e.title} [{dateString}]";
                         if (args.Length >= 3 && DirectoryExist(args[2]))
