@@ -35,7 +35,15 @@ class Program
                             }
                             creators.Add(x.value);
                         });
-                        e.meta.ForEach((x) => { if (x.name == "dcterms:modified") dateString = x.value.Replace("-", "").Substring(0, 8); });
+                        try
+                        {
+                            e.meta.ForEach((x) => { if (x.name == "dcterms:modified") dateString = x.value.Replace("-", "").Substring(0, 8); });
+                        }
+                        catch (ArgumentOutOfRangeException)
+                        {
+                            Log.log("[Warn]Error at getting modified date in metadata");
+                        }
+
                         e.filename = $"[{string.Join(",", creators)}] {e.title} [{dateString}]";
                         if (args.Length >= 3 && DirectoryExist(args[2]))
                             e.Save(args[2]);
