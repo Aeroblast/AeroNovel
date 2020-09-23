@@ -14,11 +14,27 @@
 			"patterns": [
 				{
 					"name": "keyword.control.aeronoveltxt",
-					"match": "\\[(.*?)\\]"
+					"match": "\\[[/]{0,1}(i|b|emphasis|font|img)\\]"
 				},
 				{
 					"name": "keyword.control.aeronoveltxt",
-					"match": "^#HTML:"
+					"match": "^#(HTML|center|left|right|title|class|/class|illu|h[1-6]):"
+				},
+				{
+					"name": "keyword.control.aeronoveltxt",
+					"match": "\\[(ruby|color|size|imgchar|chapter|class)=(.+?)\\]"
+				},
+				{
+					"name": "keyword.control.aeronoveltxt",
+					"match": "\\[/(ruby|color|size|imgchar|chapter|class)\\]"
+				},
+				{
+					"name": "keyword.control.aeronoveltxt",
+					"match": "\\[(note)=(.+?)\\]"
+				},
+				{
+					"name": "keyword.control.aeronoveltxt",
+					"match": "\\[(pagebreak|note)\\]"
 				}
 			]
 		},
