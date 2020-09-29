@@ -16,6 +16,7 @@ namespace AeroNovelEpub
         string spine = "";
         string items = "";
         string version = "2.0";
+        string title = "";
         EpubFile epub = new EpubFile("template.zip");
         string uid = "urn:uuid:" + Guid.NewGuid().ToString();
         string xhtml_temp;
@@ -45,19 +46,18 @@ namespace AeroNovelEpub
         {
             this.dir = dir;
 
-            GenFileNames();
-            GenContent();
-            GetImage();
-            GetCss();
             string metaPath = Path.Combine(dir, "meta.txt");
             if (File.Exists(Path.Combine(dir, "meta3.txt")))
             {
                 metaPath = Path.Combine(dir, "meta3.txt");
                 version = "3.0";
+                xhtml_temp = Regex.Replace(xhtml_temp, "<!DOCTYPE html([\\s\\S]*?)>", "<!DOCTYPE html>");
             }
+
             string meta = File.ReadAllText(metaPath);
             meta = meta.Replace("{urn:uuid}", uid);
-            meta = meta.Replace("{date}", DateTime.Today.ToString("yyyy-MM-dd"));
+            uid = Regex.Match(meta, "<dc:identifier id=\"BookId\">(.*?)</dc:identifier>").Groups[1].Value;
+            meta = meta.Replace("{date}", DateTime.Today.ToString("yyyy-MM-ddT00:00:00Z"));
             if (cc != null)
             {
                 meta = cc.Convert(meta);
@@ -66,8 +66,12 @@ namespace AeroNovelEpub
             {
                 meta = meta.Replace("<dc:language>zh-tw</dc:language>", "<dc:language>zh</dc:language>", true, null);
             }
-            string title = Regex.Match(meta, "<dc:title.*?>(.*?)</dc:title>").Groups[1].Value;
+            title = Regex.Match(meta, "<dc:title.*?>(.*?)</dc:title>").Groups[1].Value;
 
+            GenFileNames();
+            GenContent();
+            GetImage();
+            GetCss();
 
             TextEpubItemFile toc = epub.GetFile<TextEpubItemFile>("OEBPS/toc.ncx");
             TextEpubItemFile nav = epub.GetFile<TextEpubItemFile>("OEBPS/nav.xhtml");
@@ -89,7 +93,6 @@ namespace AeroNovelEpub
             opf.text = string.Format(opf.text, meta, items, spine, version);
 
             epub.ReadMeta();
-
             return epub;
         }
 
@@ -241,7 +244,7 @@ namespace AeroNovelEpub
                     body = "<div class=\"info\">" + body +
                     "</div>";
                 }
-                string xhtml = xhtml_temp.Replace("{❤title}", txt_titles[i]).Replace("{❤body}", body);
+                string xhtml = xhtml_temp.Replace("{❤title}", title).Replace("{❤body}", body);
                 TextEpubItemFile item = new TextEpubItemFile("OEBPS/Text/" + xhtml_names[i], xhtml);
                 epub.items.Add(item);
                 Log.log("[Info]Add xhtml: " + item.fullName + " (title:" + txt_titles[i] + ")");
