@@ -27,22 +27,30 @@ namespace AeroNovelEpub
             Dictionary<string, string> reg_dic = new Dictionary<string, string>
             {
                 {"^\\[align=(.*?)\\](.*?)\\[\\/align\\]$","<p class=\"aligned\" style=\"text-align:$1\">$2</p>"},
-                {"^\\[center\\](.*?)\\[\\/center\\]$","<p class=\"aligned\" style=\"text-align:center\">$1</p>"},
-                {"^\\[right\\](.*?)\\[\\/right\\]$","<p class=\"aligned\" style=\"text-align:right\">$1</p>"},
-                {"^\\[left\\](.*?)\\[\\/left\\]$","<p class=\"aligned\" style=\"text-align:left\">$1</p>"},
-                {"^#center:(.*)","<p class=\"aligned\" style=\"text-align:center\">$1</p>"},
-                {"^#right:(.*)","<p class=\"aligned\" style=\"text-align:right\">$1</p>"},
-                {"^#left:(.*)","<p class=\"aligned\" style=\"text-align:left\">$1</p>"},
+                {"^\\[center\\](.*?)\\[\\/center\\]$","<p class=\"align_center\">$1</p>"},
+                {"^\\[right\\](.*?)\\[\\/right\\]$","<p class=\"align_right\">$1</p>"},
+                {"^\\[left\\](.*?)\\[\\/left\\]$","<p class=\"align_left\">$1</p>"},
+                {reg_illu,""},
+                {"^\\[title\\](.*?)\\[\\/title\\]$","<p class=\"tagtitle\">$1</p>"},
+                {"^\\[h1\\](.*?)\\[\\/h1\\]$","<h1>$1</h1>"},
+                {"^\\[h2\\](.*?)\\[\\/h2\\]$","<h2>$1</h2>"},
+                {"^\\[h3\\](.*?)\\[\\/h3\\]$","<h3>$1</h3>"},
+                {"^\\[h4\\](.*?)\\[\\/h4\\]$","<h4>$1</h4>"},
+                {"^\\[h5\\](.*?)\\[\\/h5\\]$","<h5>$1</h5>"},
+                {"^\\[h6\\](.*?)\\[\\/h6\\]$","<h6>$1</h6>"},
+                ///以上做旧版兼容，找个时机扫进垃圾堆
+
+                {"^#center:(.*)","<p class=\"align_center\">$1</p>"},
+                {"^#right:(.*)","<p class=\"align_right\">$1</p>"},
+                {"^#left:(.*)","<p class=\"align_left\">$1</p>"},
                 {reg_noteref,""},
                 {reg_notecontent,""},
                 {reg_img,""},
                 {reg_illu2,""},
-                {reg_illu,""},
                 {reg_imgchar,""},
                 {reg_class,""},
                 {reg_chapter,""},
                 {"\\[b\\](.*?)\\[\\/b\\]","<b>$1</b>"},
-                {"^\\[title\\](.*?)\\[\\/title\\]$","<p class=\"tagtitle\">$1</p>"},
                 {"^#title:(.*)","<p class=\"tagtitle\">$1</p>"},
                 {"\\[ruby=(.*?)\\](.*?)\\[\\/ruby\\]","<ruby>$2<rt>$1</rt></ruby>"},
                 {"^\\[pagebreak\\]$","<p class=\"pagebreak\"><br/></p>"},
@@ -53,12 +61,6 @@ namespace AeroNovelEpub
                 {"\\[i\\](.*?)\\[\\/i\\]","<i>$1</i>"},
                 {"\\[color=(.*?)\\](.*?)\\[\\/color\\]","<span style=\"color:$1\">$2</span>"},
                 {"\\[size=(.*?)\\](.*?)\\[\\/size\\]","<span style=\"font-size:$1em\">$2</span>"},
-                {"^\\[h1\\](.*?)\\[\\/h1\\]$","<h1>$1</h1>"},
-                {"^\\[h2\\](.*?)\\[\\/h2\\]$","<h2>$1</h2>"},
-                {"^\\[h3\\](.*?)\\[\\/h3\\]$","<h3>$1</h3>"},
-                {"^\\[h4\\](.*?)\\[\\/h4\\]$","<h4>$1</h4>"},
-                {"^\\[h5\\](.*?)\\[\\/h5\\]$","<h5>$1</h5>"},
-                {"^\\[h6\\](.*?)\\[\\/h6\\]$","<h6>$1</h6>"},
                 {"^#h1:(.*)","<h1>$1</h1>"},
                 {"^#h2:(.*)","<h2>$1</h2>"},
                 {"^#h3:(.*)","<h3>$1</h3>"},
@@ -166,7 +168,7 @@ namespace AeroNovelEpub
                                 case reg_class://class
                                     {
 
-                                        if (m.Index == 0 && m.Length ==r.Length)
+                                        if (m.Index == 0 && m.Length == r.Length)
                                         {
                                             r = reg.Replace(r, "<p class=\"$1\">$2</p>");
 
@@ -258,15 +260,15 @@ namespace AeroNovelEpub
 
 
         }
-        static Regex entityWarn=new Regex("&[#0-9a-z]*?;");
+        static Regex entityWarn = new Regex("&[#0-9a-z]*?;");
         public static string EncodeHTML(string s)
         {
-            if(s.Contains("&"))
+            if (s.Contains("&"))
             {
-                if(!entityWarn.Match(s).Success)
+                if (!entityWarn.Match(s).Success)
                 {
                     Log.log("[Warn]not entity charater '&' detect.");
-                    s=s.Replace("&","&amp;");
+                    s = s.Replace("&", "&amp;");
                     //这里十分不严谨
                 }
             }
