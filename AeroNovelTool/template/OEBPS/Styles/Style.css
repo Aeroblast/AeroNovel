@@ -82,6 +82,13 @@ p.illu {
 
 .notesection {
     border: 1px solid;
+    page-break-before: always;
+    margin-top: 1em;
+}
+
+.footnote-p{
+	text-indent: -2em;
+	margin-left: 2em;
 }
 
 aside {

@@ -213,7 +213,7 @@ namespace AeroNovelEpub
                 {
                     var temptrimed = Util.TrimTag(r);
                     var first = (temptrimed.Length > 0) ? temptrimed[0] : '\0';
-                    if (first == '（' || first == '「' || first == '『' || first == '〈')
+                    if (first == '（' || first == '「' || first == '『' || first == '〈'||first=='【')
                     {
                         r = "<p class=\"drawout\">" + r + "</p>";
                     }

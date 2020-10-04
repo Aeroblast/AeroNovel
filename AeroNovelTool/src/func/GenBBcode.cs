@@ -239,6 +239,7 @@ class GenBbcode
                     case '『':
                     case '＜':
                     case '《':
+                    case '【':
                         r = "　" + r;
                         break;
                     default:
