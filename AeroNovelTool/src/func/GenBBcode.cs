@@ -162,7 +162,7 @@ class GenBbcode
                 {"^#left:(.*)","[align=left]$1[/align]"},
                 {"^#center:(.*)","[align=center]$1[/align]"},
                 {"^#right:(.*)","[align=right]$1[/align]"},
-                {reg_noteref,"[color=#00ffff][sup]注[/sup][/color]"},
+                {reg_noteref,"[color=#00ffff][ruby=注][size=1]　[/size][/ruby][/color]"},
                 {reg_notecontent,"\r\n[align=right][size=1][color=#00ffff]$1[/color][/size][/align]"},
                 {reg_img,""},
                 {reg_illu,""},
