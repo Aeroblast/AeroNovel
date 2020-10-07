@@ -155,6 +155,8 @@ class GenBbcode
         const string reg_chapter = "\\[chapter=(.*?)\\](.*?)\\[\\/chapter\\]";
         Dictionary<string, string> reg_dic = new Dictionary<string, string>
             {
+                {"/\\*.*?\\*/",""},
+                {"///.*",""},
                 //{"\\[align=(.*?)\\](.*?)\\[\\/align\\]","<p class=\"aligned\" style=\"text-align:$1\">$2</p>"},
                 {"^\\[center\\](.*?)\\[\\/center\\]$","[align=center]$1[/align]"},
                 {"^\\[right\\](.*?)\\[\\/right\\]$","[align=right]$1[/align]"},
@@ -175,8 +177,6 @@ class GenBbcode
                 {"^#title:(.*)","[size=5]$1[/size]"},
                 //{"\\[ruby=(.*?)\\](.*?)\\[\\/ruby\\]","<ruby>$2<rt>$1</rt></ruby>"},
                 {"\\[pagebreak\\]",""},
-                {"/\\*.*?\\*/",""},
-                {"///.*",""},
                 {"\\[emphasis\\](.*?)\\[\\/emphasis\\]","[b]$1[/b]"},
                 //{"\\[s\\](.*?)\\[\\/s\\]","<s>$1</s>"},
                 //{"\\[i\\](.*?)\\[\\/i\\]","<i>$1</i>"},
