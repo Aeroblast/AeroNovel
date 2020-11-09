@@ -127,8 +127,8 @@ class Program
         }
     }
     const string usage = @"Usage:
-epub 【项目路径】 【输出文件目录(可选)】
-bbcode 【项目路径】 【输出文件目录(可选)】
+epub 【项目文件夹】 【输出目录(可选)】
+bbcode 【项目文件夹】 【输出目录(可选)】
 atxt2bbcode 【atxt文件】
 epub2comment 【生肉epub文件】
 ";
