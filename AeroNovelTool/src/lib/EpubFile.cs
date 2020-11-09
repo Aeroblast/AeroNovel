@@ -401,7 +401,7 @@ namespace AeroEpubViewer.Epub
                     foreach (var item in items) { item.PutInto(archive); }
                 }
             }
-            Log.log("[Info]Saved " + filepath);
+            Log.Note("Saved " + filepath);
         }
         public EpubFile(string path)
         {

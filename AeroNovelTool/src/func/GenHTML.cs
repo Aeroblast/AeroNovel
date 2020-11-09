@@ -109,7 +109,7 @@ namespace AeroNovelEpub
                                         string img_name = Path.GetFileName(m.Groups[1].Value);
                                         if (File.Exists(Path.Combine(context.img_path, img_name)))
                                         {
-                                            Log.log("[Info]Image used:" + img_name);
+                                            Log.Info("Image used:" + img_name);
                                             if (!context.img_names.Contains(img_name))
                                             {
                                                 context.img_names.Add(img_name);
@@ -117,7 +117,7 @@ namespace AeroNovelEpub
                                         }
                                         else
                                         {
-                                            Log.log("[Warn]Cannot find " + img_name);
+                                            Log.Warn("Cannot find " + img_name);
                                         }
                                         string src = "../Images/" + img_name;
                                         string img_temp = "<img src=\"{0}\" alt=\"\"/>";
@@ -131,7 +131,7 @@ namespace AeroNovelEpub
                                         string img_name = Path.GetFileName(m.Groups[1].Value);
                                         if (File.Exists(Path.Combine(context.img_path, img_name)))
                                         {
-                                            Log.log("[Info]Illustation used:" + img_name);
+                                            Log.Info("Illustation used:" + img_name);
                                             if (!context.img_names.Contains(img_name))
                                             {
                                                 context.img_names.Add(img_name);
@@ -139,7 +139,7 @@ namespace AeroNovelEpub
                                         }
                                         else
                                         {
-                                            Log.log("[Warn]Cannot find " + img_name);
+                                            Log.Warn("Cannot find " + img_name);
                                         }
                                         string src = "../Images/" + img_name;
                                         string img_temp = "<div class=\"aligned illu\"><img class=\"illu\" src=\"{0}\" alt=\"\"/></div>";
@@ -151,7 +151,7 @@ namespace AeroNovelEpub
                                         string img_name = Path.GetFileName(m.Groups[1].Value);
                                         if (File.Exists(Path.Combine(context.img_path, img_name)))
                                         {
-                                            Log.log("[Info]Imagechar used:" + img_name);
+                                            Log.Info("Imagechar used:" + img_name);
                                             if (!context.img_names.Contains(img_name))
                                             {
                                                 context.img_names.Add(img_name);
@@ -159,7 +159,7 @@ namespace AeroNovelEpub
                                         }
                                         else
                                         {
-                                            Log.log("[Warn]Cannot find " + img_name);
+                                            Log.Warn("Cannot find " + img_name);
                                         }
                                         string src = "../Images/" + img_name;
                                         string img_temp = "<img class=\"imgchar\" src=\"{0}\" alt=\"\"/>";
@@ -185,10 +185,10 @@ namespace AeroNovelEpub
                                     {
                                         string chapnum_s = m.Groups[1].Value;
                                         int chapnum;
-                                        if (!int.TryParse(chapnum_s, out chapnum)) { Log.log("[Error]Bad chapter string:" + chapnum_s); continue; }
+                                        if (!int.TryParse(chapnum_s, out chapnum)) { Log.Error("Bad chapter string:" + chapnum_s); continue; }
 
                                         int index = context.txt_nums.FindIndex(0, (s) => int.Parse(s) == chapnum);
-                                        if (index < 0) { Log.log("[Error]Bad chapter number:" + chapnum); continue; }
+                                        if (index < 0) { Log.Error("Bad chapter number:" + chapnum); continue; }
                                         string path = context.xhtml_names[index];
                                         r = reg.Replace(r, "<a href=\"" + path + "\">$2</a>");
                                     }
@@ -213,7 +213,7 @@ namespace AeroNovelEpub
                 {
                     var temptrimed = Util.TrimTag(r);
                     var first = (temptrimed.Length > 0) ? temptrimed[0] : '\0';
-                    if (first == '（' || first == '「' || first == '『' || first == '〈'||first=='【')
+                    if (first == '（' || first == '「' || first == '『' || first == '〈' || first == '【' || first == '《')
                     {
                         r = "<p class=\"drawout\">" + r + "</p>";
                     }
@@ -256,7 +256,7 @@ namespace AeroNovelEpub
             {
                 if (Regex.Match(m.Groups[1].Value, "^[a-zA-Z0-9=]{1,20}$").Success)
                 {
-                    Log.log("[Warn]Unprocessed tag in line:“" + s + "”");
+                    Log.Warn("Unprocessed tag in line:“" + s + "”");
                 }
             }
 
@@ -269,7 +269,7 @@ namespace AeroNovelEpub
             {
                 if (!entityWarn.Match(s).Success)
                 {
-                    Log.log("[Warn]not entity charater '&' detect.");
+                    Log.Warn("entity charater '&' detect.");
                     s = s.Replace("&", "&amp;");
                     //这里十分不严谨
                 }

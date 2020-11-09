@@ -33,7 +33,7 @@ namespace AeroNovelEpub
             this.cc_option = cc_option;
             if (cc_option == ChineseConvertOption.T2S)
             {
-                Log.log("[Info]Chinese Convert: T2S");
+                Log.Note("Chinese Convert: T2S");
                 cc = new ChineseConvert();
                 cc.Prepare();
             }
@@ -220,11 +220,11 @@ namespace AeroNovelEpub
                                 string target = cc.Convert(xx[2]);
                                 int c = Util.CountMatches(lines[line_num - 1], target);
                                 lines[line_num - 1] = lines[line_num - 1].Replace(target, xx[3]);
-                                if (c == 0) Log.log("[Warn]Cannot Find cc patch target:" + xx[2]);
-                                else Log.log(string.Format("[Info]CC patched {0} times for {1}", c, xx[2]));
+                                if (c == 0) Log.Warn("Cannot Find cc patch target:" + xx[2]);
+                                else Log.Info(string.Format("CC patched {0} times for {1}", c, xx[2]));
                             }
                             else
-                            { Log.log("[Warn]Bad Line Number:" + xx[1]); }
+                            { Log.Warn("Bad Line Number:" + xx[1]); }
                         }
                     }
 
@@ -247,7 +247,7 @@ namespace AeroNovelEpub
                 string xhtml = xhtml_temp.Replace("{❤title}", title).Replace("{❤body}", body);
                 TextEpubItemFile item = new TextEpubItemFile("OEBPS/Text/" + xhtml_names[i], xhtml);
                 epub.items.Add(item);
-                Log.log("[Info]Add xhtml: " + item.fullName + " (title:" + txt_titles[i] + ")");
+                Log.Info("Add xhtml: " + item.fullName + " (title:" + txt_titles[i] + ")");
             }
 
         }
@@ -273,9 +273,9 @@ namespace AeroNovelEpub
                         items += $"    <item id=\"{fn}\" href=\"Images/{fn}\" media-type=\"{imgtype[ext]}\"{properties}/>\n";
                         if (!img_names.Contains(fn))
                         {
-                            Log.log("[Warn]Unrefered image: " + fn);
+                            Log.Warn("Unrefered image: " + fn);
                         }
-                        Log.log("[Info]Add image: " + fn);
+                        Log.Info("Add image: " + fn);
                     }
 
                 }
@@ -293,7 +293,7 @@ namespace AeroNovelEpub
                             if (img != null)
                             {
                                 img.data = File.ReadAllBytes(f);
-                                Log.log("[Info]T2S:Image Replaced:" + fn);
+                                Log.Info("T2S:Image Replaced:" + fn);
                             }
                         }
 
@@ -307,7 +307,7 @@ namespace AeroNovelEpub
             {
                 TextEpubItemFile cssi = epub.GetFile<TextEpubItemFile>("OEBPS/Styles/Style.css");
                 cssi.text += "\r\n\r\n" + File.ReadAllText(css[0]);
-                Log.log("[Info]Css added:" + css[0]);
+                Log.Info("Css added:" + css[0]);
             }
         }
         public (string, string) GenTOC(string[] lines, string uid, string title, string template, string template3 = "")

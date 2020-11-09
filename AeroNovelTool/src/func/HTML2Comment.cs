@@ -9,7 +9,7 @@ public class Html2Comment
         string html = File.ReadAllText(path);
         string atxt = ProcXHTML(html);
         File.WriteAllText("output_html2comment.txt", atxt);
-        Log.log("[Info]HTML2Comment Saved");
+        Log.Note("HTML2Comment Saved");
     }
     static string [] notOutputClassNames=new string[]{
         "tcy",//合并竖排标点符号

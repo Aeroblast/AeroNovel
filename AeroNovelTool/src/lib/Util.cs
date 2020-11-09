@@ -15,7 +15,7 @@ class Util
             File.Delete(outputfullpath);
         }
         ZipFile.CreateFromDirectory(src, outputfullpath);
-        Log.log("Saved:" + outputfullpath);
+        Log.Note("Saved:" + outputfullpath);
     }
     public static void Unzip(string archive_path, string output_dir)
     {

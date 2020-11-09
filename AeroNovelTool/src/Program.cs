@@ -6,6 +6,9 @@ class Program
 {
     static void Main(string[] args)
     {
+        Console.ForegroundColor = ConsoleColor.Cyan;
+        Console.WriteLine("AeroNovelTool by AE Ver." + Version.date);
+        Console.ForegroundColor = ConsoleColor.White;
         if (args.Length >= 2)
         {
             switch (args[0].ToLower())
@@ -41,7 +44,7 @@ class Program
                         }
                         catch (ArgumentOutOfRangeException)
                         {
-                            Log.log("[Warn]Error at getting modified date in metadata");
+                            Log.Warn("Error at getting modified date in metadata");
                         }
 
                         e.filename = $"[{string.Join(",", creators)}] {e.title} [{dateString}]";
@@ -86,7 +89,7 @@ class Program
                         var xhtml = WebSource.KakuyomuEpisode(args[1]);
                         var atxt = Html2Comment.ProcXHTML(xhtml.text);
                         File.WriteAllText("output_kakuyomu2comment.txt", atxt);
-                        Log.log("[Info]output_kakuyomu2comment.txt");
+                        Log.Note("output_kakuyomu2comment.txt");
                     }
                     break;
                 case "websrc":
@@ -100,7 +103,7 @@ class Program
                         }
                         else
                         {
-                            Log.log("[Error]什么网站");
+                            Log.Error("什么网站");
                             break;
                         }
                         if (xhtmls != null)
@@ -114,32 +117,38 @@ class Program
                     }
                     break;
                 default:
-                    Log.log("[Warn]Nothing happens. Usage:epub/txt/bbcode/epub2comment/epub2atxt/html2comment/atxt2bbcode");
+                    Log.Warn("Nothing happens. " + usage);
                     break;
             }
         }
         else
         {
-            Log.log("[Warn]Usage:epub/txt/bbcode/restore/epub2comment");
+            Log.Warn(usage);
         }
     }
+    const string usage = @"Usage:
+epub 【项目路径】 【输出文件目录(可选)】
+bbcode 【项目路径】 【输出文件目录(可选)】
+atxt2bbcode 【atxt文件】
+epub2comment 【生肉epub文件】
+";
     static bool FileExist(string path)
     {
         if (File.Exists(path)) return true;
-        Log.log("[Error]File not exist:" + path);
+        Log.Error("File not exist:" + path);
         return false;
     }
     static bool DirectoryExist(string path)
     {
         if (Directory.Exists(path)) return true;
-        Log.log("[Error]Dir not exist:" + path);
+        Log.Error("Dir not exist:" + path);
         return false;
     }
     static void Save(TextEpubItemFile i, string dir)
     {
         string p = dir + "/" + i.fullName;
         File.WriteAllText(p, i.text);
-        Log.log("[Info]Saved:" + p);
+        Log.Note("Saved:" + p);
     }
 }
 public class AeroNovel

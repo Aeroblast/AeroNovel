@@ -10,11 +10,11 @@ public class Epub2Comment
     static EpubFile epub;
     public static void Proc(string path)
     {
-        Log.log("[Info]Epub2Comment");
+        Log.Note("Epub2Comment");
         Directory.CreateDirectory(output_path);
         if (!File.Exists(path))
         {
-            Log.log("[Error]File not exits!");
+            Log.Error("File not exits!");
             return;
         }
         epub = new EpubFile(path);
@@ -31,7 +31,7 @@ public class Epub2Comment
         }
         catch (Exception)
         {
-            Log.log("[Warn]尝试序列化失败。");
+            Log.Warn("尝试序列化失败。");
             tocTree = null;
         }
 
@@ -42,7 +42,7 @@ public class Epub2Comment
             var txt = Html2Comment.ProcXHTML(t.text);
             var p = output_path + Path.GetFileNameWithoutExtension(t.fullName) + Util.FilenameCheck(plain[i]) + ".txt";
             File.WriteAllText(p, txt);
-            Log.log("[Info]" + p);
+            Log.Info(p);
         }
     }
     static TocItem tocTree;

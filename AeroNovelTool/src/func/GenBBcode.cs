@@ -17,7 +17,7 @@ class GenBbcode
         string body = Body(lines);
         string outpath = "output_bbcode.txt";
         File.WriteAllText(outpath, body);
-        Log.log("[Info]" + outpath);
+        Log.Note("Output: " + outpath);
     }
     public static void Gen(string dir)
     {
@@ -40,6 +40,7 @@ class GenBbcode
     }
     public static void GenSingle(string dir)
     {
+        Log.Note("bbcode single file generation.");
         string[] files = Directory.GetFiles(dir);
         ReadWebImages(dir);
         ReadConfig(dir);
@@ -57,6 +58,7 @@ class GenBbcode
         //string toc = "";
         foreach (var f in atxt)
         {
+            Log.Info("Processing " + Path.GetFileName(f));
             Match m = Regex.Match(Path.GetFileName(f), AeroNovel.filename_reg);
             int no = int.Parse(m.Groups[1].Value);
             string chaptitle = m.Groups[2].Value;
@@ -77,6 +79,7 @@ class GenBbcode
         }
         //File.WriteAllText("bbcode_output.txt", "[index]\r\n" + toc + "[/index]\r\n" + result);
         File.WriteAllText(output_path_single, result);
+        Log.Note("Output:" + output_path_single);
 
     }
     static void ReadWebImages(string dir)
@@ -85,6 +88,7 @@ class GenBbcode
         string path = Path.Combine(dir, "web_images");
         if (File.Exists(path + ".md"))
         {
+            Log.Note("图床链接配置文档读取成功：" + path + ".md");
             string[] a = File.ReadAllLines(path + ".md");
             Regex md_img = new Regex("\\[(.+?)\\]\\((.+?)\\)");
             foreach (var x in a)
@@ -98,6 +102,7 @@ class GenBbcode
         }
         if (File.Exists(path + ".txt"))
         {
+            Log.Note("图床链接配置文档读取成功：" + path + ".txt");
             string[] a = File.ReadAllLines(path + ".txt");
             foreach (var x in a)
             {
@@ -218,7 +223,7 @@ class GenBbcode
                                         if (kv.Key == reg_illu2 || kv.Key == reg_illu)
                                             r = r.Replace(m.Value, "【没传图床的图片：" + a + "】");
                                         r = r.Replace(m.Value, "");
-                                        Log.log("[Warn]" + "没传图床的图片：" + a);
+                                        Log.Warn("没传图床的图片：" + a);
                                     }
                                 }
                                 break;
@@ -240,6 +245,7 @@ class GenBbcode
                     case '＜':
                     case '《':
                     case '【':
+                    case '（':
                         r = "　" + r;
                         break;
                     default:

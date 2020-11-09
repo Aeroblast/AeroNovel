@@ -10,7 +10,7 @@ public class Epub2Atxt
         Directory.CreateDirectory(output_dir);
         if (!File.Exists(path))
         {
-            Log.log("[Error]File not exits!");
+            Log.Error("[Error]File not exits!");
             return;
         }
         EpubFile e = new EpubFile(path);
@@ -24,11 +24,11 @@ public class Epub2Atxt
     }
     static void ProcXHTML(TextEpubItemFile i)
     {
-        Log.log("[Info]" + i.fullName);
+        Log.Note("Process "+ i.fullName);
         string name = Path.GetFileNameWithoutExtension(i.fullName);
         string r = i.text.Replace("\r", "").Replace("\n", "");
         Match m = Regex.Match(r, "<body(.*)</body>");
-        if (!m.Success) { Log.log("[Error]body?"); return; }
+        if (!m.Success) { Log.Error("body?"); return; }
         r = m.Groups[0].Value;
         XFragment f = new XFragment(r, 0);
         string txt = "";
@@ -85,7 +85,6 @@ public class Epub2Atxt
         }
         if (Util.Trim(counter).Length > 0)
             File.WriteAllText(output_dir + name + ".txt", txt);
-
 
     }
 
