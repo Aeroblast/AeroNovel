@@ -11,11 +11,12 @@ public class Html2Comment
         File.WriteAllText("output_html2comment.txt", atxt);
         Log.Note("HTML2Comment Saved");
     }
-    static string [] notOutputClassNames=new string[]{
+    static string[] notOutputClassNames = new string[]{
         "tcy",//合并竖排标点符号
         "upright",//GAGAGA 似乎调整字的竖排对齐的
         "word-break-break-all",
-        "main"
+        "main",
+        "line-break-loose word-break-break-all"  //角川系，长省略号破折号
         };
     public static string ProcXHTML(string html)
     {
@@ -80,11 +81,11 @@ public class Html2Comment
                                 {
                                     string classTemp = ((XmlElement)p).GetAttribute("class");
                                     bool tagOutput = true;
-                                    foreach(string classname in notOutputClassNames)
+                                    foreach (string classname in notOutputClassNames)
                                     {
-                                        if(classTemp==classname)
+                                        if (classTemp == classname)
                                         {
-                                            tagOutput=false;
+                                            tagOutput = false;
                                             break;
                                         }
                                     }
