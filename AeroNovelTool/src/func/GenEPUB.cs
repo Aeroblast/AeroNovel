@@ -13,6 +13,9 @@ namespace AeroNovelEpub
         public List<string> xhtml_names = new List<string>();
         public List<string> txt_paths = new List<string>();
         public string dir;
+        public Dictionary<string, string> macros;
+
+
         string spine = "";
         string items = "";
         string version = "2.0";
@@ -52,6 +55,23 @@ namespace AeroNovelEpub
                 metaPath = Path.Combine(dir, "meta3.txt");
                 version = "3.0";
                 xhtml_temp = Regex.Replace(xhtml_temp, "<!DOCTYPE html([\\s\\S]*?)>", "<!DOCTYPE html>");
+            }
+
+            if (File.Exists(Path.Combine(dir, "macros.txt")))
+            {
+                Log.Info("Read macros.txt");
+                string[] macros_raw = File.ReadAllLines(Path.Combine(dir, "macros.txt"));
+                macros = new Dictionary<string, string>();
+                foreach (string macro in macros_raw)
+                {
+                    string[] s = macro.Split('\t');
+                    if (s.Length < 2)
+                    {
+                        Log.Warn("Macro defination is not complete. Use tab to separate: " + macro);
+                    }
+                    macros.Add(s[0], s[1]);
+                }
+
             }
 
             string meta = File.ReadAllText(metaPath);

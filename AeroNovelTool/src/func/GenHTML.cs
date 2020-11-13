@@ -86,6 +86,24 @@ namespace AeroNovelEpub
                 }
                 string r = EncodeHTML(line);
                 Match m = Regex.Match("", "1");
+
+                if (context != null & context.macros != null)
+                {
+                    do
+                    {
+                        foreach (var pair in context.macros)
+                        {
+                            m = Regex.Match(r, pair.Key);
+                            if (m.Success)
+                            {
+                                Regex reg = new Regex(pair.Key);
+                                r = reg.Replace(r, pair.Value);
+                                break;
+                            }
+                        }
+                    } while (m.Success);
+                }
+
                 do
                 {
                     foreach (var pair in reg_dic)
