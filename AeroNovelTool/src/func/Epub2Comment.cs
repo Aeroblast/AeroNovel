@@ -8,7 +8,7 @@ public class Epub2Comment
 {
     const string output_path = "output_epub2comment/";
     static EpubFile epub;
-    public static void Proc(string path)
+    public static void Proc(string path, bool castBlackTranslatingMagic = false)
     {
         Log.Note("Epub2Comment");
         Directory.CreateDirectory(output_path);
@@ -39,10 +39,10 @@ public class Epub2Comment
         for (int i = 0; i < plain.Length; i++)
         {
             var t = epub.spine[i].item.GetFile() as TextEpubItemFile;
-            var txt = Html2Comment.ProcXHTML(t.text);
-            var p = output_path + Path.GetFileNameWithoutExtension(t.fullName) + Util.FilenameCheck(plain[i]) + ".txt";
+            var txt = Html2Comment.ProcXHTML(t.text, castBlackTranslatingMagic);
+            var p = output_path + "i" + Util.Number(i, 2) + "_" + Path.GetFileNameWithoutExtension(t.fullName) + Util.FilenameCheck(plain[i]) + ".txt";
             File.WriteAllText(p, txt);
-            Log.Info(p);
+            Log.Note(p);
         }
     }
     static TocItem tocTree;

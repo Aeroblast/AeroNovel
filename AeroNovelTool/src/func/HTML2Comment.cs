@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using System.Text.RegularExpressions;
 public class Html2Comment
 {
+    static BlackTranslatingMagic magic;
     public static void Proc(string path)
     {
         string html = File.ReadAllText(path);
@@ -18,14 +19,14 @@ public class Html2Comment
         "main",
         "line-break-loose word-break-break-all"  //角川系，长省略号破折号
         };
-    public static string ProcXHTML(string html)
+    public static string ProcXHTML(string html, bool castBlackTranslatingMagic = false)
     {
         XmlDocument doc = new XmlDocument();
         doc.LoadXml(html);
         var body = doc.GetElementsByTagName("body")[0];
-        string txt = "";
-        string counter = "";
+        string comment = "";
         string lineTemp = "", rubyTemp = "";
+        string pureText = "";//for translate
         XmlNode p = body.FirstChild;
 
         bool closingElement = false;
@@ -40,10 +41,10 @@ public class Html2Comment
                 switch (p.Name)
                 {
                     case "p":
-                        txt += "##" + lineTemp + rubyTemp + "\n" + RemainSigns(lineTemp) + "\n" + "##————————————————\n";
-                        counter += lineTemp;
+                        comment += "##" + lineTemp + rubyTemp + "\n" + RemainSigns(lineTemp) + "\n" + "##————————————————\n";
                         lineTemp = "";
                         rubyTemp = "";
+                        pureText += "\n";
                         break;
                     default:
                         bool tagOutput = normalTagOutput[normalTagOutput.Count - 1];
@@ -58,6 +59,7 @@ public class Html2Comment
                 {
                     case XmlNodeType.Text:
                         lineTemp += p.Value;
+                        pureText += p.Value;
                         break;
                     case XmlNodeType.Element:
                         switch (p.Name)
@@ -66,6 +68,7 @@ public class Html2Comment
                                 string a = "", b = "";
                                 Ruby2Text((XmlElement)p, ref a, ref b);
                                 lineTemp += a;
+                                pureText += a;
                                 rubyTemp += "|" + b;
                                 toNext = true;
                                 break;
@@ -120,8 +123,21 @@ public class Html2Comment
             }
             else p = p.NextSibling;
         }
-        txt += lineTemp;
-        return txt;
+        comment += lineTemp;
+        if (castBlackTranslatingMagic)
+            if (Util.Trim(pureText).Length != 0)
+            {
+                if (magic == null) magic = new BlackTranslatingMagic();
+                string[] commentLines = comment.Split('\n');
+                var s = magic.Translate(pureText);
+                for (int i = 0; i < s.Length; i++)
+                {
+                    if (s[i] == "") continue;
+                    commentLines[i * 3 + 1] = "w⚠w " + s[i].Replace("“", "「").Replace("”", "」");
+                }
+                comment = string.Join('\n', commentLines);
+            }
+        return comment;
     }
     static void Ruby2Text(XmlElement ruby, ref string textonly, ref string textwithruby)
     {

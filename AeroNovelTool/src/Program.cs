@@ -70,7 +70,12 @@ class Program
                     break;
                 case "epub2comment":
                     if (!FileExist(args[1])) return;
-                    Epub2Comment.Proc(args[1]);
+                    if (args.Length > 2 && args[2] == "BlackTranslatingMagic")
+                    {
+                        Epub2Comment.Proc(args[1], true);
+                    }
+                    else
+                        Epub2Comment.Proc(args[1]);
                     break;
                 case "epub2atxt":
                     if (!FileExist(args[1])) return;
