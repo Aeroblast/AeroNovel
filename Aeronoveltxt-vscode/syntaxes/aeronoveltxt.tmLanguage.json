@@ -14,19 +14,23 @@
 			"patterns": [
 				{
 					"name": "keyword.control.aeronoveltxt",
-					"match": "\\[[/]{0,1}(i|b|emphasis|font|img)\\]"
+					"match": "\\[[/]{0,1}(i|b|emphasis|font|img|imgchar)\\]"
 				},
 				{
 					"name": "keyword.control.aeronoveltxt",
-					"match": "^#(HTML|center|left|right|title|class|/class|illu|h[1-6]):"
+					"match": "^#(HTML|center|left|right|title|class|illu|h[1-6]):"
 				},
 				{
 					"name": "keyword.control.aeronoveltxt",
-					"match": "\\[(ruby|color|size|imgchar|chapter|class)=(.+?)\\]"
+					"match": "^#/class"
 				},
 				{
 					"name": "keyword.control.aeronoveltxt",
-					"match": "\\[/(ruby|color|size|imgchar|chapter|class)\\]"
+					"match": "\\[(ruby|color|size|chapter|class)=(.+?)\\]"
+				},
+				{
+					"name": "keyword.control.aeronoveltxt",
+					"match": "\\[/(ruby|color|size|chapter|class)\\]"
 				},
 				{
 					"name": "keyword.control.aeronoveltxt",
@@ -56,7 +60,7 @@
 							"name": "punctuation.definition.comment.aeronoveltxt"
 						}
 					},
-					"match": "(///).*$\\n?",
+					"match": "^(##).*$\\n?",
 					"name": "comment.line"
 				},
 				{
@@ -65,7 +69,7 @@
 							"name": "punctuation.definition.comment.aeronoveltxt"
 						}
 					},
-					"match": "^(##).*$\\n?",
+					"match": "(///).*$\\n?",
 					"name": "comment.line"
 				}
 			]
