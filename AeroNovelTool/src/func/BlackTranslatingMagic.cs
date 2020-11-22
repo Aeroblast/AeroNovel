@@ -28,6 +28,7 @@ class BlackTranslatingMagic
 
     public string[] Translate(string input)
     {
+        Console.Write("(=゜ω゜)= ");
         if (input[input.Length - 1] == '\n')
         {
             input = input.Substring(0, input.Length - 1);
@@ -43,6 +44,11 @@ class BlackTranslatingMagic
             if (rawTemp.Length + t.Length > 2000 || end == rawLines.Length - 1)
             {
                 magicCount++;
+                if (end == rawLines.Length - 1)
+                {
+                    end++;
+                    rawTemp += t;
+                }
                 //范围index：start <= i < end
                 var d = TranslateCall(rawTemp);
                 for (int i = start; i < end; i++)
@@ -79,7 +85,7 @@ class BlackTranslatingMagic
 
     Dictionary<string, string> TranslateCall(string input)
     {
-        Console.Write("⚡");
+        Console.Write("—☆ ");
         DateTime lastestVaild = lastCall.AddMilliseconds(coolDownTime);
         while (lastestVaild > DateTime.Now)
         {
