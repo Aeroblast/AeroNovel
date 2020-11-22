@@ -338,11 +338,15 @@ namespace AeroNovelEpub
             List<string> label = new List<string>();
             int depth = 1;
             int count = 0;
+            List<string> refered = new List<string>();//for playOrder
+
+            Match m;
             foreach (string line in lines)
             {
-                Match m = Regex.Match(line, "\\[(.*?)\\]");
-                if (m.Success)
+                if (line[0] == '[')
                 {
+                    m = Regex.Match(line, "\\[(.*?)\\]");
+                    if (!m.Success) throw new Exception("目录生成失败：");
                     string tag = m.Groups[1].Value;
                     if (tag[0] == '/')
                     {
@@ -355,17 +359,13 @@ namespace AeroNovelEpub
                         label.Add(tag);
                         if (depth < label.Count + 1) { depth = label.Count + 1; }
                         count++;
-                        r += $"<navPoint id=\"navPoint-{count}\" playOrder=\"{count}\"><navLabel><text>{tag}</text></navLabel><content src=\"dummylink\"/>\n";
-                        if (template3 != "") r3 += $"<li><a href=\"dummylink\">{tag}</a><ol>\n";
-
                         m = Regex.Match(line.Substring(m.Index + m.Length), "([0-9][0-9])");
-                        if (m.Success)
-                        {
-                            int index = txt_nums.IndexOf(m.Groups[1].Value);
-                            string link = "Text/" + xhtml_names[index];
-                            r = r.Replace("dummylink", link);
-                            if (template3 != "") r3 = r3.Replace("dummylink", link);
-                        }
+                        if (!m.Success) throw new Exception();
+                        int index = txt_nums.IndexOf(m.Groups[1].Value);
+                        string link = "Text/" + xhtml_names[index];
+                        if (refered.IndexOf(link) < 0) { refered.Add(link); }
+                        r += $"<navPoint id=\"navPoint-{count}\" playOrder=\"{refered.IndexOf(link) + 1}\"><navLabel><text>{tag}</text></navLabel><content src=\"{link}\"/>\n";
+                        if (template3 != "") r3 += $"<li><a href=\"{link}\">{tag}</a><ol>\n";
                     }
                     continue;
                 }
@@ -379,12 +379,11 @@ namespace AeroNovelEpub
                     string navTitle = Util.Trim(m.Groups[2].Value);
                     if (navTitle.Length == 0)
                         navTitle = txt_titles[index];
-                    r += $"<navPoint id=\"navPoint-{count}\" playOrder=\"{count}\"><navLabel><text>{navTitle}</text></navLabel><content src=\"{link}\"/></navPoint>\n";
-                    r = r.Replace("dummylink", link);
+                    if (refered.IndexOf(link) < 0) { refered.Add(link); }
+                    r += $"<navPoint id=\"navPoint-{count}\" playOrder=\"{refered.IndexOf(link) + 1}\"><navLabel><text>{navTitle}</text></navLabel><content src=\"{link}\"/></navPoint>\n";
                     if (template3 != "")
                     {
                         r3 += $"<li><a href=\"{link}\">{navTitle}</a></li>\n";
-                        r3 = r3.Replace("dummylink", link);
                     }
                 }
 
