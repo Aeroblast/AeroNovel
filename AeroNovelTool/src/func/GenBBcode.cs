@@ -10,6 +10,7 @@ class GenBbcode
     public static string output_path_single = "output_bbcode_single.txt";
     static List<int> cat_page = new List<int>();
     static Dictionary<string, string> web_images;
+    static Dictionary<string, string> macros;
     static string[] additional_msg = new string[] { };
     public static void Proc(string path)
     {
@@ -146,6 +147,30 @@ class GenBbcode
 
             }
         }
+        if (File.Exists(Path.Combine(dir, "macros.txt")))
+        {
+            Log.Info("Read macros.txt");
+            string[] macros_raw = File.ReadAllLines(Path.Combine(dir, "macros.txt"));
+            macros = new Dictionary<string, string>();
+            foreach (string macro in macros_raw)
+            {
+                string[] s = macro.Split('\t');
+                if (s.Length < 2)
+                {
+                    Log.Warn("Macro defination is not complete. Use tab to separate: " + macro);
+                }
+                else if (s.Length == 2)
+                {
+                    macros.Add(s[0], s[1]);
+                }
+                else//length>2
+                {
+                    macros.Add(s[0], s[2]);
+                }
+
+            }
+
+        }
     }
     public static string Body(string[] txt)
     {
@@ -189,6 +214,12 @@ class GenBbcode
                 //{"\\[size=(.*?)\\](.*?)\\[\\/size\\]","<span style=\"font-size:$1em\">$2</span>"}
                 {"^#class:(.*)",""},
                 {"^#/class",""},
+                {"^#h1:(.*)","[size=3][b]$1[/b][/size]"},
+                {"^#h2:(.*)","[size=3][b]$1[/b][/size]"},
+                {"^#h3:(.*)","[size=4][b]$1[/b][/size]"},
+                {"^#h4:(.*)","[size=4][b]$1[/b][/size]"},
+                {"^#h5:(.*)","[size=5][b]$1[/b][/size]"},
+                {"^#h6:(.*)","[size=5][b]$1[/b][/size]"},
             };
         string bbcode = "";
         int addmessagecount = 0;
@@ -198,6 +229,26 @@ class GenBbcode
             if (line.StartsWith("#HTML")) continue;
             string r = line;
             Match m = Regex.Match("", "1");
+
+            //macros
+            if (macros != null)
+            {
+                do
+                {
+                    foreach (var pair in macros)
+                    {
+                        m = Regex.Match(r, pair.Key);
+                        if (m.Success)
+                        {
+                            Regex reg = new Regex(pair.Key);
+                            r = reg.Replace(r, pair.Value);
+                            break;
+                        }
+                    }
+                } while (m.Success);
+            }
+
+            //regular
             do
             {
                 foreach (var kv in reg_dic)
