@@ -253,8 +253,8 @@ namespace AeroNovelEpub
                 string body = genHtml.Gen(lines);
                 if (f.EndsWith("info.txt") || f.EndsWith("info.atxt"))
                 {
-                    body = Regex.Replace(body, "<p>(.*?：)", "<p class=\"keyvalue\">$1");
-                    body = "<div class=\"info\" epub:type=\"acknowledgements\">" + body + "<p>AeroNovelTool EPUB生成器 by AE 生成于" + DateTime.Now + "</p>" +
+                    body = Regex.Replace(body, "<p>(.*?：)", "<p class=\"atxt_keyvalue\">$1");
+                    body = "<div class=\"atxt_info\" epub:type=\"acknowledgements\">" + body + "<p>AeroNovelTool EPUB生成器 by AE 生成于" + DateTime.Now + "</p>" +
                     //"<p class=\"keyvalue\">已验证阅读器:<br/>Apple Books<br/>Kindle(使用Kindlegen 转换)<br/>AeroEpubViewer<br/></p>" +
                     "</div>";
                     //File.WriteAllText("info.txt",body);

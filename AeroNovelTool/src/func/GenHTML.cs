@@ -13,7 +13,7 @@ namespace AeroNovelEpub
         }
         public string Gen(string[] txt)
         {
-            string noteref_temp = "<a class=\"noteref\" epub:type=\"noteref\" href=\"#note{0}\" id=\"note_ref{0}\"><sup>[注]</sup></a>";
+            string noteref_temp = "<a class=\"atxt_note_ref\" epub:type=\"noteref\" href=\"#note{0}\" id=\"note_ref{0}\"><sup>[注]</sup></a>";
             int note_count = 0;
             List<string> notes = new List<string>();
             const string reg_noteref = "\\[note\\]";
@@ -44,9 +44,9 @@ namespace AeroNovelEpub
                 {"/\\*.*?\\*/",""},
                 {"///.*",""},
 
-                {"^#center:(.*)","<p class=\"align_center\">$1</p>"},
-                {"^#right:(.*)","<p class=\"align_right\">$1</p>"},
-                {"^#left:(.*)","<p class=\"align_left\">$1</p>"},
+                {"^#center:(.*)","<p class=\"atxt_align_center\">$1</p>"},
+                {"^#right:(.*)","<p class=\"atxt_align_right\">$1</p>"},
+                {"^#left:(.*)","<p class=\"atxt_align_left\">$1</p>"},
                 {reg_noteref,""},
                 {reg_notecontent,""},
                 {reg_img,""},
@@ -55,10 +55,10 @@ namespace AeroNovelEpub
                 {reg_class,""},
                 {reg_chapter,""},
                 {"\\[b\\](.*?)\\[\\/b\\]","<b>$1</b>"},
-                {"^#title:(.*)","<p class=\"tagtitle\">$1</p>"},
+                {"^#title:(.*)","<p class=\"atxt_title\">$1</p>"},
                 {"\\[ruby=(.*?)\\](.*?)\\[\\/ruby\\]","<ruby>$2<rt>$1</rt></ruby>"},
-                {"^\\[pagebreak\\]$","<p class=\"pagebreak\"><br/></p>"},
-                {"\\[emphasis\\](.*?)\\[\\/emphasis\\]","<span class=\"emph\">$1</span>"},
+                {"^\\[pagebreak\\]$","<p class=\"atxt_pagebreak\"><br/></p>"},
+                {"\\[emphasis\\](.*?)\\[\\/emphasis\\]","<span class=\"atxt_emph\">$1</span>"},
                 {"\\[s\\](.*?)\\[\\/s\\]","<s>$1</s>"},
                 {"\\[i\\](.*?)\\[\\/i\\]","<i>$1</i>"},
                 {"\\[color=(.*?)\\](.*?)\\[\\/color\\]","<span style=\"color:$1\">$2</span>"},
@@ -71,7 +71,11 @@ namespace AeroNovelEpub
                 {"^#h6:(.*)","<h6>$1</h6>"},
                 {"^#class:(.*)","<div class='$1'>"},
                 {"^#/class","</div>"},
-                {"^\\[font\\](.*?)\\[\\/font\\]$","<span class=\"afont\">$1</span>"}
+                {"^\\[font\\](.*?)\\[\\/font\\]$","<span class=\"atxt_font\">$1</span>"},
+
+                //字符处理
+                {"(?<!<span class=\"atxt_breakall\">)(?<!…)[…]{3,99}","<span class=\"atxt_breakall\">$0</span>"},
+                {"(?<!<span class=\"atxt_breakall\">)(?<!—)[—]{3,99}","<span class=\"atxt_breakall\">$0</span>"}
             };
 
 
@@ -160,7 +164,7 @@ namespace AeroNovelEpub
                                             Log.Warn("Cannot find " + img_name);
                                         }
                                         string src = "../Images/" + img_name;
-                                        string img_temp = "<div class=\"aligned illu\"><img class=\"illu\" src=\"{0}\" alt=\"\"/></div>";
+                                        string img_temp = "<div class=\"atxt_aligned atxt_illu\"><img class=\"atxt_illu\" src=\"{0}\" alt=\"\"/></div>";
                                         r = reg.Replace(r, string.Format(img_temp, src), 1);
                                     }
                                     break;
@@ -180,7 +184,7 @@ namespace AeroNovelEpub
                                             Log.Warn("Cannot find " + img_name);
                                         }
                                         string src = "../Images/" + img_name;
-                                        string img_temp = "<img class=\"imgchar\" src=\"{0}\" alt=\"\"/>";
+                                        string img_temp = "<img class=\"atxt_imgchar\" src=\"{0}\" alt=\"\"/>";
                                         r = reg.Replace(r, string.Format(img_temp, src), 1);
                                     }
 
@@ -233,7 +237,7 @@ namespace AeroNovelEpub
                     var first = (temptrimed.Length > 0) ? temptrimed[0] : '\0';
                     if (first == '（' || first == '「' || first == '『' || first == '〈' || first == '【' || first == '《')
                     {
-                        r = "<p class=\"drawout\">" + r + "</p>";
+                        r = "<p class=\"atxt_drawout\">" + r + "</p>";
                     }
                     else
                         r = "<p>" + r + "</p>";
@@ -243,8 +247,8 @@ namespace AeroNovelEpub
             }
             if (notes.Count > 0)
             {
-                html += "<aside class=\"notesection\" epub:type=\"footnote\">注释<br/>";
-                string note_temp = "<aside epub:type=\"footnote\" id=\"note{0}\"><p class=\"footnote-p\"><a href=\"#note_ref{0}\">{2}</a>{1}</p></aside>\n";
+                html += "<aside class=\"atxt_note_section\" epub:type=\"footnote\">注释<br/>";
+                string note_temp = "<aside epub:type=\"footnote\" id=\"note{0}\"><p class=\"atxt_note_p\"><a href=\"#note_ref{0}\">{2}</a>{1}</p></aside>\n";
                 int count = 0;
                 foreach (string note in notes)
                 {
