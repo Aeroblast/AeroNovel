@@ -70,12 +70,23 @@ class Program
                     break;
                 case "epub2comment":
                     if (!FileExist(args[1])) return;
-                    if (args.Length > 2 && args[2] == "BlackTranslatingMagic")
+                    Epub2Comment e2c = new Epub2Comment(args[1]);
+                    if (args.Length > 2)
                     {
-                        Epub2Comment.Proc(args[1], true);
+                        switch (args[2])
+                        {
+                            case "BlackTranslatingMagic":
+                                e2c.castBlackTranslatingMagic = true;
+                                break;
+                            case "Glossary":
+                                if (args.Length > 3)
+                                    e2c.glossaryDocPath = args[3];
+                                else
+                                    Log.Error("Should give glossary document.");
+                                break;
+                        }
                     }
-                    else
-                        Epub2Comment.Proc(args[1]);
+                    e2c.Proc();
                     break;
                 case "epub2atxt":
                     if (!FileExist(args[1])) return;

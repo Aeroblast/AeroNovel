@@ -8,14 +8,14 @@ using System.Text.Json;
 using System.Threading;
 using System.Collections.Generic;
 
-class BlackTranslatingMagic
+class BlackTranslationMagic : TextTranslation
 {
     string appId;
     string secretKey;
 
     int coolDownTime = 1000;
     DateTime lastCall;
-    public BlackTranslatingMagic()
+    public BlackTranslationMagic()
     {
         if (!File.Exists("baidu_fanyi_keys.txt"))
         {
@@ -26,14 +26,10 @@ class BlackTranslatingMagic
         secretKey = t[1];
     }
 
-    public string[] Translate(string input)
+    public override string[] Translate(string[] rawLines)
     {
         Console.Write("(=゜ω゜)= ");
-        if (input[input.Length - 1] == '\n')
-        {
-            input = input.Substring(0, input.Length - 1);
-        }
-        string[] rawLines = input.Split('\n');
+
         string[] doneLines = new string[rawLines.Length];
         int start = 0, end = 0;
         string rawTemp = "";
@@ -76,7 +72,17 @@ class BlackTranslatingMagic
             rawTemp += t;
             end++;
         }
-        for (int i = 0; i < doneLines.Length; i++) if (doneLines[i] == null) doneLines[i] = "";
+        for (int i = 0; i < doneLines.Length; i++)
+        {
+            if (doneLines[i] == null)
+                doneLines[i] = "";
+            else
+            {
+                doneLines[i] = "w⚠w " + doneLines[i].Replace("“", "「").Replace("”", "」");
+            }
+
+        }
+
         Console.WriteLine();
         Log.Info("Black Translating Magic was shot " + magicCount + " times.");
         return doneLines;

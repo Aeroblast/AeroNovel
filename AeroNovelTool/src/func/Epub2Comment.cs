@@ -7,26 +7,46 @@ using AeroEpubViewer.Epub;
 public class Epub2Comment
 {
     const string output_path = "output_epub2comment/";
-    static EpubFile epub;
-    public static void Proc(string path, bool castBlackTranslatingMagic = false)
+    public EpubFile epub;
+
+    public bool castBlackTranslatingMagic = false;
+    public string glossaryDocPath = null;
+
+    public Epub2Comment(string path)
     {
-        Log.Note("Epub2Comment");
-        Directory.CreateDirectory(output_path);
         if (!File.Exists(path))
         {
-            Log.Error("File not exits!");
-            return;
+            throw new Exception("File not exits!");
         }
         epub = new EpubFile(path);
+    }
+    public void Proc()
+    {
+        TextTranslation trans = null;
+        Log.Note("Epub2Comment");
+
+        if (!string.IsNullOrEmpty(glossaryDocPath))
+        {
+            trans=new GlossaryImportation(glossaryDocPath);
+        }
+        else if (castBlackTranslatingMagic)
+        {
+            trans = new BlackTranslationMagic();
+        }
+        if (trans != null) Log.Note("Text Translation Method: " + trans.ToString());
+
+
+
+        Directory.CreateDirectory(output_path);
         try
         {
             if (epub.toc.mediaType == "application/x-dtbncx+xml")
             {
-                Parse2(epub);
+                Parse2();
             }
             else
             {
-                Parse3(epub);
+                Parse3();
             }
         }
         catch (Exception)
@@ -39,7 +59,7 @@ public class Epub2Comment
         for (int i = 0; i < plain.Length; i++)
         {
             var t = epub.spine[i].item.GetFile() as TextEpubItemFile;
-            var txt = Html2Comment.ProcXHTML(t.text, castBlackTranslatingMagic);
+            var txt = Html2Comment.ProcXHTML(t.text, trans);
             var p = output_path + "i" + Util.Number(i, 2) + "_" + Path.GetFileNameWithoutExtension(t.fullName) + Util.FilenameCheck(plain[i]) + ".txt";
             File.WriteAllText(p, txt);
             Log.Note(p);
@@ -47,19 +67,19 @@ public class Epub2Comment
     }
     static TocItem tocTree;
     static string tocPath;
-    static void Parse2(EpubFile e)
+    void Parse2()
     {
         var f = epub.toc.GetFile() as TextEpubItemFile;
         tocPath = f.fullName;
         XmlDocument xml = new XmlDocument();
         xml.LoadXml(f.text);
         var root = xml.GetElementsByTagName("navMap")[0];
-        tocTree = new TocItem();
+        tocTree = new TocItem(epub);
         tocTree.children = new List<TocItem>();
         Parse2Helper(root, tocTree);
 
     }
-    static void Parse2Helper(XmlNode px, TocItem pt)
+    void Parse2Helper(XmlNode px, TocItem pt)
     {
         foreach (XmlNode e in px.ChildNodes)
         {
@@ -85,9 +105,9 @@ public class Epub2Comment
         }
     }
     //http://idpf.org/epub/30/spec/epub30-contentdocs.html#sec-xhtml-nav-def-model
-    public static void Parse3(EpubFile e)
+    public void Parse3()
     {
-        var f = e.toc.GetFile() as TextEpubItemFile;
+        var f = epub.toc.GetFile() as TextEpubItemFile;
 
         tocPath = f.fullName;
         XmlDocument xml = new XmlDocument();
@@ -97,7 +117,7 @@ public class Epub2Comment
         {
             if (nav.GetAttribute("epub:type") == "toc")
             {
-                tocTree = new TocItem();
+                tocTree = new TocItem(epub);
                 tocTree.children = new List<TocItem>();
                 var root = nav.GetElementsByTagName("ol")[0];
                 Parse3Helper(root, tocTree);
@@ -108,13 +128,13 @@ public class Epub2Comment
         if (navs.Count > 0)
         {
             var nav = navs[0] as XmlElement;
-            tocTree = new TocItem();
+            tocTree = new TocItem(epub);
             tocTree.children = new List<TocItem>();
             var root = nav.GetElementsByTagName("ol")[0];
             Parse3Helper(root, tocTree);
         }
     }
-    static void Parse3Helper(XmlNode px, TocItem pt)
+    void Parse3Helper(XmlNode px, TocItem pt)
     {
         foreach (XmlNode e in px.ChildNodes)
             if (e.Name == "li")
@@ -140,7 +160,7 @@ public class Epub2Comment
                 }
             }
     }
-    static public string[] GetPlainStruct()
+    public string[] GetPlainStruct()
     {
         List<string> urls = new List<string>();
         foreach (SpineItemref i in epub.spine)
@@ -176,8 +196,13 @@ public class Epub2Comment
         }
     }
 
-    private class TocItem
+    class TocItem
     {
+        EpubFile belongTo;
+        public TocItem(EpubFile epub)
+        {
+            belongTo = epub;
+        }
         public List<TocItem> children;
         public TocItem parent;
         string _name = "";
@@ -195,7 +220,7 @@ public class Epub2Comment
                 int i = 0;
                 var spl = _url.Split('#');
                 var path = spl[0];
-                foreach (SpineItemref itemref in epub.spine)
+                foreach (SpineItemref itemref in belongTo.spine)
                 {
                     if (itemref.href == path)
                     {
@@ -212,7 +237,7 @@ public class Epub2Comment
         public TocItem AddChild()
         {
             if (children == null) children = new List<TocItem>();
-            TocItem n = new TocItem();
+            TocItem n = new TocItem(belongTo);
             n.parent = this;
             children.Add(n);
             return n;

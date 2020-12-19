@@ -4,7 +4,6 @@ using System.Collections.Generic;
 using System.Text.RegularExpressions;
 public class Html2Comment
 {
-    static BlackTranslatingMagic magic;
     public static void Proc(string path)
     {
         string html = File.ReadAllText(path);
@@ -19,7 +18,7 @@ public class Html2Comment
         "main",
         "line-break-loose word-break-break-all"  //角川系，长省略号破折号
         };
-    public static string ProcXHTML(string html, bool castBlackTranslatingMagic = false)
+    public static string ProcXHTML(string html, TextTranslation textTranslation = null)
     {
         XmlDocument doc = new XmlDocument();
         doc.LoadXml(html);
@@ -124,16 +123,20 @@ public class Html2Comment
             else p = p.NextSibling;
         }
         comment += lineTemp;
-        if (castBlackTranslatingMagic)
+        if (textTranslation != null)
             if (Util.Trim(pureText).Length != 0)
             {
-                if (magic == null) magic = new BlackTranslatingMagic();
                 string[] commentLines = comment.Split('\n');
-                var s = magic.Translate(pureText);
+                while (pureText[pureText.Length - 1] == '\n')
+                {
+                    pureText = pureText.Substring(0, pureText.Length - 1);
+                }
+                string[] pureTextLines = pureText.Split('\n');
+                var s = textTranslation.Translate(pureTextLines);
                 for (int i = 0; i < s.Length; i++)
                 {
                     if (s[i] == "") continue;
-                    commentLines[i * 3 + 1] = "w⚠w " + s[i].Replace("“", "「").Replace("”", "」");
+                    commentLines[i * 3 + 1] = s[i];
                 }
                 comment = string.Join('\n', commentLines);
             }
@@ -213,4 +216,9 @@ public class Html2Comment
     }
 
 
+}
+
+public abstract class TextTranslation
+{
+    abstract public string[] Translate(string[] text);
 }
