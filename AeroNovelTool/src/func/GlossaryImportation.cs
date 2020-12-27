@@ -63,13 +63,19 @@ class GlossaryImportation : TextTranslation
         string result = "";
         foreach (char c in line)
         {
+
             for (int i = 0; i < temp.Count; i++)
             {
                 var t1 = FindNodeByChar(temp[i].children, c);
                 if (t1 != null) { temp[i] = t1; }
                 else
                 {
-                    result += temp[i].output;
+                    if (!string.IsNullOrEmpty(temp[i].output))
+                    {
+                        result += temp[i].output;
+                        temp.Clear();
+                        break;
+                    }
                     temp.RemoveAt(i);
                     i--;
                 }
