@@ -9,7 +9,7 @@ class GenBbcode
     public static string output_path = "output_bbcode/";
     public static string output_path_single = "output_bbcode_single.txt";
     static List<int> cat_page = new List<int>();
-    static Dictionary<string, string> web_images;
+    static Dictionary<string, string> web_images = new Dictionary<string, string>();
     static Dictionary<string, string> macros;
     static string[] additional_msg = new string[] { };
     public static void Proc(string path)
