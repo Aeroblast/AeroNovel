@@ -129,5 +129,9 @@ a {
 }
 
 .atxt_breakall {
+    line-break: anywhere;
     word-wrap: break-word;
+    word-break: break-all;
+    -webkit-word-break: break-all;
+    -epub-word-break: break-all;
 }
