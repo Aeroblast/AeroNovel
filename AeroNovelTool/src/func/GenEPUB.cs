@@ -261,7 +261,7 @@ namespace AeroNovelEpub
                 }
                 if (f.EndsWith("EOB.txt") || f.EndsWith("EOB.atxt"))
                 {
-                    body = "<div class=\"info\">" + body +
+                    body = "<div class=\"atxt_info\">" + body +
                     "</div>";
                 }
                 string xhtml = xhtml_temp.Replace("{❤title}", title).Replace("{❤body}", body);

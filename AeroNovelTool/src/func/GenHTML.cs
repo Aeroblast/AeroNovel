@@ -26,12 +26,12 @@ namespace AeroNovelEpub
             const string reg_chapter = "\\[chapter=(.*?)\\](.*?)\\[\\/chapter\\]";
             Dictionary<string, string> reg_dic = new Dictionary<string, string>
             {
-                {"^\\[align=(.*?)\\](.*?)\\[\\/align\\]$","<p class=\"aligned\" style=\"text-align:$1\">$2</p>"},
-                {"^\\[center\\](.*?)\\[\\/center\\]$","<p class=\"align_center\">$1</p>"},
-                {"^\\[right\\](.*?)\\[\\/right\\]$","<p class=\"align_right\">$1</p>"},
-                {"^\\[left\\](.*?)\\[\\/left\\]$","<p class=\"align_left\">$1</p>"},
+                {"^\\[align=(.*?)\\](.*?)\\[\\/align\\]$","<p class=\"atxt_aligned\" style=\"text-align:$1\">$2</p>"},
+                {"^\\[center\\](.*?)\\[\\/center\\]$","<p class=\"atxt_align_center\">$1</p>"},
+                {"^\\[right\\](.*?)\\[\\/right\\]$","<p class=\"atxt_align_right\">$1</p>"},
+                {"^\\[left\\](.*?)\\[\\/left\\]$","<p class=\"atxt_align_left\">$1</p>"},
                 {reg_illu,""},
-                {"^\\[title\\](.*?)\\[\\/title\\]$","<p class=\"tagtitle\">$1</p>"},
+                {"^\\[title\\](.*?)\\[\\/title\\]$","<p class=\"atxt_title\">$1</p>"},
                 {"^\\[h1\\](.*?)\\[\\/h1\\]$","<h1>$1</h1>"},
                 {"^\\[h2\\](.*?)\\[\\/h2\\]$","<h2>$1</h2>"},
                 {"^\\[h3\\](.*?)\\[\\/h3\\]$","<h3>$1</h3>"},
