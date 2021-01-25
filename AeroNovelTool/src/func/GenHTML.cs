@@ -71,7 +71,8 @@ namespace AeroNovelEpub
                 {"^#h6:(.*)","<h6>$1</h6>"},
                 {"^#class:(.*)","<div class='$1'>"},
                 {"^#/class","</div>"},
-                {"^\\[font\\](.*?)\\[\\/font\\]$","<span class=\"atxt_font\">$1</span>"},
+                {"\\[font\\](.*?)\\[\\/font\\]","<span class=\"atxt_font\">$1</span>"},
+                {"\\[url=(.*?)\\](.*?)\\[\\/url\\]","<a href=\"$1\">$2</a>"},
 
                 //字符处理
                 {"(?<!<span class=\"atxt_breakall\">)(?<!…)[…]{3,99}","<span class=\"atxt_breakall\">$0</span>"},
@@ -83,11 +84,7 @@ namespace AeroNovelEpub
             foreach (string line in txt)
             {
                 if (line.StartsWith("##")) continue;
-                if (line.StartsWith("#HTML:"))
-                {
-                    html += line.Substring("#HTML:".Length);
-                    continue;
-                }
+
                 string r = EncodeHTML(line);
                 Match m = Regex.Match("", "1");
 
@@ -106,6 +103,12 @@ namespace AeroNovelEpub
                             }
                         }
                     } while (m.Success);
+                }
+
+                if (r.StartsWith("#HTML:"))
+                {
+                    html += r.Substring("#HTML:".Length)+"\n";
+                    continue;
                 }
 
                 do
