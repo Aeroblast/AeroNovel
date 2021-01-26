@@ -1,0 +1,20 @@
+﻿  <metadata xmlns:opf="http://www.idpf.org/2007/opf" xmlns:dc="http://purl.org/dc/elements/1.1/">
+    <dc:title>AeroNovel工具样例</dc:title>
+
+    <dc:creator id="author">AE</dc:creator>
+    <meta refines="#author" property="role" scheme="marc:relators">aut</meta>
+
+    <dc:language>zh-CN</dc:language>
+
+    <dc:publisher>AE example</dc:publisher>
+
+    <dc:contributor id="tool">AeroNovelTool</dc:contributor>
+    <meta refines="#tool" property="role" scheme="marc:relators">bkp</meta>
+
+    <dc:date>2021-01-26</dc:date>
+    <meta property="dcterms:modified">{date}</meta>
+
+    <dc:identifier id="BookId">{urn:uuid}</dc:identifier>
+
+    <dc:description>对各种功能进行一些说明。</dc:description>
+  </metadata>
