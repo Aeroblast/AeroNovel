@@ -132,6 +132,28 @@ class Program
 
                     }
                     break;
+                case "atxtcc":
+                    {
+                        if (!FileExist(args[1])) return;
+                        bool t2s = false, s2t = false, replace = false;
+                        for (int i = 2; i < args.Length; i++)
+                        {
+                            switch (args[i])
+                            {
+                                case "t2s": t2s = true; break;
+                                case "s2t": s2t = true; break;
+                                case "replace": replace = true; break;
+                            }
+                        }
+                        if (t2s)
+                            AeroNovelEpub.AtxtChineseConvert.ProcT2C(args[1], replace);
+                        else if (s2t)
+                        {
+                            //Not Implemented
+                        }
+
+                    }
+                    break;
                 default:
                     Log.Warn("Nothing happens. " + usage);
                     break;
