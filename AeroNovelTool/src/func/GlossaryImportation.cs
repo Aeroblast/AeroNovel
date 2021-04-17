@@ -23,6 +23,8 @@ class GlossaryImportation : TextTranslation
         dictionary.TryAdd("」", "」");
         dictionary.TryAdd("『", "『");
         dictionary.TryAdd("』", "』");
+        dictionary.TryAdd("（", "（");
+        dictionary.TryAdd("）", "）");
         CreateTree();
 
     }
@@ -72,6 +74,7 @@ class GlossaryImportation : TextTranslation
                 {
                     if (!string.IsNullOrEmpty(temp[i].output))
                     {
+                        TryAddSpace(ref result, temp[i].output);
                         result += temp[i].output;
                         temp.Clear();
                         break;
@@ -88,6 +91,7 @@ class GlossaryImportation : TextTranslation
         }
         for (int i = 0; i < temp.Count; i++)
         {
+            TryAddSpace(ref result, temp[i].output);
             result += temp[i].output;
         }
         return result;
@@ -100,6 +104,31 @@ class GlossaryImportation : TextTranslation
             if (r.v == c) return r;
         }
         return null;
+    }
+
+    void TryAddSpace(ref string result, string added)
+    {
+        if (result != "")
+        {
+            if (isBracket(result[result.Length - 1]) || (added == "" || isBracket(added[0])))
+            { }
+            else
+            { result += " "; }
+        }
+    }
+    bool isBracket(char c)
+    {
+        switch (c)
+        {
+            case '「':
+            case '」':
+            case '『':
+            case '』':
+            case '（':
+            case '）':
+                return true;
+        }
+        return false;
     }
 
 
