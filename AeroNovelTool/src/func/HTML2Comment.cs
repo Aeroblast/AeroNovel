@@ -16,7 +16,8 @@ public class Html2Comment
         "upright",//GAGAGA 似乎调整字的竖排对齐的
         "word-break-break-all",
         "main",
-        "line-break-loose word-break-break-all"  //角川系，长省略号破折号
+        "line-break-loose word-break-break-all",  //角川系，长省略号破折号
+        "koboSpan"
         };
     public static string ProcXHTML(string html, TextTranslation textTranslation = null)
     {
