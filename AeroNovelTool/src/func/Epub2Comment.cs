@@ -9,7 +9,7 @@ public class Epub2Comment
     const string output_path = "output_epub2comment/";
     public EpubFile epub;
 
-    public bool castBlackTranslatingMagic = false;
+    public bool castBlackTranslationMagic = false;
     public string glossaryDocPath = null;
 
     public Epub2Comment(string path)
@@ -29,7 +29,7 @@ public class Epub2Comment
         {
             trans=new GlossaryImportation(glossaryDocPath);
         }
-        else if (castBlackTranslatingMagic)
+        else if (castBlackTranslationMagic)
         {
             trans = new BlackTranslationMagic();
         }

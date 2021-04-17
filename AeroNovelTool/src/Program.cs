@@ -154,6 +154,11 @@ class Program
 
                     }
                     break;
+                case "atxt2inlinehtml":
+                    if (!FileExist(args[1])) return;
+                    string r = Atxt2InlineHTML.Process(args[1]);
+                    File.WriteAllText("output_inlineHTML.txt", r);
+                    break;
                 default:
                     Log.Warn("Nothing happens. " + usage);
                     break;

@@ -84,7 +84,7 @@ class BlackTranslationMagic : TextTranslation
         }
 
         Console.WriteLine();
-        Log.Info("Black Translating Magic was shot " + magicCount + " times.");
+        Log.Info("Black Translation Magic was shot " + magicCount + " times.");
         return doneLines;
 
     }
