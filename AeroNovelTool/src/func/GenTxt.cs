@@ -14,7 +14,7 @@ class GenTxt
         string[] files = Directory.GetFiles(dir);
         foreach (string f in files)
         {
-            Match m = Regex.Match(Path.GetFileName(f), AeroNovel.filename_reg);
+            Match m = Regex.Match(Path.GetFileName(f), AeroNovel.regStr_filename);
             if (!m.Success) continue;
             string no = m.Groups[1].Value;
             string chaptitle = m.Groups[2].Value;

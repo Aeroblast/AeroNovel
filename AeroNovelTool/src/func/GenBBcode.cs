@@ -28,7 +28,7 @@ class GenBbcode
         ReadConfig(dir);
         foreach (string f in files)
         {
-            Match m = Regex.Match(Path.GetFileName(f), AeroNovel.filename_reg);
+            Match m = Regex.Match(Path.GetFileName(f), AeroNovel.regStr_filename);
             if (!m.Success) continue;
             //string no = m.Groups[1].Value;
             string chaptitle = m.Groups[2].Value;
@@ -49,7 +49,7 @@ class GenBbcode
         List<string> atxt = new List<string>();
         foreach (string f in files)
         {
-            Match m = Regex.Match(Path.GetFileName(f), AeroNovel.filename_reg);
+            Match m = Regex.Match(Path.GetFileName(f), AeroNovel.regStr_filename);
             if (!m.Success) continue;
             atxt.Add(f);
         }
@@ -60,7 +60,7 @@ class GenBbcode
         foreach (var f in atxt)
         {
             Log.Info("Processing " + Path.GetFileName(f));
-            Match m = Regex.Match(Path.GetFileName(f), AeroNovel.filename_reg);
+            Match m = Regex.Match(Path.GetFileName(f), AeroNovel.regStr_filename);
             int no = int.Parse(m.Groups[1].Value);
             string chaptitle = m.Groups[2].Value;
             string[] lines = File.ReadAllLines(f);
@@ -247,6 +247,8 @@ class GenBbcode
                     }
                 } while (m.Success);
             }
+            if (line.StartsWith("##")) continue;
+            if (line.StartsWith("#HTML")) continue;
 
             //regular
             do

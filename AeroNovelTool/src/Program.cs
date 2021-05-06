@@ -1,6 +1,7 @@
 ﻿using System;
 using System.IO;
 using System.Collections.Generic;
+using System.Text.RegularExpressions;
 using AeroEpubViewer.Epub;
 class Program
 {
@@ -75,8 +76,8 @@ class Program
                     {
                         switch (args[2])
                         {
-                            case "BlackTranslatingMagic":
-                                e2c.castBlackTranslatingMagic = true;
+                            case "BlackTranslationMagic":
+                                e2c.castBlackTranslationMagic = true;
                                 break;
                             case "Glossary":
                                 if (args.Length > 3)
@@ -155,9 +156,18 @@ class Program
                     }
                     break;
                 case "atxt2inlinehtml":
-                    if (!FileExist(args[1])) return;
-                    string r = Atxt2InlineHTML.Process(args[1]);
-                    File.WriteAllText("output_inlineHTML.txt", r);
+                    if (File.Exists(args[1]))
+                    {
+                        Atxt2InlineHTML.ConvertSave(args[1], "output_inlineHTML.txt");
+                        break;
+                    }
+                    if (Directory.Exists(args[1]))
+                    {
+                        Directory.CreateDirectory("output_inlineHTML");
+                        Atxt2InlineHTML.ConvertSaveDir(args[1], "output_inlineHTML");
+                        break;
+                    }
+                    Log.Warn("Nothing happens. Make sure there is a file or folder to process.");
                     break;
                 default:
                     Log.Warn("Nothing happens. " + usage);
@@ -196,6 +206,11 @@ epub2comment 【生肉epub文件】
 }
 public class AeroNovel
 {
-    public static string filename_reg = "([0-9][0-9])(.*?)\\.[a]{0,1}txt";
+    public static string regStr_filename = "([0-9][0-9])(.*?)\\.[a]{0,1}txt";
+    public static bool isIndexedTxt(string path)
+    {
+        return Regex.Match(Path.GetFileName(path), regStr_filename).Success;
+
+    }
 }
 
