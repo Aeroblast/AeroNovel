@@ -25,6 +25,8 @@ class GlossaryImportation : TextTranslation
         dictionary.TryAdd("』", "』");
         dictionary.TryAdd("（", "（");
         dictionary.TryAdd("）", "）");
+        dictionary.TryAdd("《", "〔");
+        dictionary.TryAdd("》", "〕");
         CreateTree();
 
     }
@@ -126,6 +128,8 @@ class GlossaryImportation : TextTranslation
             case '』':
             case '（':
             case '）':
+            case '〔':
+            case '〕':
                 return true;
         }
         return false;
