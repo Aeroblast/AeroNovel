@@ -16,8 +16,9 @@ public class Html2Comment
         "upright",//GAGAGA 似乎调整字的竖排对齐的
         "word-break-break-all",
         "main",
-        "line-break-loose word-break-break-all",  //角川系，长省略号破折号
-        "koboSpan"
+        "line-break-loose word-break-break-all","word-break-break-all line-break-loose",  //角川系，长省略号破折号
+        "koboSpan",
+        "tcy unified-e-q","tcy unified-e-e"//星海社
         };
     public static string ProcXHTML(string html, TextTranslation textTranslation = null)
     {
@@ -30,7 +31,7 @@ public class Html2Comment
         XmlNode p = body.FirstChild;
 
         bool closingElement = false;
-        List<bool> normalTagOutput = new List<bool>();
+        List<string> normalTagEndOutput = new List<string>();
         while (true)
         {
             bool toNext = false;
@@ -46,11 +47,13 @@ public class Html2Comment
                         rubyTemp = "";
                         pureText += "\n";
                         break;
+                    case "em":
+                        lineTemp += "[/b]";
+                        break;
                     default:
-                        bool tagOutput = normalTagOutput[normalTagOutput.Count - 1];
-                        normalTagOutput.RemoveAt(normalTagOutput.Count - 1);
-                        if (tagOutput)
-                            lineTemp += "</" + p.Name + ">";
+                        string tagOutput = normalTagEndOutput[normalTagEndOutput.Count - 1];
+                        normalTagEndOutput.RemoveAt(normalTagEndOutput.Count - 1);
+                        lineTemp += tagOutput;
                         break;
                 }
             }
@@ -80,29 +83,52 @@ public class Html2Comment
                             case "image":
                                 lineTemp += $"<image href=\"{((XmlElement)p).GetAttribute("href", "http://www.w3.org/1999/xlink")}\">";
                                 break;
+                            case "em":
+                                lineTemp += "[b]";//星海社
+                                break;
                             default:
                                 {
+                                    //一般tag：输出带className
+                                    //检测到已知tag：不输出tag
+                                    //检测到重点号：[b]
+                                    //输出加入normalTagEndOutput
                                     string classTemp = ((XmlElement)p).GetAttribute("class");
-                                    bool tagOutput = true;
+                                    string tagEndOutput = "";
+                                    bool needOutput = true;
                                     foreach (string classname in notOutputClassNames)
                                     {
                                         if (classTemp == classname)
                                         {
-                                            tagOutput = false;
+                                            needOutput = false;
                                             break;
                                         }
                                     }
-                                    if (p.HasChildNodes)
-                                        normalTagOutput.Add(tagOutput);
-                                    if (tagOutput)
-                                    {
-                                        if (classTemp.Length > 0) classTemp = " class=" + classTemp;
 
-                                        if (p.HasChildNodes)
-                                            lineTemp += "<" + p.Name + classTemp + ">";
+                                    if (needOutput)
+                                    {
+                                        if (classTemp == "em-sesame")
+                                        {
+                                            lineTemp += "[b]";
+                                            tagEndOutput = "[/b]";
+                                        }
                                         else
-                                            lineTemp += "<" + p.Name + classTemp + "/>";
+                                        {
+                                            tagEndOutput = $"</{((XmlElement)p).Name}>";
+                                            if (classTemp.Length > 0)
+                                            {
+                                                classTemp = " class=\"" + classTemp + "\"";
+                                            }
+                                            if (p.HasChildNodes)
+                                            {
+                                                lineTemp += "<" + p.Name + classTemp + ">";
+                                            }
+                                            else
+                                                lineTemp += "<" + p.Name + classTemp + "/>";
+                                        }
                                     }
+
+                                    if (p.HasChildNodes)
+                                        normalTagEndOutput.Add(tagEndOutput);
 
                                     break;
                                 }
@@ -210,6 +236,12 @@ public class Html2Comment
                 case '『':
                 case '』':
                     r += c;
+                    break;
+                case '《':
+                    r += '〔';
+                    break;
+                case '》':
+                    r += '〕';
                     break;
             }
         }
