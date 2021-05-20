@@ -65,6 +65,10 @@ class GenBbcode
             string chaptitle = m.Groups[2].Value;
             string[] lines = File.ReadAllLines(f);
             string body = Body(lines);
+            if (chaptitle == "info")
+            {
+                body = Regex.Replace(body, "(^|[\\n])　　", "$1");
+            }
             result += body;
             bool contains = false;
             foreach (int i in cat_page) if (i == no) { contains = true; break; }
