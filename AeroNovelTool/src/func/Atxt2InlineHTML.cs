@@ -42,7 +42,7 @@ class Atxt2InlineHTML
     public string Process(string path)
     {
         string[] atxt = File.ReadAllLines(path);
-        return "<span style=\"white-space:normal\">" + Gen(atxt) + "</span>";
+        return "<span style=\"white-space:normal\">\n" + Gen(atxt) + "</span>";
     }
     public string Gen(string[] txt)
     {
@@ -62,9 +62,9 @@ class Atxt2InlineHTML
                 {"/\\*.*?\\*/",""},
                 {"///.*",""},
 
-                {"^#center:(.*)","<span style=\"display:block;text-align:center;\">$1</span>"},
-                {"^#right:(.*)","<span style=\"display:block;text-align:right;\">$1</span>"},
-                {"^#left:(.*)","<span style=\"display:block;text-align:left;\">$1</span>"},
+                {"^#center:(.*)","<p style=\"text-align:center;margin:0;\">$1</p>"},
+                {"^#right:(.*)","<p style=\"text-align:right;margin:0;\">$1</p>"},
+                {"^#left:(.*)","<p style=\"text-align:left;margin:0;\">$1</p>"},
                 {reg_noteref,""},
                 {reg_notecontent,""},
                 {reg_img,""},
@@ -73,7 +73,7 @@ class Atxt2InlineHTML
                 {reg_class,""},
                 {reg_chapter,""},
                 {"\\[b\\](.*?)\\[\\/b\\]","<b>$1</b>"},
-                {"^#title:(.*)","<span style=\"display:block;text-align:center;font-size:2em;font-weight:bold\">$1</span>"},
+                {"^#title:(.*)","<p style=\"text-align:center;font-size:1.6em;font-weight:bold\">$1</p>"},
                 {"\\[ruby=(.*?)\\](.*?)\\[\\/ruby\\]","<ruby>$2<rt>$1</rt></ruby>"},
                 {"^\\[pagebreak\\]$","<p class=\"atxt_pagebreak\"><br/></p>"},
                 {"\\[emphasis\\](.*?)\\[\\/emphasis\\]","<span style=\"-webkit-text-emphasis: dot filled;-webkit-text-emphasis-position: under;\">$1</span>"},
@@ -93,8 +93,8 @@ class Atxt2InlineHTML
                 {"\\[url=(.*?)\\](.*?)\\[\\/url\\]","<a href=\"$1\">$2</a>"},
 
                 //字符处理
-                //{"(?<!<span class=\"atxt_breakall\">)(?<!…)[…]{3,99}","<span class=\"atxt_breakall\">$0</span>"},
-                //{"(?<!<span class=\"atxt_breakall\">)(?<!—)[—]{3,99}","<span class=\"atxt_breakall\">$0</span>"}
+                {"(?<!<span style=\"word-wrap:break-word;word-break:break-all;\">)(?<!…)[…]{3,99}","<span style=\"word-wrap:break-word;word-break:break-all;\">$0</span>"},
+                {"(?<!<span style=\"word-wrap:break-word;word-break:break-all;\">)(?<!—)[—]{3,99}","<span style=\"word-wrap:break-word;word-break:break-all;\">$0</span>"}
             };
 
 
@@ -145,7 +145,7 @@ class Atxt2InlineHTML
                                     var a = m.Groups[1].Value;
                                     if (web_images.ContainsKey(a))
                                     {
-                                        r = r.Replace(m.Value, "<span style=\"display:block;text-align:center\"><img src=\"" + web_images[a] + "\"></span>");
+                                        r = r.Replace(m.Value, "<p style=\"display:block;text-align:center\"><img src=\"" + web_images[a] + "\" style=\"max-width:100%;max-height:90vh\"></p>");
                                     }
                                     else
                                     {
@@ -201,18 +201,18 @@ class Atxt2InlineHTML
             string[] dont_addp_list = new string[]
             {"p","div","/div","h1","h2","h3","h4","h5","h6","span"};
             foreach (var a in dont_addp_list)
-                if (Regex.Match(r, "<" + a + ".*>").Success)
+                if (Regex.Match(r, "^<" + a + ".*>").Success)
                     addp = false;
             if (addp)
             {
                 var temptrimed = Util.TrimTag(r);
                 var first = (temptrimed.Length > 0) ? temptrimed[0] : '\0';
-                if (first == '（' || first == '「' || first == '『' || first == '〈' || first == '【' || first == '《')
+                if (first == '（' || first == '「' || first == '『' || first == '〈' || first == '【' || first == '《' || first == '〔')
                 {
-                    r = "<span style=\"display:block;text-indent:1.5em;line-height:1.5;\">" + r + "</span>";
+                    r = "<p style=\"text-indent:1.5em;line-height:1.5;margin:0;\">" + r + "</p>";
                 }
                 else
-                    r = "<span style=\"display:block;text-indent:2em;line-height:1.5;\">" + r + "</span>";
+                    r = "<p style=\"text-indent:2em;line-height:1.5;margin:0;\">" + r + "</p>";
             }
             html += r + "\n";
         }
