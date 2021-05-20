@@ -158,13 +158,14 @@ class Program
                 case "atxt2inlinehtml":
                     if (File.Exists(args[1]))
                     {
-                        Atxt2InlineHTML.ConvertSave(args[1], "output_inlineHTML.txt");
+                        Atxt2InlineHTML.ConvertSave(args[1], $"output_inlineHTML_{Path.GetFileNameWithoutExtension(args[1])}.txt");
                         break;
                     }
                     if (Directory.Exists(args[1]))
                     {
-                        Directory.CreateDirectory("output_inlineHTML");
-                        Atxt2InlineHTML.ConvertSaveDir(args[1], "output_inlineHTML");
+                        var outputPath = "output_inlineHTML_" + Path.GetFileName(args[1]);
+                        Directory.CreateDirectory(outputPath);
+                        Atxt2InlineHTML.ConvertSaveDir(args[1], outputPath);
                         break;
                     }
                     Log.Warn("Nothing happens. Make sure there is a file or folder to process.");
