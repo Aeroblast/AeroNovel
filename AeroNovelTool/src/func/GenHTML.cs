@@ -107,7 +107,7 @@ namespace AeroNovelEpub
 
                 if (r.StartsWith("#HTML:"))
                 {
-                    html += r.Substring("#HTML:".Length)+"\n";
+                    html += r.Substring("#HTML:".Length) + "\n";
                     continue;
                 }
 
@@ -232,13 +232,13 @@ namespace AeroNovelEpub
                 string[] dont_addp_list = new string[]
                 {"p","div","/div","h1","h2","h3","h4","h5","h6"};
                 foreach (var a in dont_addp_list)
-                    if (Regex.Match(r, "<" + a + ".*>").Success)
+                    if (Regex.Match(r, "^<" + a + ".*>").Success)
                         addp = false;
                 if (addp)
                 {
                     var temptrimed = Util.TrimTag(r);
                     var first = (temptrimed.Length > 0) ? temptrimed[0] : '\0';
-                    if (first == '（' || first == '「' || first == '『' || first == '〈' || first == '【' || first == '《')
+                    if (first == '（' || first == '「' || first == '『' || first == '〈' || first == '【' || first == '《' || first == '〔')
                     {
                         r = "<p class=\"atxt_drawout\">" + r + "</p>";
                     }
