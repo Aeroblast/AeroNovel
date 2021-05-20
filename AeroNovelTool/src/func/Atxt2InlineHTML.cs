@@ -65,8 +65,8 @@ class Atxt2InlineHTML
                 {"^#center:(.*)","<p style=\"text-align:center;margin:0;\">$1</p>"},
                 {"^#right:(.*)","<p style=\"text-align:right;margin:0;\">$1</p>"},
                 {"^#left:(.*)","<p style=\"text-align:left;margin:0;\">$1</p>"},
-                {reg_noteref,""},
-                {reg_notecontent,""},
+                {reg_noteref,"<span style=\"vertical-align:super;font-size:smaller;\">[注]</span>"},
+                {reg_notecontent,"<p style=\"width:50%;margin-left:40%\">$1</p>"},
                 {reg_img,""},
                 {reg_illu2,""},
                 {reg_imgchar,""},
@@ -145,7 +145,7 @@ class Atxt2InlineHTML
                                     var a = m.Groups[1].Value;
                                     if (web_images.ContainsKey(a))
                                     {
-                                        r = r.Replace(m.Value, "<p style=\"display:block;text-align:center\"><img src=\"" + web_images[a] + "\" style=\"max-width:100%;max-height:90vh\"></p>");
+                                        r = r.Replace(m.Value, "<p style=\"text-align:center\"><img src=\"" + web_images[a] + "\" style=\"max-width:100%;max-height:90vh\"></p>");
                                     }
                                     else
                                     {
