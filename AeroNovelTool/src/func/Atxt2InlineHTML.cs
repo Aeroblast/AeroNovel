@@ -42,7 +42,7 @@ class Atxt2InlineHTML
     public string Process(string path)
     {
         string[] atxt = File.ReadAllLines(path);
-        return "<span style=\"white-space:normal\">\n" + Gen(atxt) + "</span>";
+        return "<div style=\"white-space:normal\">\n" + Gen(atxt) + "</div>";
     }
     public string Gen(string[] txt)
     {
@@ -71,12 +71,12 @@ class Atxt2InlineHTML
                 {reg_illu2,""},
                 {reg_imgchar,""},
                 {reg_class,""},
-                {reg_chapter,""},
+                {reg_chapter,"$2"},
                 {"\\[b\\](.*?)\\[\\/b\\]","<b>$1</b>"},
                 {"^#title:(.*)","<p style=\"text-align:center;font-size:1.6em;font-weight:bold\">$1</p>"},
                 {"\\[ruby=(.*?)\\](.*?)\\[\\/ruby\\]","<ruby>$2<rt>$1</rt></ruby>"},
                 {"^\\[pagebreak\\]$","<p class=\"atxt_pagebreak\"><br/></p>"},
-                {"\\[emphasis\\](.*?)\\[\\/emphasis\\]","<span style=\"-webkit-text-emphasis: dot filled;-webkit-text-emphasis-position: under;\">$1</span>"},
+                {"\\[em\\](.*?)\\[\\/em\\]","<span style=\"-webkit-text-emphasis: dot filled;-webkit-text-emphasis-position: under;\">$1</span>"},
                 {"\\[s\\](.*?)\\[\\/s\\]","<s>$1</s>"},
                 {"\\[i\\](.*?)\\[\\/i\\]","<i>$1</i>"},
                 {"\\[color=(.*?)\\](.*?)\\[\\/color\\]","<span style=\"color:$1\">$2</span>"},

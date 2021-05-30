@@ -208,7 +208,7 @@ class GenBbcode
                 {reg_chapter,"$2"},
                 //{"\\[b\\](.*?)\\[\\/b\\]","<b>$1</b>"},
                 {"\\[title\\](.*?)\\[\\/title\\]","[size=5]$1[/size]"},
-                {"^#title:(.*)","[size=5]$1[/size]"},
+                {"^#title:(.*)","[align=center][size=5]$1[/size][/align]\n"},
                 //{"\\[ruby=(.*?)\\](.*?)\\[\\/ruby\\]","<ruby>$2<rt>$1</rt></ruby>"},
                 {"\\[pagebreak\\]",""},
                 {"\\[emphasis\\](.*?)\\[\\/emphasis\\]","[b]$1[/b]"},
@@ -303,6 +303,7 @@ class GenBbcode
                     case '《':
                     case '【':
                     case '（':
+                    case '〔':
                         r = "　" + r;
                         break;
                     default:
