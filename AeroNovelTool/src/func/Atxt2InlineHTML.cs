@@ -42,7 +42,7 @@ class Atxt2InlineHTML
     public string Process(string path)
     {
         string[] atxt = File.ReadAllLines(path);
-        return "<div style=\"white-space:normal\">\n" + Gen(atxt) + "</div>";
+        return "<div style=\"white-space:normal;line-height:1.5;\">\n" + Gen(atxt) + "</div>";
     }
     public string Gen(string[] txt)
     {
@@ -199,7 +199,7 @@ class Atxt2InlineHTML
             if (r.Length == 0) { r = "<br/>"; }
             bool addp = true;
             string[] dont_addp_list = new string[]
-            {"p","div","/div","h1","h2","h3","h4","h5","h6","span"};
+            {"p","div","/div","h1","h2","h3","h4","h5","h6"};
             foreach (var a in dont_addp_list)
                 if (Regex.Match(r, "^<" + a + ".*>").Success)
                     addp = false;
@@ -209,10 +209,10 @@ class Atxt2InlineHTML
                 var first = (temptrimed.Length > 0) ? temptrimed[0] : '\0';
                 if (first == '（' || first == '「' || first == '『' || first == '〈' || first == '【' || first == '《' || first == '〔')
                 {
-                    r = "<p style=\"text-indent:1.5em;line-height:1.5;margin:0;\">" + r + "</p>";
+                    r = "<p style=\"text-indent:1.5em;margin:0;\">" + r + "</p>";
                 }
                 else
-                    r = "<p style=\"text-indent:2em;line-height:1.5;margin:0;\">" + r + "</p>";
+                    r = "<p style=\"text-indent:2em;margin:0;\">" + r + "</p>";
             }
             html += r + "\n";
         }
