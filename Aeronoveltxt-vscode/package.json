@@ -2,7 +2,7 @@
     "name": "aeronoveltxt",
     "displayName": "AeroNovelTxt",
     "description": "",
-    "version": "0.0.7",
+    "version": "0.0.8",
     "engines": {
         "vscode": "^1.37.0"
     },
@@ -12,7 +12,8 @@
     "activationEvents": [
         "onCommand:aeronoveltxt.search",
         "onCommand:aeronoveltxt.searchp1",
-        "onCommand:aeronoveltxt.weblio"
+        "onCommand:aeronoveltxt.weblio",
+        "onCommand:aeronoveltxt.onDownArrow"
     ],
     "main": "./extension.js",
     "contributes": {
@@ -48,6 +49,10 @@
             {
                 "command": "aeronoveltxt.weblio",
                 "title": "试试Weblio"
+            },
+            {
+                "command": "aeronoveltxt.onDownArrow",
+                "title": "↓"
             }
         ],
         "menus": {
@@ -68,7 +73,15 @@
                     "group": "navigation@3"
                 }
             ]
-        }
+        },
+        "keybindings": [
+            {
+                "command": "aeronoveltxt.onDownArrow",
+                "key": "down",
+                "mac": "down",
+                "when": "editorTextFocus && resourceLangId == aeronoveltxt"
+            }
+        ]
     },
     "devDependencies": {
         "@types/mocha": "^2.2.42",
