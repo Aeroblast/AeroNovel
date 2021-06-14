@@ -1,8 +1,9 @@
 {
     "name": "aeronoveltxt",
     "displayName": "AeroNovelTxt",
-    "description": "",
-    "version": "0.0.8",
+    "publisher":"Aeroblast",
+    "description": "Highlight and utils for AeroNovel",
+    "version": "0.0.9",
     "engines": {
         "vscode": "^1.37.0"
     },
