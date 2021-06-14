@@ -184,7 +184,12 @@ class Program
 epub 【项目文件夹】 【输出目录(可选)】
 bbcode 【项目文件夹】 【输出目录(可选)】
 atxt2bbcode 【atxt文件】
-epub2comment 【生肉epub文件】
+epub2comment 【生肉epub文件】 【可选选项...】
+　　选项'Glossary' 【名词表文件】
+　　选项'BlackTranslationMagic' 
+atxt2inlinehtml　【atxt或项目文件夹】
+atxtcc 【txt文件】 【't2s'】
+html2comment 【xhtml文件】
 ";
     static bool FileExist(string path)
     {
