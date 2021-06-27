@@ -170,6 +170,23 @@ class Program
                     }
                     Log.Warn("Nothing happens. Make sure there is a file or folder to process.");
                     break;
+                case "analyze":
+                    if (Directory.Exists(args[1]))
+                    {
+                        if (args.Length >= 3)
+                        {
+                            int chap = 0;
+                            if (!int.TryParse(args[2], out chap))
+                            {
+                                Log.Error("Chapter number!");
+                            }
+                            Statistic.AnalyzeProject(args[1], chap);
+                            break;
+                        }
+                        Statistic.AnalyzeProject(args[1]);
+                        break;
+                    }
+                    break;
                 default:
                     Log.Warn("Nothing happens. " + usage);
                     break;
