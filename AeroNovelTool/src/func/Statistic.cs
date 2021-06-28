@@ -16,23 +16,25 @@ class Statistic
             string no = m.Groups[1].Value;
             int chapter = int.Parse(no);
             if (chapter < start) continue;
-            //string chaptitle = m.Groups[2].Value;
             atxts.Add(f);
 
         }
         atxts.Sort();
         int totalLineCount = 0, totalCharCount = 0, totalRawCharCount = 0;
-        Console.WriteLine($"     line |  char |   raw");
+        Console.WriteLine($"     line |  char |   raw |");
         foreach (string f in atxts)
         {
+            Match m = Regex.Match(Path.GetFileName(f), AeroNovel.regStr_filename);
+            string chaptitle = m.Groups[2].Value;
+            string no = m.Groups[1].Value;
             string[] lines = File.ReadAllLines(f);
             var (lineCount, charCount, rawCharCount) = Analyse(lines);
-            Console.WriteLine($"{Path.GetFileName(f).Substring(0, 2)}:{lineCount.ToString().PadLeft(7, ' ')}|{charCount.ToString().PadLeft(7, ' ')}|{rawCharCount.ToString().PadLeft(7, ' ')}");
+            Console.WriteLine($"{no}:{lineCount.ToString().PadLeft(7, ' ')}|{charCount.ToString().PadLeft(7, ' ')}|{rawCharCount.ToString().PadLeft(7, ' ')}| {chaptitle}");
             totalLineCount += lineCount;
             totalCharCount += charCount;
             totalRawCharCount += rawCharCount;
         }
-        Console.WriteLine($"All{totalLineCount.ToString().PadLeft(7, ' ')}|{totalCharCount.ToString().PadLeft(7, ' ')}|{totalRawCharCount.ToString().PadLeft(7, ' ')}");
+        Console.WriteLine($"All{totalLineCount.ToString().PadLeft(7, ' ')}|{totalCharCount.ToString().PadLeft(7, ' ')}|{totalRawCharCount.ToString().PadLeft(7, ' ')}|");
     }
 
     public static (int lineCount, int charCount, int rawCharCount) Analyse(string[] lines)
