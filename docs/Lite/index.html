@@ -19,6 +19,7 @@
 
     #output_render {
       border: black solid 1px;
+      word-wrap: break-word;
     }
 
     textarea {
@@ -80,6 +81,9 @@ div不会触发增加p标签，可以加样式（此功能与命令行版不同�
 「对话缩进调整」
 『对话缩进调整』
 对比
+普通省略号……
+超长省略号强制换行……………………………………………………………………………………………………
+破折号也是————————————————————————————————————
 </div>
 对比一下line-height效果吧啊啊
 啊啊啊啊啊啊啊啊啊啊啊啊啊啊
@@ -177,8 +181,8 @@ div不会触发增加p标签，可以加样式（此功能与命令行版不同�
         [/^#h([1-6]):(.*)/, "<h$1>$2</h$1>"],
         [/\/\/\/.*/, ""],
         [/^#illu:(.*)/, "<p class='aligned' style='text-align:center'><img src=\"$1\" style='max-width:100%;max-height:90vh'></p>"],
-        [/(?<!<span style=\"word-wrap:break-word;word-break:break-all;\">)(?<!…)[…]{3,99}/, "<span style=\"word-wrap:break-word;word-break:break-all;\">$0</span>"],
-        [/(?<!<span style=\"word-wrap:break-word;word-break:break-all;\">)(?<!—)[—]{3,99}/, "<span style=\"word-wrap:break-word;word-break:break-all;\">$0</span>"]
+        [/((?<!<span style=\"word-wrap:break-word;word-break:break-all;\">)(?<!…)[…]{3,99})/, "<span style=\"word-wrap:break-word;word-break:break-all;\">$1</span>"],
+        [/((?<!<span style=\"word-wrap:break-word;word-break:break-all;\">)(?<!—)[—]{3,99})/, "<span style=\"word-wrap:break-word;word-break:break-all;\">$1</span>"]
       ];
       const lines = atxt.split('\n');
       let html = "";
