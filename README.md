@@ -2,6 +2,8 @@
 
 自用小说工具链。在普通.txt文本文档（一行一个段落的小说文本）的基础上增加一系列标记，直观地编辑文本，并生成多种目标格式。包括用于转换文本的命令行工具和提供着色等功能的VSCode插件。
 
+另有一个轻量的网页体验版，可以生成行内HTML：[Github Page](https://aeroblast.github.io/AeroNovel/Lite/)
+
 ## 使用命令行工具 AeroNovelTool
 一些预想的使用场景：
 + 将一般txt文档转换为一些网站用的行内HTML。可以利用类似bbcode的标记改变颜色、加粗、注音。
