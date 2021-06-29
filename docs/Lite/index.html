@@ -1,0 +1,241 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1.0">
+
+  <link rel="stylesheet" href="lib/codemirror.css">
+  <link rel="stylesheet" href="theme/3024-day.css">
+  <link rel="stylesheet" href="theme/darcula.css">
+  <title>AeroNovel-Lite</title>
+  <style>
+    .tab {
+      display: inline-block;
+      width: 30vw;
+      vertical-align: text-top;
+      min-height: 100vh;
+    }
+
+    #output_render {
+      border: black solid 1px;
+    }
+
+    textarea {
+      width: 100%;
+      min-height: 90vh;
+    }
+
+    .CodeMirror {
+      height: 90vh;
+    }
+
+    .CodeMirror-wrap pre {
+      word-break: break-word;
+    }
+  </style>
+</head>
+
+<body>
+  <header>
+    ✅在这个页面，您可以体验AeroNovel大致功能。<br>
+    ⚠️此页面的效果与命令行工具不完全相同。<br>
+    ⚠️此页面仅供体验，不包含任何优化，不保证文章特别长的时候不卡顿。<br>
+    ✅有需要可以拿去改。<br>
+    👉<a target="_blank" href="https://github.com/Aeroblast/AeroNovel">项目地址</a>
+  </header>
+  <div id="container_src" class="tab">
+
+    Select a theme:
+    <select onchange="selectTheme()" id="theme_select">
+      <option>default</option>
+      <option>3024-day</option>
+      <option selected>darcula</option>
+    </select>
+    <textarea id="src">
+## テスト
+第一行文字。
+## テスト
+长一点的文字喔哦哦哦哦哦哦哦哦哦哦哦哦噢噢噢噢啊啊啊嗯嗯嗯嗯嗯嗯嗯嗯嗯啦啦啦啦啦啊啊啊啊
+## テスト
+行内样式系列：[ruby=Test]测试[/ruby]这是[b]测试[/b][s]测试[/s][color=#ff0000]测试[/color]。
+#title:标题
+#center:居中
+#center:[size=1.2]组合使用测试（单位是[b]em[/b]）[/size]
+<div style="line-height:2">
+div不会触发增加p标签，可以加样式（此功能与命令行版不同）
+## テスト
+长一点的文字喔哦哦哦哦哦哦哦哦哦哦哦哦噢噢噢噢啊啊啊嗯嗯嗯嗯嗯嗯嗯嗯嗯啦啦啦啦啦啊啊啊啊啊
+一些文字
+「对话缩进调整」
+『对话缩进调整』
+对比
+</div>
+对比一下line-height效果吧啊啊
+啊啊啊啊啊啊啊啊啊啊啊啊啊啊
+啊啊啊啊啊啊啊嗯嗯嗯嗯嗯嗯嗯嗯嗯嗯
+#right:右对齐
+#left:插图提供居中和自适应：
+#illu:https://aeroblast.github.io/AeroNovel/Lite/test_illu.jpg
+空行数量测试：
+
+1行↑
+
+
+2行↑</textarea>
+  </div>
+  <div class="tab">输出HTML：<textarea id="output_html"></textarea></div>
+  <div class="tab">预览：<div id="output_render"></div>
+  </div>
+  <script src="lib/codemirror.js"></script>
+  <script src="mode/simple.js"></script>
+  <script>
+    // https://codemirror.net/demo/simplemode.html
+    CodeMirror.defineSimpleMode("simplemode", {
+      // The start state contains the rules that are initially used
+      start: [
+        {
+          regex: /(\[b\].*?\[\/b\])/,
+          token: "keyword"
+        },
+        {
+          regex: /(\[s\].*?\[\/s\])/,
+          token: "keyword"
+        },
+        {
+          regex: /\[color=(.*?)\](.*?)\[\/color\]/,
+          token: "keyword"
+        },
+        {
+          regex: /(\[ruby=.*?\].*?\[\/ruby\])/,
+          token: "keyword"
+        },
+        {
+          regex: /^#(right|left|center|illu|title):(.*)/,
+          token: "keyword"
+        },
+        { regex: /##.*/, token: "comment" },
+      ],
+      comment: [
+      ],
+      meta: {
+        dontIndentStates: ["comment"],
+        lineComment: "##"
+      }
+    });
+    const src_textarea = document.getElementById("src")
+    var editor = CodeMirror.fromTextArea(src_textarea, {
+      lineNumbers: true,
+      lineWrapping: true,
+      mode: "simplemode"
+    });
+    editor.on("change", function (cm, change) {
+      Update();
+    })
+    const theme_select = document.getElementById("theme_select");
+    function selectTheme() {
+      let theme = theme_select.options[theme_select.selectedIndex].textContent;
+      editor.setOption("theme", theme);
+    }
+    selectTheme()
+
+    //doc.replaceSelection(string)
+    //doc.getSelection()
+    //doc.getValue() 
+    const output_html = document.getElementById("output_html");
+    const output_render = document.getElementById("output_render");
+    function Update() {
+      let html = RenderAtxt(editor.getValue());
+      output_html.value = html;
+      output_render.innerHTML = html;
+    }
+    Update();
+
+    function RenderAtxt(atxt) {
+      const reg = [
+        [/\[color=(.*?)\](.*?)\[\/color\]/, "<span style=\"color:$1\">$2</span>"],
+        [/\[img\](.*?)\[\/img\]/, "<img src='$1'>"],
+        [/\[img=(.*?),(.*?)\](.*?)\[\/img\]/, "<img style='width:$1;height:$2' src='$3'>"],
+        [/\[b\](.*?)\[\/b\]/, "<b>$1</b>"],
+        [/\[ruby=(.*?)\](.*?)\[\/ruby\]/, "<ruby>$2<rt>$1</rt></ruby>"],
+        [/\[s\](.*?)\[\/s\]/, "<s>$1</s>"],
+        [/\[size=(.*?)\](.*?)\[\/size\]/, "<span style=\"font-size:$1em\">$2</span>"],
+        [/^#left:(.*)/, "<p style='text-align:left;margin:0;'>$1</p>"],
+        [/^#center:(.*)/, "<p style='text-align:center;margin:0;'>$1</p>"],
+        [/^#right:(.*)/, "<p style='text-align:right;margin:0;'>$1</p>"],
+        [/^#title:(.*)/, "<p style='font-size:1.4em;font-weight:bold;text-align:center;margin:0.2em;'>$1</p>"],
+        [/^#h([1-6]):(.*)/, "<h$1>$2</h$1>"],
+        [/\/\/\/.*/, ""],
+        [/^#illu:(.*)/, "<p class='aligned' style='text-align:center'><img src=\"$1\" style='max-width:100%;max-height:90vh'></p>"],
+        [/(?<!<span style=\"word-wrap:break-word;word-break:break-all;\">)(?<!…)[…]{3,99}/, "<span style=\"word-wrap:break-word;word-break:break-all;\">$0</span>"],
+        [/(?<!<span style=\"word-wrap:break-word;word-break:break-all;\">)(?<!—)[—]{3,99}/, "<span style=\"word-wrap:break-word;word-break:break-all;\">$0</span>"]
+      ];
+      const lines = atxt.split('\n');
+      let html = "";
+      for (const line of lines) {
+        if (line.startsWith("##")) continue;
+        let renderedLine = line;
+        let matched = true;
+        while (matched) {
+          matched = false;
+          for (let i = 0; i < reg.length; i++) {
+            let match = reg[i][0].exec(renderedLine);
+            if (match != null) {
+              let rep = reg[i][1];
+              switch (i) {
+                default:
+                  renderedLine = renderedLine.replace(reg[i][0], rep);
+                  break;
+              }
+              matched = true;
+              break;
+            }
+          }
+        }
+        if (renderedLine == "") renderedLine = "<br>";
+        if (
+          //if should add <p></p>
+          !((str) => {
+            const reg_startswith = [
+              /^<div/,
+              /^<\/div/,
+              /^<p /,
+              /^<h[1-6]/,
+            ];
+            for (let i = 0; i < reg_startswith.length; i++) {
+              if (str.match(reg_startswith[i])) {
+                return true;
+              }
+            }
+            return false;
+          })(renderedLine)
+        ) {
+          //should add <p></p>
+          let pStyle = "margin:0;";
+          if (
+            //if should drawout
+            ((c) => {
+              const list = ["「", "『", "（"];
+              for (const k of list) {
+                if (c[0] == k) return true;
+              }
+              return false;
+            })(renderedLine)
+          ) {
+            //should drawout
+            pStyle += "text-indent:1.5em;";
+            
+          } else {
+            pStyle += "text-indent:2em;";
+          }
+          renderedLine =
+            "<p style='" + pStyle + "'>" + renderedLine + "</p>";
+        }
+        html += renderedLine + "\n";
+      }
+      return html;
+    }
+  </script>
+</body>
+
+</html>
