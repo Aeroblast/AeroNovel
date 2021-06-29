@@ -1,0 +1,15 @@
+/* 配合#class:XXX #/class [class=XXX][/class]和内置的类等，可按需求增加CSS。 */
+.toc-center>p {
+    text-align: left;
+    text-indent: -4em;
+    padding-left: 6em;
+    line-height: 1.2;
+    padding-bottom: 0.5em;
+}
+
+.toc-center {
+    margin-left: auto;
+    margin-right: auto;
+    width: 18em;
+    max-width: 90%;
+}

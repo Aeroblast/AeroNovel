@@ -1,0 +1,25 @@
+﻿  <metadata xmlns:opf="http://www.idpf.org/2007/opf" xmlns:dc="http://purl.org/dc/elements/1.1/">
+    <dc:title>【标题】</dc:title>
+
+    <dc:creator id="author">【作者】</dc:creator>
+    <meta refines="#author" property="role" scheme="marc:relators">aut</meta>
+
+    <dc:creator id="illustrator">【插画】</dc:creator>
+    <meta refines="#illustrator" property="role" scheme="marc:relators">ill</meta>
+
+    <dc:language>zh-CN</dc:language>
+
+    <dc:publisher>【发布组织】</dc:publisher>
+
+    <dc:contributor id="translator0">【翻译（添加多个请修改此项目的id属性不重复）】</dc:contributor>
+    <meta refines="#translator0" property="role" scheme="marc:relators">trl</meta>
+    <dc:contributor id="tool">AeroNovelTool</dc:contributor>
+    <meta refines="#tool" property="role" scheme="marc:relators">bkp</meta>
+
+    <!-- 分别为发布日期和最后更改日期 -->
+    <dc:date>2020-01-01</dc:date>
+    <meta property="dcterms:modified">2020-01-01</meta>
+    <dc:identifier id="BookId">{urn:uuid}</dc:identifier>
+
+    <dc:description>【简介】</dc:description>
+  </metadata>
