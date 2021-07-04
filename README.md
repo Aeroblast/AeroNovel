@@ -11,7 +11,15 @@
 + 将生肉EPUB转换为对照稿，将文件夹视作一个项目，准备目录、元数据、图片、图床链接等信息，应对多种发布格式（bbcode、HTML、EPUB）。
 + 将一般txt文档组织成项目，应对多种发布格式（bbcode、HTML、EPUB）
 
-提供一些常用命令的批处理 (*.bat) 文件，把相应的文件夹或文件拖到.bat上即可使用，不必关心命令行选项。
+提供一些常用命令的批处理 (.bat) 文件，把相应的文件夹或文件拖到.bat上即可使用，不必关心命令行选项。
+
++ `drop_folder_epub.bat` 处理项目文件夹，生成EPUB。
++ `drop_folder_bbcode.bat` 处理项目文件夹，生成一个文本文档，包含所有章节转换出的bbocde。
++ `drop_epub_epub2comment.bat` 处理生肉EPUB，生成填空用的文本文档(.txt)。
++ `drop_atxt-or-folder_atxt2inlinehtml.bat` 处理单个文本文档或项目文件夹，生成带行内样式的HTML代码。
++ `drop_atxt_atxt2bbcode.bat` 处理单个文件，生成包含bbcode的文本文档。
+
+自行编写命令可指定输出位置或更多参数。undocumented。（有些老设计也该改进了）
 
 ## VSCode
 ### VScode插件
