@@ -128,7 +128,22 @@ namespace AeroNovelEpub
                 string name = "atxt" + no + ".xhtml";
                 string txtname = Path.GetFileNameWithoutExtension(f);
                 chaptitle = Util.UrlDecode(chaptitle);
+                
+                string lowered = chaptitle;
+                string numberMap = "１①Ⅰ";
+                foreach (char c in numberMap)
+                {
+                    int block = (int)c - 1;
+                    for (int i = 0; i <= 9; i++)
+                    {
+                        char numberChar = Convert.ToChar(block + i);
+                        lowered = lowered.Replace(numberChar, (char)('0' + i));
+                    }
+                }
+                string trimmed = lowered.Replace("　", "");
 
+                bool nameOk = false;
+                //Name dic start
                 Dictionary<string, string> name_dic = new Dictionary<string, string>
                     {
                         {"序章","prologue"},
@@ -141,25 +156,30 @@ namespace AeroNovelEpub
                         {"後記","postscript"},
                         {"后记","postscript"},
                         {"目錄","toc"},
-                        {"目录","toc"}
+                        {"目录","toc"},
+                        {"间章","interlude"},
+                        {"幕间","interlude"}
                     };
-                bool nameDicSuccess = false;
+
                 foreach (var k in name_dic)
                 {
-                    if (txtname.Contains(k.Key))
+                    if (trimmed.Contains(k.Key))
                     {
                         name = "atxt" + no + "_" + k.Value + ".xhtml";
-                        nameDicSuccess = true;
+                        nameOk = true;
                         break;
                     }
                 }
-                if (!nameDicSuccess)
+                //name dic end
+
+                //chapter number
+                if (!nameOk)
                 {
-                    string t = chaptitle;
+                    string t = trimmed;
                     string[] chapterNumberPatterns = new string[]{
-                        "^第([一二三四五六七八九十百零0-9]{1,10})",
-                        "([一二三四五六七八九十百零0-9]{1,10})\\s",
-                        "([一二三四五六七八九十百零0-9]{1,10})章"
+                        "^第([一二三四五六七八九十百零\\d]{1,10})",
+                        "([一二三四五六七八九十百零\\d]{1,10})\\s",
+                        "([一二三四五六七八九十百零\\d]{1,10})章"
                         };
                     foreach (string pattern in chapterNumberPatterns)
                     {
@@ -169,11 +189,18 @@ namespace AeroNovelEpub
                             string chapterNumber = m_num.Groups[1].Value;
                             if (!char.IsDigit(chapterNumber[0])) chapterNumber = "" + Util.FromChineseNumber(chapterNumber);
 
-                            t = t.Remove(m_num.Index, m_num.Length).Insert(m_num.Index, "_chapter" + chapterNumber + ' ');
-
+                            name = "atxt" + no + "_chapter" + chapterNumber + ".xhtml";
+                            nameOk = true;
                             break;
                         }
                     }
+                }
+                //chapter numder end
+
+                //just keep ascii
+                if (!nameOk)
+                {
+                    string t = lowered;
                     name = "_";
                     for (int i = 0; i < t.Length; i++)
                     {
