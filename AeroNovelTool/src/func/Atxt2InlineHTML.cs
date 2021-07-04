@@ -42,7 +42,7 @@ class Atxt2InlineHTML
     public string Process(string path)
     {
         string[] atxt = File.ReadAllLines(path);
-        return "<div style=\"line-height:1.5;\">\n" + Gen(atxt) + "</div>";
+        return "<div style=\"line-height:1.5;text-align:justify;\">\n" + Gen(atxt) + "</div>";
     }
     public string Gen(string[] txt)
     {
