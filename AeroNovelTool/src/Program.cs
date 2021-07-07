@@ -19,8 +19,19 @@ class Program
                         if (!DirectoryExist(args[1])) return;
                         var gen = new AeroNovelEpub.GenEpub();
                         for (int i = 2; i < args.Length; i++)
-                            if (args[i] == "t2s")
-                                gen = new AeroNovelEpub.GenEpub(AeroNovelEpub.ChineseConvertOption.T2S);
+                        {
+                            switch (args[i])
+                            {
+                                case "--t2s":
+                                    gen.cc_option = AeroNovelEpub.ChineseConvertOption.T2S; break;
+                                case "--no-info":
+                                    gen.addInfo = false;
+                                    break;
+                                case "--no-indent-adjust":
+                                    gen.indentAdjust = false;
+                                    break;
+                            }
+                        }
 
                         EpubFile e = gen.Gen(args[1]);
                         List<string> creators = new List<string>();

@@ -29,24 +29,29 @@ namespace AeroNovelEpub
             get { return Path.Combine(dir, "Images"); }
         }
         public List<string> img_names = new List<string>();
-        ChineseConvertOption cc_option;
+        public ChineseConvertOption cc_option;
+        public bool indentAdjust = true;
+        public bool addInfo = true;
         ChineseConvert cc;
-        public GenEpub(ChineseConvertOption cc_option = ChineseConvertOption.None)
+        public GenEpub()
         {
-            this.cc_option = cc_option;
-            if (cc_option == ChineseConvertOption.T2S)
-            {
-                Log.Note("Chinese Convert: T2S");
-                cc = new ChineseConvert();
-                cc.Prepare();
-            }
-
             TextEpubItemFile t = epub.GetFile<TextEpubItemFile>("OEBPS/Text/template.xhtml");
             xhtml_temp = t.text;
             epub.items.Remove(t);
         }
         public EpubFile Gen(string dir)
         {
+            if (cc_option == ChineseConvertOption.T2S)
+            {
+                Log.Note("Chinese Convert: T2S");
+                cc = new ChineseConvert();
+                cc.Prepare();
+            }
+            if (!indentAdjust)
+                Log.Note("Option: No indent adjustion.");
+            if (!addInfo)
+                Log.Note("Qption: Do not add generation info.");
+                
             this.dir = dir;
 
             string metaPath = Path.Combine(dir, "meta.txt");
@@ -128,7 +133,7 @@ namespace AeroNovelEpub
                 string name = "atxt" + no + ".xhtml";
                 string txtname = Path.GetFileNameWithoutExtension(f);
                 chaptitle = Util.UrlDecode(chaptitle);
-                
+
                 string lowered = chaptitle;
                 string numberMap = "１①Ⅰ";
                 foreach (char c in numberMap)
@@ -281,10 +286,10 @@ namespace AeroNovelEpub
                 if (f.EndsWith("info.txt") || f.EndsWith("info.atxt"))
                 {
                     body = Regex.Replace(body, "<p>(.*?：)", "<p class=\"atxt_keyvalue\">$1");
-                    body = "<div class=\"atxt_info\" epub:type=\"acknowledgements\">" + body + "<p>AeroNovelTool EPUB生成器 by AE 生成于" + DateTime.Now + "</p>" +
-                    //"<p class=\"keyvalue\">已验证阅读器:<br/>Apple Books<br/>Kindle(使用Kindlegen 转换)<br/>AeroEpubViewer<br/></p>" +
-                    "</div>";
-                    //File.WriteAllText("info.txt",body);
+                    body = "<div class=\"atxt_info\" epub:type=\"acknowledgements\">" + body;
+                    if (addInfo)
+                        body += "<p>AeroNovelTool EPUB生成器 by AE 生成于" + DateTime.Now + "</p>";
+                    body += "</div>";
                 }
                 if (f.EndsWith("EOB.txt") || f.EndsWith("EOB.atxt"))
                 {
