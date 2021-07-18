@@ -1,4 +1,4 @@
 %~d0
 cd %~dp0
-AeroNovelTool epub2comment %1 BlackTranslationMagic
+AeroNovelTool epub2comment %1 BlackMagic-Cloud
 pause

@@ -87,8 +87,11 @@ class Program
                     {
                         switch (args[2])
                         {
-                            case "BlackTranslationMagic":
-                                e2c.castBlackTranslationMagic = true;
+                            case "BlackMagic-Cloud":
+                                e2c.setTextTranslation = new BlackMagic_Cloud();
+                                break;
+                            case "BlackMagic-Dog":
+                                e2c.setTextTranslation = new BlackMagic_Dog();
                                 break;
                             case "Glossary":
                                 if (args.Length > 3)

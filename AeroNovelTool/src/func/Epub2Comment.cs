@@ -9,7 +9,7 @@ public class Epub2Comment
     string output_path = "output_epub2comment/";
     public EpubFile epub;
 
-    public bool castBlackTranslationMagic = false;
+    public TextTranslation setTextTranslation = null;
     public string glossaryDocPath = null;
 
     public Epub2Comment(string path)
@@ -19,7 +19,7 @@ public class Epub2Comment
             throw new Exception("File not exits!");
         }
         epub = new EpubFile(path);
-        output_path= "output_epub2comment_"+Util.FilenameCheck(epub.title)+"/";
+        output_path = "output_epub2comment_" + Util.FilenameCheck(epub.title) + "/";
     }
     public void Proc()
     {
@@ -28,11 +28,11 @@ public class Epub2Comment
 
         if (!string.IsNullOrEmpty(glossaryDocPath))
         {
-            trans=new GlossaryImportation(glossaryDocPath);
+            trans = new GlossaryImportation(glossaryDocPath);
         }
-        else if (castBlackTranslationMagic)
+        else if (setTextTranslation != null)
         {
-            trans = new BlackTranslationMagic();
+            trans = setTextTranslation;
         }
         if (trans != null) Log.Note("Text Translation Method: " + trans.ToString());
 

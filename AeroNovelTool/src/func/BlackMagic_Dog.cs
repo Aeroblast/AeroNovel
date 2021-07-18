@@ -8,14 +8,14 @@ using System.Text.Json;
 using System.Threading;
 using System.Collections.Generic;
 
-class BlackTranslationMagic : TextTranslation
+class BlackMagic_Dog : TextTranslation
 {
     string appId;
     string secretKey;
 
     int coolDownTime = 1000;
     DateTime lastCall;
-    public BlackTranslationMagic()
+    public BlackMagic_Dog()
     {
         if (!File.Exists("baidu_fanyi_keys.txt"))
         {
