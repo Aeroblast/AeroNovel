@@ -3,7 +3,7 @@
     "displayName": "AeroNovelTxt",
     "publisher":"Aeroblast",
     "description": "Highlight and utils for AeroNovel",
-    "version": "0.0.9",
+    "version": "0.0.10",
     "engines": {
         "vscode": "^1.37.0"
     },
@@ -14,6 +14,7 @@
         "onCommand:aeronoveltxt.search",
         "onCommand:aeronoveltxt.searchp1",
         "onCommand:aeronoveltxt.weblio",
+        "onCommand:aeronoveltxt.webliojc",
         "onCommand:aeronoveltxt.onDownArrow"
     ],
     "main": "./extension.js",
@@ -52,6 +53,10 @@
                 "title": "试试Weblio"
             },
             {
+                "command": "aeronoveltxt.webliojc",
+                "title": "试试Weblio日中"
+            },
+            {
                 "command": "aeronoveltxt.onDownArrow",
                 "title": "↓"
             }
@@ -72,6 +77,11 @@
                     "when": "resourceLangId == aeronoveltxt",
                     "command": "aeronoveltxt.searchp1",
                     "group": "navigation@3"
+                },
+                {
+                    "when": "resourceLangId == aeronoveltxt",
+                    "command": "aeronoveltxt.webliojc",
+                    "group": "navigation@4"
                 }
             ]
         },

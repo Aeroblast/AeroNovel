@@ -17,6 +17,11 @@ function activate(context) {
     const text = editor.document.getText(editor.selection);
     vscode.env.openExternal(vscode.Uri.parse('https://www.weblio.jp/content/' + text));
   }));
+  context.subscriptions.push(vscode.commands.registerCommand('aeronoveltxt.webliojc', () => {
+    const editor = vscode.window.activeTextEditor;
+    const text = editor.document.getText(editor.selection);
+    vscode.env.openExternal(vscode.Uri.parse('https://cjjc.weblio.jp/content/' + text));
+  }));
   context.subscriptions.push(vscode.commands.registerTextEditorCommand('aeronoveltxt.onDownArrow', (editor, edit, args) => {
     vscode.commands.executeCommand('cursorMove', {
       to: "down",
