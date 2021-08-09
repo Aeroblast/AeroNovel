@@ -1,7 +1,7 @@
 using System.Collections.Generic;
 using System.Text.RegularExpressions;
 
-namespace AeroEpubViewer.Xml
+namespace AeroEpub.Xml
 {
     //System.Xml太抠规范了，还是自己简易糊个吧。
     public class XFragment

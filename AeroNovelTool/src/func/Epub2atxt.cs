@@ -1,7 +1,7 @@
 using System.IO;
 using System.Text.RegularExpressions;
-using AeroEpubViewer.Epub;
-using AeroEpubViewer.Xml;
+using AeroEpub.Epub;
+using AeroEpub.Xml;
 public class Epub2Atxt
 {
     const string output_dir = "output_epub2atxt/";

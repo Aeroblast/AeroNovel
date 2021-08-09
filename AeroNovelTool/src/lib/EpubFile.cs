@@ -5,8 +5,8 @@ using System.Collections;
 using System.IO.Compression;
 using System.Text.RegularExpressions;
 using System.Text;
-using AeroEpubViewer.Xml;
-namespace AeroEpubViewer.Epub
+using AeroEpub.Xml;
+namespace AeroEpub.Epub
 {
     public class EpubFile
     {
@@ -98,8 +98,10 @@ namespace AeroEpubViewer.Epub
         public List<MetaRecord> meta;
         public string cover_img = "";
         ManifestItem _toc;
-        public ManifestItem toc {
-            get {
+        public ManifestItem toc
+        {
+            get
+            {
                 if (_version == null) ReadMeta();
                 return _toc;
             }
@@ -403,70 +405,80 @@ namespace AeroEpubViewer.Epub
             }
             Log.Note("Saved " + filepath);
         }
+        public EpubFile(Stream stream)
+        {
+            InitFromStream(stream);
+            if (items.Count == 0) throw new EpubErrorException("Cannot find files in epub");
+            if (items[0].GetType() != typeof(MIMETypeItem)) throw new EpubErrorException("Cannot find mimetype in epub");
+        }
         public EpubFile(string path)
         {
             this.path = path;
             filename = Path.GetFileNameWithoutExtension(path);
-            items = new List<EpubItemFile>();
             using (FileStream zipToOpen = new FileStream(path, FileMode.Open))
             {
-                using (ZipArchive archive = new ZipArchive(zipToOpen, ZipArchiveMode.Read))
-                {
-                    foreach (var entry in archive.Entries)
-                    {
-                        string ext = Path.GetExtension(entry.Name).ToLower();
-                        if (entry.FullName == "mimetype")
-                        {
-                            using (var stm = entry.Open())
-                            using (StreamReader r = new StreamReader(stm))
-                            {
-                                string s = Util.Trim(r.ReadToEnd());
-                                if (s != "application/epub+zip") throw new EpubErrorException("The mimetype of epub should be 'application/epub+zip'. Current:" + s);
-                                var i = new MIMETypeItem();
-                                items.Insert(0, i);
-                            }
-
-                        }
-                        else
-                            switch (ext)
-                            {
-                                case ".xhtml":
-                                case ".html":
-                                case ".xml":
-                                case ".css":
-                                case ".opf":
-                                case ".ncx":
-                                case ".svg":
-                                case ".js":
-
-                                    using (var stm = entry.Open())
-                                    using (StreamReader r = new StreamReader(stm))
-                                    {
-                                        string s = r.ReadToEnd();
-                                        var i = new TextEpubItemFile(entry.FullName, s);
-                                        items.Add(i);
-                                    }
-                                    break;
-                                default:
-                                    using (var stm = entry.Open())
-
-                                    {
-                                        byte[] d = new byte[entry.Length];
-                                        if (entry.Length < int.MaxValue)
-                                        {
-                                            stm.Read(d, 0, (int)entry.Length);
-                                            var i = new EpubItemFile(entry.FullName, d);
-                                            items.Add(i);
-                                        }
-                                        else { throw new EpubErrorException("File size exceeds the limit."); }
-                                    }
-                                    break;
-                            }
-                    }
-                }
+                InitFromStream(zipToOpen);
             }
             if (items.Count == 0) throw new EpubErrorException("Cannot find files in epub");
             if (items[0].GetType() != typeof(MIMETypeItem)) throw new EpubErrorException("Cannot find mimetype in epub");
+        }
+        void InitFromStream(Stream stream)
+        {
+            items = new List<EpubItemFile>();
+            using (ZipArchive archive = new ZipArchive(stream, ZipArchiveMode.Read))
+            {
+                foreach (var entry in archive.Entries)
+                {
+                    string ext = Path.GetExtension(entry.Name).ToLower();
+                    if (entry.FullName == "mimetype")
+                    {
+                        using (var stm = entry.Open())
+                        using (StreamReader r = new StreamReader(stm))
+                        {
+                            string s = Util.Trim(r.ReadToEnd());
+                            if (s != "application/epub+zip") throw new EpubErrorException("The mimetype of epub should be 'application/epub+zip'. Current:" + s);
+                            var i = new MIMETypeItem();
+                            items.Insert(0, i);
+                        }
+
+                    }
+                    else
+                        switch (ext)
+                        {
+                            case ".xhtml":
+                            case ".html":
+                            case ".xml":
+                            case ".css":
+                            case ".opf":
+                            case ".ncx":
+                            case ".svg":
+                            case ".js":
+
+                                using (var stm = entry.Open())
+                                using (StreamReader r = new StreamReader(stm))
+                                {
+                                    string s = r.ReadToEnd();
+                                    var i = new TextEpubItemFile(entry.FullName, s);
+                                    items.Add(i);
+                                }
+                                break;
+                            default:
+                                using (var stm = entry.Open())
+
+                                {
+                                    byte[] d = new byte[entry.Length];
+                                    if (entry.Length < int.MaxValue)
+                                    {
+                                        stm.Read(d, 0, (int)entry.Length);
+                                        var i = new EpubItemFile(entry.FullName, d);
+                                        items.Add(i);
+                                    }
+                                    else { throw new EpubErrorException("File size exceeds the limit."); }
+                                }
+                                break;
+                        }
+                }
+            }
         }
     }
     public class ManifestItem

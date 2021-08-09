@@ -3,7 +3,7 @@ using System.IO;
 using System.Text.RegularExpressions;
 using System.IO.Compression;
 using System.Collections.Generic;
-using AeroEpubViewer.Epub;
+using AeroEpub.Epub;
 namespace AeroNovelEpub
 {
     public class GenEpub

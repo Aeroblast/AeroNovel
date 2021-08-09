@@ -3,7 +3,7 @@ using System.IO;
 using System.Xml;
 using System.Collections.Generic;
 using System.Text.RegularExpressions;
-using AeroEpubViewer.Epub;
+using AeroEpub.Epub;
 public class Epub2Comment
 {
     string output_path = "output_epub2comment/";

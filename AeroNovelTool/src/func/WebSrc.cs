@@ -3,8 +3,8 @@ using System.Net;
 using System;
 using System.IO;
 using System.Text.RegularExpressions;
-using AeroEpubViewer.Epub;
-using AeroEpubViewer.Xml;
+using AeroEpub.Epub;
+using AeroEpub.Xml;
 class WebSource
 {
     const string xhtml =

@@ -37,14 +37,13 @@ class Atxt2InlineHTML
                 Log.Note("Saved: " + outputPath);
             }
         }
-
     }
     public string Process(string path)
     {
         string[] atxt = File.ReadAllLines(path);
-        return "<div style=\"line-height:1.5;text-align:justify;\">\n" + Gen(atxt) + "</div>";
+        return "<div style=\"line-height:1.5;text-align:justify;\">\n" + GenContent(atxt) + "</div>";
     }
-    public string Gen(string[] txt)
+    public string GenContent(string[] txt)
     {
         List<string> notes = new List<string>();
         const string reg_noteref = "\\[note\\]";

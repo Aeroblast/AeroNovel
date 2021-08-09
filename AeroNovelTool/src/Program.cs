@@ -2,7 +2,7 @@
 using System.IO;
 using System.Collections.Generic;
 using System.Text.RegularExpressions;
-using AeroEpubViewer.Epub;
+using AeroEpub.Epub;
 class Program
 {
     static void Main(string[] args)
