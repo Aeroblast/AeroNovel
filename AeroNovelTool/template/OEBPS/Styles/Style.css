@@ -43,6 +43,7 @@ p {
 
 @media amzn-kf8 {
     div.atxt_illu {
+        page-break-before: always;
         page-break-after: always;
     }
 }
