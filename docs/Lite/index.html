@@ -44,6 +44,24 @@
     ⚠️此页面仅供体验，不包含任何优化，不保证文章特别长的时候不卡顿。<br>
     ✅有需要可以拿去改。<br>
     👉<a target="_blank" href="https://github.com/Aeroblast/AeroNovel">项目地址</a>
+    <br><br>
+    <input type="checkbox" onchange="ChangeOption()" checked id="input_indent">缩进
+    <input type="checkbox" onchange="ChangeOption()" checked id="input_indent_adjust">缩进调整
+    <input type="checkbox" onchange="ChangeOption()" checked id="input_margin">消除段间距
+    <script>
+      var addIndent = true;
+      var indentAdjust = true;
+      var addMargin = true;
+      const input_indent = document.getElementById("input_indent");
+      const input_indent_adjust = document.getElementById("input_indent_adjust");
+      const input_input_margin = document.getElementById("input_margin");
+      function ChangeOption() {
+        addIndent = input_indent.checked;
+        indentAdjust = input_indent_adjust.checked;
+        addMargin = input_input_margin.checked;
+        Update()
+      }
+    </script>
   </header>
   <div id="container_src" class="tab">
 
@@ -225,25 +243,30 @@ div不会触发增加p标签，可以加样式（此功能与命令行版不同�
           })(renderedLine)
         ) {
           //should add <p></p>
-          let pStyle = "margin:0;";
-          if (
-            //if should drawout
-            ((c) => {
-              const list = ["「", "『", "（"];
-              for (const k of list) {
-                if (c[0] == k) return true;
-              }
-              return false;
-            })(renderedLine)
-          ) {
-            //should drawout
-            pStyle += "text-indent:1.5em;";
-            
-          } else {
-            pStyle += "text-indent:2em;";
-          }
+          let pStyle = "";
+          if (addMargin) pStyle += "margin:0;";
+          if (addIndent)
+            if (
+              //if should drawout
+              ((c) => {
+                const list = ["「", "『", "（"];
+                for (const k of list) {
+                  if (c[0] == k) return true;
+                }
+                return false;
+              })(renderedLine)
+            ) {
+              //should drawout
+              if (indentAdjust)
+                pStyle += "text-indent:1.5em;";
+              else
+                pStyle += "text-indent:2em;";
+
+            } else {
+              pStyle += "text-indent:2em;";
+            }
           renderedLine =
-            "<p style='" + pStyle + "'>" + renderedLine + "</p>";
+            "<p" + (pStyle ? (" style='" + pStyle + "'") : "") + ">" + renderedLine + "</p>";
         }
         html += renderedLine + "\n";
       }
