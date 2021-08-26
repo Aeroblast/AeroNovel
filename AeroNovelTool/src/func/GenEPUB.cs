@@ -51,7 +51,7 @@ namespace AeroNovelEpub
                 Log.Note("Option: No indent adjustion.");
             if (!addInfo)
                 Log.Note("Qption: Do not add generation info.");
-                
+
             this.dir = dir;
 
             string metaPath = Path.Combine(dir, "meta.txt");
@@ -127,7 +127,13 @@ namespace AeroNovelEpub
             foreach (string f in files)
             {
                 Match m = Regex.Match(Path.GetFileName(f), AeroNovel.regStr_filename);
-                if (!m.Success) { continue; }
+                if (!m.Success)
+                {
+                    m = Regex.Match(Path.GetFileName(f), AeroNovel.regStr_filename_xhtml);
+                    if (!m.Success) { continue; }
+
+                }
+
                 string no = m.Groups[1].Value;
                 string chaptitle = m.Groups[2].Value;
                 string name = "atxt" + no + ".xhtml";
@@ -224,8 +230,15 @@ namespace AeroNovelEpub
                     if (name.EndsWith('_')) name = name.Substring(0, name.Length - 1);
                     name = "atxt" + no + name + ".xhtml";
                 }
+                if (chaptitle.StartsWith("SVG"))
+                {
+                    items += string.Format("    <item id=\"{0}\" href=\"Text/{0}\" media-type=\"application/xhtml+xml\" properties=\"svg\"/>\n", name);
+                }
+                else
+                {
+                    items += string.Format("    <item id=\"{0}\" href=\"Text/{0}\" media-type=\"application/xhtml+xml\"/>\n", name);
+                }
 
-                items += string.Format("    <item id=\"{0}\" href=\"Text/{0}\" media-type=\"application/xhtml+xml\"/>\n", name);
                 spine += string.Format("    <itemref idref=\"{0}\"/>\n", name);
 
                 txt_nums.Add(no);
@@ -244,64 +257,75 @@ namespace AeroNovelEpub
         {
             GenHtml genHtml = new GenHtml(this);
             string patchfile_path = Path.Combine(dir, "patch_t2s/patch.csv");
-            string[] patchs = new string[0];
+            string[] patches = new string[0];
             if (cc_option == ChineseConvertOption.T2S && File.Exists(patchfile_path))
             {
-                patchs = File.ReadAllLines(patchfile_path);
+                patches = File.ReadAllLines(patchfile_path);
             }
             for (int i = 0; i < txt_nums.Count; i++)
             {
                 string f = txt_paths[i];
-                string[] lines = File.ReadAllLines(f);
-                if (cc != null)
+                string xhtml;
+                if (f.EndsWith(".xhtml"))
                 {
-                    for (int j = 0; j < lines.Length; j++)
-                        lines[j] = cc.Convert(lines[j]);
-                    foreach (var patch in patchs)
+                    xhtml = File.ReadAllText(f);
+                }
+                else
+                {
+                    string[] lines = File.ReadAllLines(f);
+                    if (cc != null)
                     {
-                        string[] xx = patch.Split(',');
-                        if (xx[0] == txt_nums[i])
-                        {
-                            int line_num;
-                            if (
-                                int.TryParse(xx[1], out line_num)
-                             && line_num <= lines.Length
-                             && line_num > 0
-                             )
-                            {
-                                string target = cc.Convert(xx[2]);
-                                int c = Util.CountMatches(lines[line_num - 1], target);
-                                lines[line_num - 1] = lines[line_num - 1].Replace(target, xx[3]);
-                                if (c == 0) Log.Warn("Cannot Find cc patch target:" + xx[2]);
-                                else Log.Info(string.Format("CC patched {0} times for {1}", c, xx[2]));
-                            }
-                            else
-                            { Log.Warn("Bad Line Number:" + xx[1]); }
-                        }
+                        CCPatch(lines, patches, i);
                     }
+                    string body = genHtml.Gen(lines);
+                    if (f.EndsWith("info.txt") || f.EndsWith("info.atxt"))
+                    {
+                        body = Regex.Replace(body, "<p>(.*?：)", "<p class=\"atxt_keyvalue\">$1");
+                        body = "<div class=\"atxt_info\" epub:type=\"acknowledgements\">\n" + body;
+                        if (addInfo)
+                            body += "<p>AeroNovelTool EPUB生成器 by AE 生成于" + DateTime.Now + "</p>";
+                        body += "</div>";
+                    }
+                    if (f.EndsWith("EOB.txt") || f.EndsWith("EOB.atxt"))
+                    {
+                        body = "<div class=\"atxt_info\">" + body +
+                        "</div>";
+                    }
+                    xhtml = xhtml_temp.Replace("{❤title}", title).Replace("{❤body}", body);
+                }
 
-
-                }
-                string body = genHtml.Gen(lines);
-                if (f.EndsWith("info.txt") || f.EndsWith("info.atxt"))
-                {
-                    body = Regex.Replace(body, "<p>(.*?：)", "<p class=\"atxt_keyvalue\">$1");
-                    body = "<div class=\"atxt_info\" epub:type=\"acknowledgements\">" + body;
-                    if (addInfo)
-                        body += "<p>AeroNovelTool EPUB生成器 by AE 生成于" + DateTime.Now + "</p>";
-                    body += "</div>";
-                }
-                if (f.EndsWith("EOB.txt") || f.EndsWith("EOB.atxt"))
-                {
-                    body = "<div class=\"atxt_info\">" + body +
-                    "</div>";
-                }
-                string xhtml = xhtml_temp.Replace("{❤title}", title).Replace("{❤body}", body);
                 TextEpubItemFile item = new TextEpubItemFile("OEBPS/Text/" + xhtml_names[i], xhtml);
                 epub.items.Add(item);
                 Log.Info("Add xhtml: " + item.fullName + " (title:" + txt_titles[i] + ")");
             }
 
+        }
+        void CCPatch(string[] lines, string[] patches, int i)
+        {
+            for (int j = 0; j < lines.Length; j++)
+                lines[j] = cc.Convert(lines[j]);
+            foreach (var patch in patches)
+            {
+                string[] xx = patch.Split(',');
+                if (xx[0] == txt_nums[i])
+                {
+                    int line_num;
+                    if (
+                        int.TryParse(xx[1], out line_num)
+                     && line_num <= lines.Length
+                     && line_num > 0
+                     )
+                    {
+                        string target = cc.Convert(xx[2]);
+                        int c = Util.CountMatches(lines[line_num - 1], target);
+                        lines[line_num - 1] = lines[line_num - 1].Replace(target, xx[3]);
+                        if (c == 0) Log.Warn("Cannot Find cc patch target:" + xx[2]);
+                        else Log.Info(string.Format("CC patched {0} times for {1}", c, xx[2]));
+                    }
+                    else
+                    { Log.Warn("Bad Line Number:" + xx[1]); }
+                }
+            }
         }
         void GetImage()
         {
@@ -366,7 +390,7 @@ namespace AeroNovelEpub
         {
             //string temp=File.ReadAllText("template/toc.txt");
             string r = "";
-            string r3 = "<ol>";
+            string r3 = "<ol>\n";
             List<string> label = new List<string>();
             int depth = 1;
             int count = 0;
@@ -415,7 +439,7 @@ namespace AeroNovelEpub
                     r += $"<navPoint id=\"navPoint-{count}\" playOrder=\"{refered.IndexOf(link) + 1}\"><navLabel><text>{navTitle}</text></navLabel><content src=\"{link}\"/></navPoint>\n";
                     if (template3 != "")
                     {
-                        r3 += $"<li><a href=\"{link}\">{navTitle}</a></li>\n";
+                        r3 += $"  <li><a href=\"{link}\">{navTitle}</a></li>\n";
                     }
                 }
 
