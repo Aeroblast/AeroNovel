@@ -235,6 +235,8 @@ public class Html2Comment
                 case '」':
                 case '『':
                 case '』':
+                case '〈':
+                case '〉':
                     r += c;
                     break;
                 case '《':
@@ -243,6 +245,7 @@ public class Html2Comment
                 case '》':
                     r += '〕';
                     break;
+
             }
         }
         return r;
