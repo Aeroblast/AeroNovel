@@ -69,7 +69,7 @@ namespace AeroNovelEpub
                 {"^#h4:(.*)","<h4>$1</h4>"},
                 {"^#h5:(.*)","<h5>$1</h5>"},
                 {"^#h6:(.*)","<h6>$1</h6>"},
-                {"^#class:(.*)","<div class='$1'>"},
+                {"^#class:(.*)","<div class=\"$1\">"},
                 {"^#/class","</div>"},
                 {"\\[font\\](.*?)\\[\\/font\\]","<span class=\"atxt_font\">$1</span>"},
                 {"\\[url=(.*?)\\](.*?)\\[\\/url\\]","<a href=\"$1\">$2</a>"},
@@ -212,9 +212,9 @@ namespace AeroNovelEpub
                                         int chapnum;
                                         if (!int.TryParse(chapnum_s, out chapnum)) { Log.Error("Bad chapter string:" + chapnum_s); continue; }
 
-                                        int index = context.txt_nums.FindIndex(0, (s) => int.Parse(s) == chapnum);
+                                        int index = context.srcs.FindIndex(0, (src) => int.Parse(src.no) == chapnum);
                                         if (index < 0) { Log.Error("Bad chapter number:" + chapnum); continue; }
-                                        string path = context.xhtml_names[index];
+                                        string path = context.srcs[index].xhtmlName;
                                         r = reg.Replace(r, "<a href=\"" + path + "\">$2</a>");
                                     }
                                     break;
@@ -251,7 +251,7 @@ namespace AeroNovelEpub
             }
             if (notes.Count > 0)
             {
-                html += "<aside class=\"atxt_note_section\" epub:type=\"footnote\">注释<br/>";
+                html += "<aside class=\"atxt_note_section\" epub:type=\"footnote\">注释<br/>\n";
                 string note_temp = "<aside epub:type=\"footnote\" id=\"note{0}\"><p class=\"atxt_note_p\"><a href=\"#note_ref{0}\">{2}</a>{1}</p></aside>\n";
                 int count = 0;
                 foreach (string note in notes)

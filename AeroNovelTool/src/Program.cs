@@ -245,10 +245,54 @@ public class AeroNovel
 {
     public static string regStr_filename = "([0-9][0-9])(.*?)\\.[a]{0,1}txt";
     public static string regStr_filename_xhtml = "([0-9][0-9])(.*?)\\.xhtml";
+    public static string regStr_filename_noext = "([0-9][0-9])(.*)";
     public static bool isIndexedTxt(string path)
     {
         return Regex.Match(Path.GetFileName(path), regStr_filename).Success;
+    }
 
+}
+
+public class ProjectConfig
+{
+    public List<JoinCommand> joinCommands = new List<JoinCommand>();
+    public int joinBlankLine = 0;
+
+    public ProjectConfig(string[] content)
+    {
+        foreach (var line in content)
+        {
+            var sep = line.IndexOf(':');
+            if (sep < 0) continue;
+            var cmd = line.Substring(0, sep);
+            var arg = line.Substring(sep + 1);
+            switch (cmd)
+            {
+                case "join":
+                    joinCommands.Add(new JoinCommand(arg));
+                    break;
+                case "join_blank_line":
+                    int.TryParse(arg, out joinBlankLine);
+                    break;
+            }
+        }
+        joinCommands.Sort();
+    }
+}
+public class JoinCommand
+{
+    public string start, end;
+    public bool used = false;
+    public string title;
+    static Regex regex = new Regex("([0-9]{2})-([0-9]{2})(.*)");
+
+    public JoinCommand(string cmd)
+    {
+        var r = regex.Match(cmd);
+        if (!r.Success) throw new Exception("Join Command Fail: " + cmd);
+        start = r.Groups[1].Value;
+        end = r.Groups[2].Value;
+        title = r.Groups[3].Value;
     }
 }
 

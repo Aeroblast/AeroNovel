@@ -8,10 +8,9 @@ namespace AeroNovelEpub
 {
     public class GenEpub
     {
-        public List<string> txt_nums = new List<string>();
-        public List<string> txt_titles = new List<string>();
-        public List<string> xhtml_names = new List<string>();
-        public List<string> txt_paths = new List<string>();
+        public List<AtxtSource> srcs = new List<AtxtSource>();
+
+        public List<string> src_paths = new List<string>();
         public string dir;
         public Dictionary<string, string> macros;
 
@@ -33,6 +32,7 @@ namespace AeroNovelEpub
         public bool indentAdjust = true;
         public bool addInfo = true;
         ChineseConvert cc;
+        public ProjectConfig config;
         public GenEpub()
         {
             TextEpubItemFile t = epub.GetFile<TextEpubItemFile>("OEBPS/Text/template.xhtml");
@@ -41,6 +41,12 @@ namespace AeroNovelEpub
         }
         public EpubFile Gen(string dir)
         {
+
+            if (File.Exists(Path.Combine(dir, "config.txt")))
+            {
+                config = new ProjectConfig(File.ReadAllLines(Path.Combine(dir, "config.txt")));
+                Log.Info("Read config.txt");
+            }
             if (cc_option == ChineseConvertOption.T2S)
             {
                 Log.Note("Chinese Convert: T2S");
@@ -50,7 +56,7 @@ namespace AeroNovelEpub
             if (!indentAdjust)
                 Log.Note("Option: No indent adjustion.");
             if (!addInfo)
-                Log.Note("Qption: Do not add generation info.");
+                Log.Note("Option: Do not add generation info.");
 
             this.dir = dir;
 
@@ -93,7 +99,7 @@ namespace AeroNovelEpub
             }
             title = Regex.Match(meta, "<dc:title.*?>(.*?)</dc:title>").Groups[1].Value;
 
-            GenFileNames();
+            CollectSource();
             GenContent();
             GetImage();
             GetCss();
@@ -121,7 +127,7 @@ namespace AeroNovelEpub
             return epub;
         }
 
-        void GenFileNames()
+        void CollectSource()
         {
             string[] files = Directory.GetFiles(dir);
             foreach (string f in files)
@@ -131,128 +137,40 @@ namespace AeroNovelEpub
                 {
                     m = Regex.Match(Path.GetFileName(f), AeroNovel.regStr_filename_xhtml);
                     if (!m.Success) { continue; }
-
                 }
+                src_paths.Add(f);
+            }
+            src_paths.Sort();
 
-                string no = m.Groups[1].Value;
-                string chaptitle = m.Groups[2].Value;
-                string name = "atxt" + no + ".xhtml";
-                string txtname = Path.GetFileNameWithoutExtension(f);
-                chaptitle = Util.UrlDecode(chaptitle);
+            foreach (string txt_path in src_paths)
+            {
+                var src = new AtxtSource(txt_path);
+                srcs.Add(src);
+            }
+            if (config != null)
+            {
 
-                string lowered = chaptitle;
-                string numberMap = "１①Ⅰ";
-                foreach (char c in numberMap)
+            }
+            foreach (var src in srcs)
+            {
+                if (src.title.StartsWith("SVG"))
                 {
-                    int block = (int)c - 1;
-                    for (int i = 0; i <= 9; i++)
-                    {
-                        char numberChar = Convert.ToChar(block + i);
-                        lowered = lowered.Replace(numberChar, (char)('0' + i));
-                    }
-                }
-                string trimmed = lowered.Replace("　", "");
-
-                bool nameOk = false;
-                //Name dic start
-                Dictionary<string, string> name_dic = new Dictionary<string, string>
-                    {
-                        {"序章","prologue"},
-                        {"终章","epilogue"},
-                        {"終章","epilogue"},
-                        {"序幕","prologue"},
-                        {"尾声","epilogue"},
-                        {"简介","summary"},
-                        {"簡介","summary"},
-                        {"後記","postscript"},
-                        {"后记","postscript"},
-                        {"目錄","toc"},
-                        {"目录","toc"},
-                        {"间章","interlude"},
-                        {"幕间","interlude"}
-                    };
-
-                foreach (var k in name_dic)
-                {
-                    if (trimmed.Contains(k.Key))
-                    {
-                        name = "atxt" + no + "_" + k.Value + ".xhtml";
-                        nameOk = true;
-                        break;
-                    }
-                }
-                //name dic end
-
-                //chapter number
-                if (!nameOk)
-                {
-                    string t = trimmed;
-                    string[] chapterNumberPatterns = new string[]{
-                        "^第([一二三四五六七八九十百零\\d]{1,10})",
-                        "([一二三四五六七八九十百零\\d]{1,10})\\s",
-                        "([一二三四五六七八九十百零\\d]{1,10})章"
-                        };
-                    foreach (string pattern in chapterNumberPatterns)
-                    {
-                        var m_num = Regex.Match(t, pattern);
-                        if (m_num.Success)
-                        {
-                            string chapterNumber = m_num.Groups[1].Value;
-                            if (!char.IsDigit(chapterNumber[0])) chapterNumber = "" + Util.FromChineseNumber(chapterNumber);
-
-                            name = "atxt" + no + "_chapter" + chapterNumber + ".xhtml";
-                            nameOk = true;
-                            break;
-                        }
-                    }
-                }
-                //chapter numder end
-
-                //just keep ascii
-                if (!nameOk)
-                {
-                    string t = lowered;
-                    name = "_";
-                    for (int i = 0; i < t.Length; i++)
-                    {
-                        if (t[i] < 128)
-                        {
-                            if (t[i] == ' ')
-                            {
-                                if (i == t.Length - 1) continue;
-                                if (name.EndsWith('_')) continue;
-                                name += '_'; continue;
-                            }
-                            if (t[i] == '_' && name.EndsWith('_')) continue;
-                            name += t[i];
-                        }
-                    }
-                    if (name.EndsWith('_')) name = name.Substring(0, name.Length - 1);
-                    name = "atxt" + no + name + ".xhtml";
-                }
-                if (chaptitle.StartsWith("SVG"))
-                {
-                    items += string.Format("    <item id=\"{0}\" href=\"Text/{0}\" media-type=\"application/xhtml+xml\" properties=\"svg\"/>\n", name);
+                    items += string.Format("    <item id=\"{0}\" href=\"Text/{0}\" media-type=\"application/xhtml+xml\" properties=\"svg\"/>\n", src.xhtmlName);
                 }
                 else
                 {
-                    items += string.Format("    <item id=\"{0}\" href=\"Text/{0}\" media-type=\"application/xhtml+xml\"/>\n", name);
+                    items += string.Format("    <item id=\"{0}\" href=\"Text/{0}\" media-type=\"application/xhtml+xml\"/>\n", src.xhtmlName);
                 }
 
-                spine += string.Format("    <itemref idref=\"{0}\"/>\n", name);
+                spine += string.Format("    <itemref idref=\"{0}\"/>\n", src.xhtmlName);
 
-                txt_nums.Add(no);
-                txt_titles.Add(chaptitle);
-                xhtml_names.Add(name);
-                txt_paths.Add(f);
+                if (cc != null)
+                {
+                    src.title = cc.Convert(src.title);
+                }
             }
-            if (cc != null)
-            {
-                for (int i = 0; i < txt_titles.Count; i++)
-                    txt_titles[i] = cc.Convert(txt_titles[i]);
-            }
-
         }
+
         void GenContent()
         {
             GenHtml genHtml = new GenHtml(this);
@@ -262,23 +180,23 @@ namespace AeroNovelEpub
             {
                 patches = File.ReadAllLines(patchfile_path);
             }
-            for (int i = 0; i < txt_nums.Count; i++)
+            int i = 0;
+            foreach (var src in srcs)
             {
-                string f = txt_paths[i];
                 string xhtml;
-                if (f.EndsWith(".xhtml"))
+                if (src.ext == ".xhtml")
                 {
-                    xhtml = File.ReadAllText(f);
+                    xhtml = src.content;
                 }
                 else
                 {
-                    string[] lines = File.ReadAllLines(f);
+                    string[] lines = src.lines;
                     if (cc != null)
                     {
                         CCPatch(lines, patches, i);
                     }
                     string body = genHtml.Gen(lines);
-                    if (f.EndsWith("info.txt") || f.EndsWith("info.atxt"))
+                    if (src.path.EndsWith("info.txt") || src.path.EndsWith("info.atxt"))
                     {
                         body = Regex.Replace(body, "<p>(.*?：)", "<p class=\"atxt_keyvalue\">$1");
                         body = "<div class=\"atxt_info\" epub:type=\"acknowledgements\">\n" + body;
@@ -286,7 +204,7 @@ namespace AeroNovelEpub
                             body += "<p>AeroNovelTool EPUB生成器 by AE 生成于" + DateTime.Now + "</p>";
                         body += "</div>";
                     }
-                    if (f.EndsWith("EOB.txt") || f.EndsWith("EOB.atxt"))
+                    if (src.path.EndsWith("EOB.txt") || src.path.EndsWith("EOB.atxt"))
                     {
                         body = "<div class=\"atxt_info\">" + body +
                         "</div>";
@@ -294,9 +212,10 @@ namespace AeroNovelEpub
                     xhtml = xhtml_temp.Replace("{❤title}", title).Replace("{❤body}", body);
                 }
 
-                TextEpubItemFile item = new TextEpubItemFile("OEBPS/Text/" + xhtml_names[i], xhtml);
+                TextEpubItemFile item = new TextEpubItemFile("OEBPS/Text/" + srcs[i].xhtmlName, xhtml);
                 epub.items.Add(item);
-                Log.Info("Add xhtml: " + item.fullName + " (title:" + txt_titles[i] + ")");
+                Log.Info("Add xhtml: " + item.fullName + " (title:" + srcs[i].title + ")");
+                i++;
             }
 
         }
@@ -307,7 +226,7 @@ namespace AeroNovelEpub
             foreach (var patch in patches)
             {
                 string[] xx = patch.Split(',');
-                if (xx[0] == txt_nums[i])
+                if (xx[0] == srcs[i].no)
                 {
                     int line_num;
                     if (
@@ -417,8 +336,8 @@ namespace AeroNovelEpub
                         count++;
                         m = Regex.Match(line.Substring(m.Index + m.Length), "([0-9][0-9])");
                         if (!m.Success) throw new Exception();
-                        int index = txt_nums.IndexOf(m.Groups[1].Value);
-                        string link = "Text/" + xhtml_names[index];
+                        int index = srcs.FindIndex(src => src.no == m.Groups[1].Value);
+                        string link = "Text/" + srcs[index].xhtmlName;
                         if (refered.IndexOf(link) < 0) { refered.Add(link); }
                         r += $"<navPoint id=\"navPoint-{count}\" playOrder=\"{refered.IndexOf(link) + 1}\"><navLabel><text>{tag}</text></navLabel><content src=\"{link}\"/>\n";
                         if (template3 != "") r3 += $"<li><a href=\"{link}\">{tag}</a><ol>\n";
@@ -430,11 +349,11 @@ namespace AeroNovelEpub
                 if (m.Success)
                 {
                     count++;
-                    int index = txt_nums.IndexOf(m.Groups[1].Value);
-                    string link = "Text/" + xhtml_names[index];
+                    int index = srcs.FindIndex(src => src.no == m.Groups[1].Value);
+                    string link = "Text/" + srcs[index].xhtmlName;
                     string navTitle = Util.Trim(m.Groups[2].Value);
                     if (navTitle.Length == 0)
-                        navTitle = txt_titles[index];
+                        navTitle = srcs[index].title;
                     if (refered.IndexOf(link) < 0) { refered.Add(link); }
                     r += $"<navPoint id=\"navPoint-{count}\" playOrder=\"{refered.IndexOf(link) + 1}\"><navLabel><text>{navTitle}</text></navLabel><content src=\"{link}\"/></navPoint>\n";
                     if (template3 != "")
@@ -451,5 +370,116 @@ namespace AeroNovelEpub
             );
         }
     }
+
+    public class AtxtSource
+    {
+        public string content, path;
+        public string no, title, ext, xhtmlName;
+        public string[] lines
+        {
+            get
+            {
+                return content.Split(new[] { "\r\n", "\r", "\n" }, StringSplitOptions.None);
+            }
+        }
+        public AtxtSource(string path)
+        {
+            this.path=path;
+            Match m = Regex.Match(Path.GetFileNameWithoutExtension(path), AeroNovel.regStr_filename_noext);
+            ext = Path.GetExtension(path);
+            no = m.Groups[1].Value;
+            title = Util.UrlDecode(m.Groups[2].Value);
+            xhtmlName = MapFileName(no, title);
+            content = File.ReadAllText(path);
+        }
+        string MapFileName(string no, string readableName)
+        {
+            string lowered = readableName;
+            string numberMap = "１①Ⅰ";
+            foreach (char c in numberMap)
+            {
+                int block = (int)c - 1;
+                for (int i = 0; i <= 9; i++)
+                {
+                    char numberChar = Convert.ToChar(block + i);
+                    lowered = lowered.Replace(numberChar, (char)('0' + i));
+                }
+            }
+            string trimmed = lowered.Replace("　", "");
+            //Name dic start
+            Dictionary<string, string> name_dic = new Dictionary<string, string>
+                    {
+                        {"序章","prologue"},
+                        {"终章","epilogue"},
+                        {"終章","epilogue"},
+                        {"序幕","prologue"},
+                        {"尾声","epilogue"},
+                        {"简介","summary"},
+                        {"簡介","summary"},
+                        {"後記","postscript"},
+                        {"后记","postscript"},
+                        {"目錄","toc"},
+                        {"目录","toc"},
+                        {"间章","interlude"},
+                        {"幕间","interlude"}
+                    };
+
+            foreach (var k in name_dic)
+            {
+                if (trimmed.Contains(k.Key))
+                {
+                    return "atxt" + no + "_" + k.Value + ".xhtml";
+
+                }
+            }
+            //name dic end
+
+            //chapter number
+            {
+                string t = trimmed;
+                string[] chapterNumberPatterns = new string[]{
+                        "^第([一二三四五六七八九十百零\\d]{1,10})",
+                        "([一二三四五六七八九十百零\\d]{1,10})\\s",
+                        "([一二三四五六七八九十百零\\d]{1,10})章"
+                        };
+                foreach (string pattern in chapterNumberPatterns)
+                {
+                    var m_num = Regex.Match(t, pattern);
+                    if (m_num.Success)
+                    {
+                        string chapterNumber = m_num.Groups[1].Value;
+                        if (!char.IsDigit(chapterNumber[0])) chapterNumber = "" + Util.FromChineseNumber(chapterNumber);
+
+                        return "atxt" + no + "_chapter" + chapterNumber + ".xhtml";
+                    }
+                }
+            }
+            //chapter numder end
+
+            //just keep ascii
+            {
+                string t = lowered;
+                string name = "_";
+                for (int i = 0; i < t.Length; i++)
+                {
+                    if (t[i] < 128)
+                    {
+                        if (t[i] == ' ')
+                        {
+                            if (i == t.Length - 1) continue;
+                            if (name.EndsWith('_')) continue;
+                            name += '_'; continue;
+                        }
+                        if (t[i] == '_' && name.EndsWith('_')) continue;
+                        name += t[i];
+                    }
+                }
+                if (name.EndsWith('_')) name = name.Substring(0, name.Length - 1);
+                return "atxt" + no + name + ".xhtml";
+            }
+        }
+
+    }
+
 
 }
