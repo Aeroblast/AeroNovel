@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using System.Text.RegularExpressions;
 class Statistic
 {
+    const float translatedRawCharRateThreshold = 0.7f;
     public static void AnalyzeProject(string dir, int start = 0)
     {
         Console.WriteLine($"Analyze '{dir}' start from file {start}");
@@ -21,7 +22,9 @@ class Statistic
         }
         atxts.Sort();
         int totalLineCount = 0, totalCharCount = 0, totalRawCharCount = 0;
-        Console.WriteLine($"     line |  char |   raw |");
+        int totalTranslatedRaw = 0;
+        int totalTranslated = 0;
+        Console.WriteLine($"     line |  char |   raw |   c/r |");
         foreach (string f in atxts)
         {
             Match m = Regex.Match(Path.GetFileName(f), AeroNovel.regStr_filename);
@@ -29,12 +32,24 @@ class Statistic
             string no = m.Groups[1].Value;
             string[] lines = File.ReadAllLines(f);
             var (lineCount, charCount, rawCharCount) = Analyse(lines);
-            Console.WriteLine($"{no}:{lineCount.ToString().PadLeft(7, ' ')}|{charCount.ToString().PadLeft(7, ' ')}|{rawCharCount.ToString().PadLeft(7, ' ')}| {chaptitle}");
+            var rawCharRate = ((float)charCount) / rawCharCount;
+            Console.ResetColor();
+            if (rawCharCount > 100 && rawCharRate > translatedRawCharRateThreshold)
+            {
+                Console.ForegroundColor = ConsoleColor.Green;
+                totalTranslatedRaw += rawCharCount;
+                totalTranslated += charCount;
+            }
+            Console.WriteLine($"{no}:{lineCount.ToString().PadLeft(7, ' ')}|{charCount.ToString().PadLeft(7, ' ')}|{rawCharCount.ToString().PadLeft(7, ' ')}|{rawCharRate.ToString("0.00").PadLeft(7, ' ')}|{chaptitle}");
             totalLineCount += lineCount;
             totalCharCount += charCount;
             totalRawCharCount += rawCharCount;
         }
         Console.WriteLine($"All{totalLineCount.ToString().PadLeft(7, ' ')}|{totalCharCount.ToString().PadLeft(7, ' ')}|{totalRawCharCount.ToString().PadLeft(7, ' ')}|");
+        float translatedCharRate = ((float)totalTranslated) / totalTranslatedRaw;
+        float progressPercent = ((float)totalTranslatedRaw / totalRawCharCount) * 100;
+        float guessTotalTranslatedChar = translatedCharRate * totalRawCharCount;
+        Console.WriteLine($"估计进度 {progressPercent.ToString("0.00")}%");
     }
 
     public static (int lineCount, int charCount, int rawCharCount) Analyse(string[] lines)
