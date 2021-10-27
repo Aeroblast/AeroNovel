@@ -170,14 +170,30 @@ class Program
                     }
                     break;
                 case "atxt2inlinehtml":
+                    var outputPath = "";
+                    if (args.Length > 2)
+                        if (DirectoryExist(args[2]))
+                        {
+                            outputPath = args[2];
+                        }
+                        else
+                        {
+                            break;
+                        }
                     if (File.Exists(args[1]))
                     {
-                        Atxt2InlineHTML.ConvertSave(args[1], $"output_inlineHTML_{Path.GetFileNameWithoutExtension(args[1])}.txt");
+                        var outputFile = $"output_inlineHTML_{Path.GetFileNameWithoutExtension(args[1])}.txt";
+                        if (outputPath != "")
+                        {
+                            outputFile = Path.Combine(outputPath, outputFile);
+                        }
+                        Atxt2InlineHTML.ConvertSave(args[1], outputFile);
                         break;
                     }
                     if (Directory.Exists(args[1]))
                     {
-                        var outputPath = "output_inlineHTML_" + Path.GetFileName(args[1]);
+                        if (outputPath == "")
+                            outputPath = "output_inlineHTML_" + Path.GetFileName(args[1]);
                         Directory.CreateDirectory(outputPath);
                         Atxt2InlineHTML.ConvertSaveDir(args[1], outputPath);
                         break;
@@ -276,7 +292,7 @@ public class ProjectConfig
                     break;
             }
         }
-        joinCommands.Sort();
+        joinCommands.Sort((c1, c2) => c1.start.CompareTo(c2.start));
     }
 }
 public class JoinCommand
@@ -293,6 +309,11 @@ public class JoinCommand
         start = r.Groups[1].Value;
         end = r.Groups[2].Value;
         title = r.Groups[3].Value;
+    }
+
+    public override string ToString()
+    {
+        return $"JoinCommand: {start}-{end} {title}";
     }
 }
 

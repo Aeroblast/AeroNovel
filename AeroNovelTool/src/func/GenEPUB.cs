@@ -3,6 +3,7 @@ using System.IO;
 using System.Text.RegularExpressions;
 using System.IO.Compression;
 using System.Collections.Generic;
+using System.Linq;
 using AeroEpub.Epub;
 namespace AeroNovelEpub
 {
@@ -147,9 +148,26 @@ namespace AeroNovelEpub
                 var src = new AtxtSource(txt_path);
                 srcs.Add(src);
             }
-            if (config != null)
+            if (config != null && config.joinCommands.Count > 0)
             {
-
+                Log.Info("Combine Source. Join blank lines: " + config.joinBlankLine);
+                foreach (var cmbcmd in config.joinCommands)
+                {
+                    Log.Info($"{cmbcmd}");
+                    int startIndex = srcs.FindIndex(0, s => s.no.CompareTo(cmbcmd.start) == 0);
+                    int endIndex = srcs.FindIndex(0, s => s.no.CompareTo(cmbcmd.end) == 0);
+                    if (startIndex < 0 || endIndex < 0)
+                    {
+                        Log.Error("Failure: " + cmbcmd.ToString());
+                        continue;
+                    }
+                    string blankLines = new string('\n', config.joinBlankLine);
+                    var contentToJoin = srcs.GetRange(startIndex, endIndex - startIndex + 1).Select(s => s.content);
+                    string content = string.Join(blankLines, contentToJoin);
+                    AtxtSource combined = new AtxtSource($"{cmbcmd.start}.atxt", cmbcmd.start, cmbcmd.title, content);
+                    srcs.RemoveRange(startIndex, endIndex - startIndex + 1);
+                    srcs.Insert(startIndex, combined);
+                }
             }
             foreach (var src in srcs)
             {
@@ -384,13 +402,26 @@ namespace AeroNovelEpub
         }
         public AtxtSource(string path)
         {
-            this.path=path;
+            this.path = path;
             Match m = Regex.Match(Path.GetFileNameWithoutExtension(path), AeroNovel.regStr_filename_noext);
             ext = Path.GetExtension(path);
             no = m.Groups[1].Value;
             title = Util.UrlDecode(m.Groups[2].Value);
             xhtmlName = MapFileName(no, title);
             content = File.ReadAllText(path);
+        }
+        public AtxtSource(string dummy_path, string no, string title, string content)
+        {
+            this.path = dummy_path;
+            ext = ".atxt";
+            this.no = no;
+            this.title = Util.UrlDecode(title);
+            xhtmlName = MapFileName(no, title);
+            this.content = content;
+        }
+        public override string ToString()
+        {
+            return $"{no}{title}{ext}";
         }
         string MapFileName(string no, string readableName)
         {
