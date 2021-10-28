@@ -25,10 +25,10 @@ class Program
                                 case "--t2s":
                                     gen.cc_option = AeroNovelEpub.ChineseConvertOption.T2S; break;
                                 case "--no-info":
-                                    gen.addInfo = false;
+                                    gen.addInfo = ConfigValue.disable;
                                     break;
                                 case "--no-indent-adjust":
-                                    gen.indentAdjust = false;
+                                    gen.indentAdjust = ConfigValue.disable;
                                     break;
                             }
                         }
@@ -268,11 +268,19 @@ public class AeroNovel
     }
 
 }
+public enum ConfigValue
+{
+    unset = 0,
+    active = 1,
+    disable = 2
+}
 
 public class ProjectConfig
 {
     public List<JoinCommand> joinCommands = new List<JoinCommand>();
     public int joinBlankLine = 0;
+    public ConfigValue indentAdjust;
+    public ConfigValue addInfo;
 
     public ProjectConfig(string[] content)
     {
@@ -290,9 +298,34 @@ public class ProjectConfig
                 case "join_blank_line":
                     int.TryParse(arg, out joinBlankLine);
                     break;
+                case "indent_adjust":
+                    indentAdjust = GetConfigValue(arg); break;
+                case "add_info":
+                    addInfo = GetConfigValue(arg); break;
             }
         }
         joinCommands.Sort((c1, c2) => c1.start.CompareTo(c2.start));
+    }
+    ConfigValue GetConfigValue(string s)
+    {
+        s = s.ToLower();
+        switch (s)
+        {
+            case "true":
+            case "yes":
+            case "1":
+            case "active":
+            case "enable":
+                return ConfigValue.active;
+            case "false":
+            case "no":
+            case "0":
+            case "disable":
+                return ConfigValue.disable;
+            default:
+                return ConfigValue.unset;
+
+        }
     }
 }
 public class JoinCommand

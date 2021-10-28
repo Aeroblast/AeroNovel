@@ -240,7 +240,7 @@ namespace AeroNovelEpub
                     var first = (temptrimed.Length > 0) ? temptrimed[0] : '\0';
                     if (first == '（' || first == '「' || first == '『' || first == '〈' || first == '【' || first == '《' || first == '〔')
                     {
-                        if (context == null || context.indentAdjust)
+                        if (context == null || context.indentAdjust != ConfigValue.disable)
                             r = "<p class=\"atxt_drawout\">" + r + "</p>";
                     }
                     else

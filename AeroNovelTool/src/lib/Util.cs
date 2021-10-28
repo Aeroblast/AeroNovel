@@ -137,6 +137,13 @@ class Util
         ;
     }
 
+    public static ConfigValue GetConfigValue(ConfigValue higher,ConfigValue lower){
+        if(higher!=ConfigValue.unset){
+            return higher;
+        }
+        return lower;
+    }
+
 }
 
 

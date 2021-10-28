@@ -30,8 +30,8 @@ namespace AeroNovelEpub
         }
         public List<string> img_names = new List<string>();
         public ChineseConvertOption cc_option;
-        public bool indentAdjust = true;
-        public bool addInfo = true;
+        public ConfigValue indentAdjust = 0;
+        public ConfigValue addInfo = 0;
         ChineseConvert cc;
         public ProjectConfig config;
         public GenEpub()
@@ -47,6 +47,8 @@ namespace AeroNovelEpub
             {
                 config = new ProjectConfig(File.ReadAllLines(Path.Combine(dir, "config.txt")));
                 Log.Info("Read config.txt");
+                indentAdjust = Util.GetConfigValue(indentAdjust, config.indentAdjust);
+                addInfo = Util.GetConfigValue(addInfo, config.addInfo);
             }
             if (cc_option == ChineseConvertOption.T2S)
             {
@@ -54,9 +56,9 @@ namespace AeroNovelEpub
                 cc = new ChineseConvert();
                 cc.Prepare();
             }
-            if (!indentAdjust)
+            if (indentAdjust == ConfigValue.disable)
                 Log.Note("Option: No indent adjustion.");
-            if (!addInfo)
+            if (addInfo == ConfigValue.disable)
                 Log.Note("Option: Do not add generation info.");
 
             this.dir = dir;
@@ -218,7 +220,7 @@ namespace AeroNovelEpub
                     {
                         body = Regex.Replace(body, "<p>(.*?：)", "<p class=\"atxt_keyvalue\">$1");
                         body = "<div class=\"atxt_info\" epub:type=\"acknowledgements\">\n" + body;
-                        if (addInfo)
+                        if (addInfo != ConfigValue.disable)
                             body += "<p>AeroNovelTool EPUB生成器 by AE 生成于" + DateTime.Now + "</p>";
                         body += "</div>";
                     }
