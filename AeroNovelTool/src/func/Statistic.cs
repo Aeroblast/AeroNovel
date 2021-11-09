@@ -21,35 +21,55 @@ class Statistic
 
         }
         atxts.Sort();
-        int totalLineCount = 0, totalCharCount = 0, totalRawCharCount = 0;
+        int totalLineCount = 0, totalTranslatedCount = 0, totalRawCount = 0;
         int totalTranslatedRaw = 0;
         int totalTranslated = 0;
-        Console.WriteLine($"     line |  char |   raw |   c/r |");
+        List<AnalyseResult> results = new List<AnalyseResult>();
+
         foreach (string f in atxts)
         {
             Match m = Regex.Match(Path.GetFileName(f), AeroNovel.regStr_filename);
-            string chaptitle = m.Groups[2].Value;
+            string title = m.Groups[2].Value;
             string no = m.Groups[1].Value;
             string[] lines = File.ReadAllLines(f);
-            var (lineCount, charCount, rawCharCount) = Analyse(lines);
-            var rawCharRate = ((float)charCount) / rawCharCount;
+            var (lineCount, translatedCount, rawCount) = Analyse(lines);
+            var translatedRawRate = ((float)translatedCount) / rawCount;
+
+            if (rawCount > 100 && translatedRawRate > translatedRawCharRateThreshold)
+            {
+                totalTranslatedRaw += rawCount;
+                totalTranslated += translatedCount;
+            }
+            totalLineCount += lineCount;
+            totalTranslatedCount += translatedCount;
+            totalRawCount += rawCount;
+
+            results.Add(new AnalyseResult(lineCount, translatedCount, rawCount, translatedRawRate, title, no));
+        }
+        Console.WriteLine($"     line |  trld |   raw |   t/r |  len% |");
+        foreach (var r in results)
+        {
             Console.ResetColor();
-            if (rawCharCount > 100 && rawCharRate > translatedRawCharRateThreshold)
+            if (r.rawCount > 100 && r.translatedRawRate > translatedRawCharRateThreshold)
             {
                 Console.ForegroundColor = ConsoleColor.Green;
-                totalTranslatedRaw += rawCharCount;
-                totalTranslated += charCount;
             }
-            Console.WriteLine($"{no}:{lineCount.ToString().PadLeft(7, ' ')}|{charCount.ToString().PadLeft(7, ' ')}|{rawCharCount.ToString().PadLeft(7, ' ')}|{rawCharRate.ToString("0.00").PadLeft(7, ' ')}|{chaptitle}");
-            totalLineCount += lineCount;
-            totalCharCount += charCount;
-            totalRawCharCount += rawCharCount;
+            var rawTotalPercent = r.rawCount / (float)totalRawCount * 100;
+            Console.WriteLine(
+                $"{r.no}:{r.lineCount.ToString().PadLeft(7, ' ')}|{r.translatedCount.ToString().PadLeft(7, ' ')}|"
+                + $"{r.rawCount.ToString().PadLeft(7, ' ')}|{r.translatedRawRate.ToString("0.00").PadLeft(7, ' ')}"
+                + $"|{rawTotalPercent.ToString("0.0").PadLeft(6, ' ')}%|{r.title}"
+            );
+
         }
-        Console.WriteLine($"All{totalLineCount.ToString().PadLeft(7, ' ')}|{totalCharCount.ToString().PadLeft(7, ' ')}|{totalRawCharCount.ToString().PadLeft(7, ' ')}|");
+        Console.ResetColor();
+        Console.WriteLine($"All{totalLineCount.ToString().PadLeft(7, ' ')}|{totalTranslatedCount.ToString().PadLeft(7, ' ')}|{totalRawCount.ToString().PadLeft(7, ' ')}|");
         float translatedCharRate = ((float)totalTranslated) / totalTranslatedRaw;
-        float progressPercent = ((float)totalTranslatedRaw / totalRawCharCount) * 100;
-        float guessTotalTranslatedChar = translatedCharRate * totalRawCharCount;
-        Console.WriteLine($"估计进度 {progressPercent.ToString("0.00")}%");
+        float progressPercent = ((float)totalTranslatedRaw / totalRawCount) * 100;
+        float guessTotalTranslatedChar = translatedCharRate * totalRawCount;
+        Console.WriteLine($"已处理生肉{totalTranslatedRaw}字符，产生{totalTranslated}字符。");
+        Console.WriteLine($"估计进度 {progressPercent.ToString("0.00")}%。");
+        Console.WriteLine($"字符比率{translatedCharRate.ToString("0.00")}，预计总处理后字数{guessTotalTranslatedChar.ToString("0")}。");
     }
 
     public static (int lineCount, int charCount, int rawCharCount) Analyse(string[] lines)
@@ -175,6 +195,7 @@ class Statistic
 
                 }
             } while (m.Success);
+            r = Regex.Replace(r, "<.*?>", "");
             cleaned += r + "\n";
             charCount += r.Length;
         }
@@ -209,4 +230,6 @@ class Statistic
 
         }
     }
+
+    record AnalyseResult(int lineCount, int translatedCount, int rawCount, float translatedRawRate, string title, string no);
 }
