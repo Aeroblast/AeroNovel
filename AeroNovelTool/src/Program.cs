@@ -71,14 +71,73 @@ class Program
                     GenTxt.Gen(args[1]);
                     break;
                 case "bbcode":
-                    if (!DirectoryExist(args[1])) return;
-                    if (args.Length >= 3)
-                        if (DirectoryExist(args[2]))
+                    {
+                        var outputPath = "";
+                        if (args.Length > 2)
+                            if (DirectoryExist(args[2]))
+                            {
+                                outputPath = args[2];
+                            }
+                            else
+                            {
+                                break;
+                            }
+                        if (File.Exists(args[1]))
                         {
-                            GenBbcode.output_path = Path.Combine(args[2], GenBbcode.output_path);
-                            GenBbcode.output_path_single = Path.Combine(args[2], GenBbcode.output_path_single);
+                            var outputFile = $"output_bbcode_{Path.GetFileNameWithoutExtension(args[1])}.txt";
+                            if (outputPath != "")
+                            {
+                                outputFile = Path.Combine(outputPath, outputFile);
+                            }
+                            GenBbcode.ConvertFile(args[1], outputFile);
+                            break;
                         }
-                    GenBbcode.GenSingle(args[1]);
+                        if (Directory.Exists(args[1]))
+                        {
+                            var outputFile = $"output_bbcode_{Path.GetFileNameWithoutExtension(args[1])}.txt";
+                            if (outputPath != "")
+                            {
+                                outputFile = Path.Combine(outputPath, outputFile);
+                            }
+                            GenBbcode.ConvertDir(args[1], outputFile);
+                            break;
+                        }
+                        Log.Warn("Nothing happens. Make sure there is a file or folder to process.");
+
+                    }
+                    break;
+                case "inlinehtml":
+                    {
+                        var outputPath = "";
+                        if (args.Length > 2)
+                            if (DirectoryExist(args[2]))
+                            {
+                                outputPath = args[2];
+                            }
+                            else
+                            {
+                                break;
+                            }
+                        if (File.Exists(args[1]))
+                        {
+                            var outputFile = $"output_inlineHTML_{Path.GetFileNameWithoutExtension(args[1])}.txt";
+                            if (outputPath != "")
+                            {
+                                outputFile = Path.Combine(outputPath, outputFile);
+                            }
+                            GenInlineHTML.ConvertFile(args[1], outputFile);
+                            break;
+                        }
+                        if (Directory.Exists(args[1]))
+                        {
+                            if (outputPath == "")
+                                outputPath = "output_inlineHTML_" + Path.GetFileName(args[1]);
+                            Directory.CreateDirectory(outputPath);
+                            GenInlineHTML.ConvertDir(args[1], outputPath);
+                            break;
+                        }
+                        Log.Warn("Nothing happens. Make sure there is a file or folder to process.");
+                    }
                     break;
                 case "epub2comment":
                     if (!FileExist(args[1])) return;
@@ -111,10 +170,6 @@ class Program
                     if (!FileExist(args[1])) return;
                     Html2Comment.Proc(args[1]);
                     break;
-                case "atxt2bbcode":
-                    if (!FileExist(args[1])) return;
-                    GenBbcode.Proc(args[1]);
-                    break;
                 case "kakuyomu2comment":
                     {
                         var xhtml = WebSource.KakuyomuEpisode(args[1]);
@@ -143,8 +198,6 @@ class Program
                             foreach (var xhtml in xhtmls)
                                 Save(xhtml, dirname);
                         }
-
-
                     }
                     break;
                 case "atxtcc":
@@ -166,39 +219,7 @@ class Program
                         {
                             //Not Implemented
                         }
-
                     }
-                    break;
-                case "atxt2inlinehtml":
-                    var outputPath = "";
-                    if (args.Length > 2)
-                        if (DirectoryExist(args[2]))
-                        {
-                            outputPath = args[2];
-                        }
-                        else
-                        {
-                            break;
-                        }
-                    if (File.Exists(args[1]))
-                    {
-                        var outputFile = $"output_inlineHTML_{Path.GetFileNameWithoutExtension(args[1])}.txt";
-                        if (outputPath != "")
-                        {
-                            outputFile = Path.Combine(outputPath, outputFile);
-                        }
-                        Atxt2InlineHTML.ConvertSave(args[1], outputFile);
-                        break;
-                    }
-                    if (Directory.Exists(args[1]))
-                    {
-                        if (outputPath == "")
-                            outputPath = "output_inlineHTML_" + Path.GetFileName(args[1]);
-                        Directory.CreateDirectory(outputPath);
-                        Atxt2InlineHTML.ConvertSaveDir(args[1], outputPath);
-                        break;
-                    }
-                    Log.Warn("Nothing happens. Make sure there is a file or folder to process.");
                     break;
                 case "analyze":
                     if (Directory.Exists(args[1]))
@@ -268,85 +289,3 @@ public class AeroNovel
     }
 
 }
-public enum ConfigValue
-{
-    unset = 0,
-    active = 1,
-    disable = 2
-}
-
-public class ProjectConfig
-{
-    public List<JoinCommand> joinCommands = new List<JoinCommand>();
-    public int joinBlankLine = 0;
-    public ConfigValue indentAdjust;
-    public ConfigValue addInfo;
-
-    public ProjectConfig(string[] content)
-    {
-        foreach (var line in content)
-        {
-            var sep = line.IndexOf(':');
-            if (sep < 0) continue;
-            var cmd = line.Substring(0, sep);
-            var arg = line.Substring(sep + 1);
-            switch (cmd)
-            {
-                case "join":
-                    joinCommands.Add(new JoinCommand(arg));
-                    break;
-                case "join_blank_line":
-                    int.TryParse(arg, out joinBlankLine);
-                    break;
-                case "indent_adjust":
-                    indentAdjust = GetConfigValue(arg); break;
-                case "add_info":
-                    addInfo = GetConfigValue(arg); break;
-            }
-        }
-        joinCommands.Sort((c1, c2) => c1.start.CompareTo(c2.start));
-    }
-    ConfigValue GetConfigValue(string s)
-    {
-        s = s.ToLower();
-        switch (s)
-        {
-            case "true":
-            case "yes":
-            case "1":
-            case "active":
-            case "enable":
-                return ConfigValue.active;
-            case "false":
-            case "no":
-            case "0":
-            case "disable":
-                return ConfigValue.disable;
-            default:
-                return ConfigValue.unset;
-
-        }
-    }
-}
-public class JoinCommand
-{
-    public string start, end;
-    public bool used = false;
-    public string title;
-    static Regex regex = new Regex("([0-9]{2})-([0-9]{2})(.*)");
-
-    public JoinCommand(string cmd)
-    {
-        var r = regex.Match(cmd);
-        if (!r.Success) throw new Exception("Join Command Fail: " + cmd);
-        start = r.Groups[1].Value;
-        end = r.Groups[2].Value;
-        title = r.Groups[3].Value;
-    }
-
-    public override string ToString()
-    {
-        return $"JoinCommand: {start}-{end} {title}";
-    }
-}
-

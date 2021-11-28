@@ -3,47 +3,43 @@ using System.IO;
 using System.Text;
 using System.Collections.Generic;
 using System.Text.RegularExpressions;
-class Atxt2InlineHTML
+class GenInlineHTML
 {
-    public Atxt2InlineHTML(string dir)
+    AtxtProject project;
+    public GenInlineHTML(string dir)
     {
-        ReadConfig(dir);
-        ReadWebImages(dir);
+        project = new AtxtProject(dir);
+        project.LoadMacro();
+        project.LoadWebImages();
+        project.CollectSource();
     }
-    public static string Convert(string path)
+    public static void ConvertFile(string path, string outputPath)
     {
         string dir = Path.GetDirectoryName(path);
-        var inst = new Atxt2InlineHTML(dir);
-        return inst.Process(path);
-    }
-    public static void ConvertSave(string path, string outputPath)
-    {
-        string dir = Path.GetDirectoryName(path);
-        var inst = new Atxt2InlineHTML(dir);
-        string r = inst.Process(path);
+        var inst = new GenInlineHTML(dir);
+        string r = inst.GenContent(File.ReadAllLines(path));
         File.WriteAllText(outputPath, r);
         Log.Note("Saved: " + outputPath);
     }
-    public static void ConvertSaveDir(string path, string outputDir)
+    public static void ConvertDir(string path, string outputDir)
     {
-        var inst = new Atxt2InlineHTML(path);
-        foreach (var f in Directory.GetFiles(path))
+        var inst = new GenInlineHTML(path);
+        foreach (var f in inst.project.srcs)
         {
-            if (AeroNovel.isIndexedTxt(f))
-            {
-                string r = inst.Process(f);
-                var outputPath = Path.Combine(outputDir, Path.GetFileNameWithoutExtension(f) + ".txt");
-                File.WriteAllText(outputPath, r);
-                Log.Note("Saved: " + outputPath);
-            }
+            if (f.title == "EOB") { continue; }
+            if (f.title.StartsWith("SVG")) { continue; }
+            string r = inst.GenContent(f.lines);
+            var outputPath = Path.Combine(outputDir, Path.GetFileNameWithoutExtension(f.xhtmlName) + ".txt");
+            File.WriteAllText(outputPath, r);
+            Log.Note("Saved: " + outputPath);
+
         }
     }
-    public string Process(string path)
-    {
-        string[] atxt = File.ReadAllLines(path);
-        return "<div style=\"line-height:1.5;text-align:justify;\">\n" + GenContent(atxt) + "</div>";
-    }
     public string GenContent(string[] txt)
+    {
+        return "<div style=\"line-height:1.5;text-align:justify;\">\n" + GenBody(txt) + "</div>";
+    }
+    public string GenBody(string[] txt)
     {
         List<string> notes = new List<string>();
         const string reg_noteref = "\\[note\\]";
@@ -105,11 +101,11 @@ class Atxt2InlineHTML
             string r = EncodeHTML(line);
             Match m = Regex.Match("", "1");
 
-            if (macros != null)
+            if (project.macros != null)
             {
                 do
                 {
-                    foreach (var pair in macros)
+                    foreach (var pair in project.macros)
                     {
                         m = Regex.Match(r, pair.Key);
                         if (m.Success)
@@ -142,9 +138,9 @@ class Atxt2InlineHTML
                             case reg_illu2:
                                 {
                                     var a = m.Groups[1].Value;
-                                    if (web_images.ContainsKey(a))
+                                    if (project.web_images.ContainsKey(a))
                                     {
-                                        r = r.Replace(m.Value, "<p style=\"text-align:center\"><img src=\"" + web_images[a] + "\" style=\"max-width:100%;max-height:90vh\"></p>");
+                                        r = r.Replace(m.Value, "<p style=\"text-align:center\"><img src=\"" + project.web_images[a] + "\" style=\"max-width:100%;max-height:90vh\"></p>");
                                     }
                                     else
                                     {
@@ -159,9 +155,9 @@ class Atxt2InlineHTML
                             case reg_imgchar:
                                 {
                                     var a = m.Groups[1].Value;
-                                    if (web_images.ContainsKey(a))
+                                    if (project.web_images.ContainsKey(a))
                                     {
-                                        r = r.Replace(m.Value, "<img src=\"" + web_images[a] + "\">");
+                                        r = r.Replace(m.Value, "<img src=\"" + project.web_images[a] + "\">");
                                     }
                                     else
                                     {
@@ -206,7 +202,7 @@ class Atxt2InlineHTML
             {
                 var temptrimed = Util.TrimTag(r);
                 var first = (temptrimed.Length > 0) ? temptrimed[0] : '\0';
-                if (first == '（' || first == '「' || first == '『' || first == '〈' || first == '【' || first == '《' || first == '〔')
+                if (Util.IsNeedAdjustIndent(first))
                 {
                     r = "<p style=\"text-indent:1.5em;margin:0;\">" + r + "</p>";
                 }
@@ -232,68 +228,4 @@ class Atxt2InlineHTML
         }
         return s;
     }
-    Dictionary<string, string> web_images;
-    void ReadWebImages(string dir)
-    {
-        web_images = new Dictionary<string, string>();
-        string path = Path.Combine(dir, "web_images");
-        if (File.Exists(path + ".md"))
-        {
-            Log.Note("图床链接配置文档读取成功：" + path + ".md");
-            string[] a = File.ReadAllLines(path + ".md");
-            Regex md_img = new Regex("\\[(.+?)\\]\\((.+?)\\)");
-            foreach (var x in a)
-            {
-                var b = md_img.Match(x);
-                if (b.Success)
-                {
-                    web_images.Add(b.Groups[1].Value, b.Groups[2].Value);
-                }
-            }
-        }
-        if (File.Exists(path + ".txt"))
-        {
-            Log.Note("图床链接配置文档读取成功：" + path + ".txt");
-            string[] a = File.ReadAllLines(path + ".txt");
-            foreach (var x in a)
-            {
-                var b = x.Split(' ');
-                if (b.Length > 1)
-                {
-                    web_images.Add(b[0], b[1]);
-                }
-            }
-        }
-
-    }
-    Dictionary<string, string> macros;
-    void ReadConfig(string dir)
-    {
-        if (File.Exists(Path.Combine(dir, "macros.txt")))
-        {
-            Log.Info("Read macros.txt");
-            string[] macros_raw = File.ReadAllLines(Path.Combine(dir, "macros.txt"));
-            macros = new Dictionary<string, string>();
-            foreach (string macro in macros_raw)
-            {
-                string[] s = macro.Split('\t');
-                if (s.Length < 2)
-                {
-                    Log.Warn("Macro defination is not complete. Use tab to separate: " + macro);
-                }
-                else if (s.Length == 2)
-                {
-                    macros.Add(s[0], s[1]);
-                }
-                else//length>2
-                {
-                    macros.Add(s[0], s[2]);
-                }
-
-            }
-
-        }
-    }
-
-
 }

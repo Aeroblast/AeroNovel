@@ -137,8 +137,20 @@ class Util
         ;
     }
 
-    public static ConfigValue GetConfigValue(ConfigValue higher,ConfigValue lower){
-        if(higher!=ConfigValue.unset){
+    public static bool IsNeedAdjustIndent(char c)
+    {
+        string s = "（「『〈【《〔";
+        foreach (char sc in s)
+        {
+            if (sc == c) return true;
+        }
+        return false;
+    }
+
+    public static ConfigValue GetConfigValue(ConfigValue higher, ConfigValue lower)
+    {
+        if (higher != ConfigValue.unset)
+        {
             return higher;
         }
         return lower;

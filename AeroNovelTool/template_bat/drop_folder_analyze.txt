@@ -1,0 +1,4 @@
+%~d0
+cd %~dp0
+AeroNovelTool analyze %1 09
+pause

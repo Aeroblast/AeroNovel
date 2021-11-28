@@ -6,177 +6,53 @@ using System.IO.Compression;
 using System.Collections.Generic;
 class GenBbcode
 {
-    public static string output_path = "output_bbcode/";
-    public static string output_path_single = "output_bbcode_single.txt";
-    static List<int> cat_page = new List<int>();
-    static Dictionary<string, string> web_images = new Dictionary<string, string>();
-    static Dictionary<string, string> macros;
+
+    AtxtProject project;
     static string[] additional_msg = new string[] { };
-    public static void Proc(string path)
+
+    public GenBbcode(string dir)
     {
-        string[] lines = File.ReadAllLines(path);
-        string body = Body(lines);
-        string outpath = "output_bbcode.txt";
-        File.WriteAllText(outpath, body);
-        Log.Note("Output: " + outpath);
+        project = new AtxtProject(dir);
+        project.LoadMacro();
+        project.LoadWebImages();
+        project.CollectSource();
     }
-    public static void Gen(string dir)
+    public static void ConvertFile(string path, string outputPath)
     {
-        string[] files = Directory.GetFiles(dir);
-        Directory.CreateDirectory(output_path);
-        ReadWebImages(dir);
-        ReadConfig(dir);
-        foreach (string f in files)
-        {
-            Match m = Regex.Match(Path.GetFileName(f), AeroNovel.regStr_filename);
-            if (!m.Success) continue;
-            //string no = m.Groups[1].Value;
-            string chaptitle = m.Groups[2].Value;
-            string[] lines = File.ReadAllLines(f);
-            string body = Body(lines);
-            string outpath = output_path + Path.GetFileNameWithoutExtension(f) + ".txt";
-            File.WriteAllText(outpath, body);
-            Console.WriteLine(outpath);
-        }
+        string dir = Path.GetDirectoryName(path);
+        var inst = new GenBbcode(dir);
+        var r = inst.GenBody(File.ReadAllLines(path));
+        File.WriteAllText(outputPath, r);
+        Log.Note("Saved: " + outputPath);
     }
-    public static void GenSingle(string dir)
+    public static void ConvertDir(string path, string outputPath)
+    {
+        var inst = new GenBbcode(path);
+        string r = inst.GenSingle();
+        File.WriteAllText(outputPath, r);
+        Log.Note("Saved: " + outputPath);
+    }
+    public string GenSingle()
     {
         Log.Note("bbcode single file generation.");
-        string[] files = Directory.GetFiles(dir);
-        ReadWebImages(dir);
-        ReadConfig(dir);
-        string result = "";
-        List<string> atxt = new List<string>();
-        foreach (string f in files)
+        StringBuilder stringBuilder = new StringBuilder();
+        foreach (var f in project.srcs)
         {
-            Match m = Regex.Match(Path.GetFileName(f), AeroNovel.regStr_filename);
-            if (!m.Success) continue;
-            atxt.Add(f);
-        }
-        atxt.Sort();
-
-        int index = 0;
-        //string toc = "";
-        foreach (var f in atxt)
-        {
-            Log.Info("Processing " + Path.GetFileName(f));
-            Match m = Regex.Match(Path.GetFileName(f), AeroNovel.regStr_filename);
-            int no = int.Parse(m.Groups[1].Value);
-            string chaptitle = m.Groups[2].Value;
-            string[] lines = File.ReadAllLines(f);
-            string body = Body(lines);
-            if (chaptitle == "info")
+            Log.Info("Processing " + f.title);
+            if (f.title == "EOB") { continue; }
+            if (f.title.StartsWith("SVG")) { continue; }
+            string body = GenBody(f.lines);
+            if (f.title == "info")
             {
                 body = Regex.Replace(body, "(^|[\\n])　　", "$1");
             }
-            result += body;
-            bool contains = false;
-            foreach (int i in cat_page) if (i == no) { contains = true; break; }
-            if (!contains)
-            {
-                index++;
-                //toc += string.Format("[#{0}]【{0}】{1}\r\n", index, chaptitle);
-                //result += "[page]\r\n";
-                //result += "【第" + (index + 1) + "页】\r\n";
-                result += "======================\r\n";
-            }
-
+            stringBuilder.Append(body);
+            stringBuilder.Append("======================\r\n");
         }
-        //File.WriteAllText("bbcode_output.txt", "[index]\r\n" + toc + "[/index]\r\n" + result);
-        File.WriteAllText(output_path_single, result);
-        Log.Note("Output:" + output_path_single);
-
+        return stringBuilder.ToString();
     }
-    static void ReadWebImages(string dir)
-    {
-        web_images = new Dictionary<string, string>();
-        string path = Path.Combine(dir, "web_images");
-        if (File.Exists(path + ".md"))
-        {
-            Log.Note("图床链接配置文档读取成功：" + path + ".md");
-            string[] a = File.ReadAllLines(path + ".md");
-            Regex md_img = new Regex("\\[(.+?)\\]\\((.+?)\\)");
-            foreach (var x in a)
-            {
-                var b = md_img.Match(x);
-                if (b.Success)
-                {
-                    web_images.Add(b.Groups[1].Value, b.Groups[2].Value);
-                }
-            }
-        }
-        if (File.Exists(path + ".txt"))
-        {
-            Log.Note("图床链接配置文档读取成功：" + path + ".txt");
-            string[] a = File.ReadAllLines(path + ".txt");
-            foreach (var x in a)
-            {
-                var b = x.Split(' ');
-                if (b.Length > 1)
-                {
-                    web_images.Add(b[0], b[1]);
-                }
-            }
-        }
 
-    }
-    static void ReadConfig(string dir)
-    {
-        string path = Path.Combine(dir, "web_config.txt");
-        if (File.Exists(path))
-        {
-            string[] a = File.ReadAllLines(path);
-            foreach (var x in a)
-            {
-                var s = x.Split('=');
-                var b = Util.Trim(s[0]);
-                switch (b)
-                {
-                    case "cat_page":
-                        {
-                            var i = s[1].Split(",");
-                            foreach (var ii in i)
-                            {
-                                var c = Util.Trim(ii);
-                                if (c != "") { cat_page.Add(int.Parse(c)); }
-                            }
-                        }
-                        break;
-                    case "additional_msg":
-                        {
-                            additional_msg = s[1].Split(' ');
-                        }
-                        break;
-                }
-
-            }
-        }
-        if (File.Exists(Path.Combine(dir, "macros.txt")))
-        {
-            Log.Info("Read macros.txt");
-            string[] macros_raw = File.ReadAllLines(Path.Combine(dir, "macros.txt"));
-            macros = new Dictionary<string, string>();
-            foreach (string macro in macros_raw)
-            {
-                string[] s = macro.Split('\t');
-                if (s.Length < 2)
-                {
-                    Log.Warn("Macro defination is not complete. Use tab to separate: " + macro);
-                }
-                else if (s.Length == 2)
-                {
-                    macros.Add(s[0], s[1]);
-                }
-                else//length>2
-                {
-                    macros.Add(s[0], s[2]);
-                }
-
-            }
-
-        }
-    }
-    public static string Body(string[] txt)
+    string GenBody(string[] txt)
     {
 
         const string reg_noteref = "\\[note\\]";
@@ -235,11 +111,11 @@ class GenBbcode
             Match m = Regex.Match("", "1");
 
             //macros
-            if (macros != null)
+            if (project.macros != null)
             {
                 do
                 {
-                    foreach (var pair in macros)
+                    foreach (var pair in project.macros)
                     {
                         m = Regex.Match(r, pair.Key);
                         if (m.Success)
@@ -251,8 +127,8 @@ class GenBbcode
                     }
                 } while (m.Success);
             }
-            if (line.StartsWith("##")) continue;
-            if (line.StartsWith("#HTML")) continue;
+            if (r.StartsWith("##")) continue;
+            if (r.StartsWith("#HTML")) continue;
 
             //regular
             do
@@ -271,9 +147,9 @@ class GenBbcode
                             case reg_imgchar:
                                 {
                                     var a = m.Groups[1].Value;
-                                    if (web_images.ContainsKey(a))
+                                    if (project.web_images.ContainsKey(a))
                                     {
-                                        r = r.Replace(m.Value, "[img]" + web_images[a] + "[/img]");
+                                        r = r.Replace(m.Value, "[img]" + project.web_images[a] + "[/img]");
                                     }
                                     else
                                     {
@@ -295,21 +171,16 @@ class GenBbcode
             } while (m.Success);
             string checkhead = Regex.Replace(r, "\\[.*?\\]", "");
             if (checkhead.Length > 0)
-                switch (checkhead[0])
+            {
+                if (Util.IsNeedAdjustIndent(checkhead[0]))
                 {
-                    case '「':
-                    case '『':
-                    case '＜':
-                    case '《':
-                    case '【':
-                    case '（':
-                    case '〔':
-                        r = "　" + r;
-                        break;
-                    default:
-                        r = "　　" + r;
-                        break;
+                    r = "　" + r;
                 }
+                else
+                {
+                    r = "　　" + r;
+                }
+            }
             if (r == "　　" || r == "")
             {
                 addmessagecount++;

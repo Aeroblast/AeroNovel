@@ -238,7 +238,7 @@ namespace AeroNovelEpub
                 {
                     var temptrimed = Util.TrimTag(r);
                     var first = (temptrimed.Length > 0) ? temptrimed[0] : '\0';
-                    if (first == '（' || first == '「' || first == '『' || first == '〈' || first == '【' || first == '《' || first == '〔')
+                    if (Util.IsNeedAdjustIndent(first))
                     {
                         if (context == null || context.indentAdjust != ConfigValue.disable)
                             r = "<p class=\"atxt_drawout\">" + r + "</p>";
