@@ -38,9 +38,17 @@ class GenBbcode
         StringBuilder stringBuilder = new StringBuilder();
         foreach (var f in project.srcs)
         {
+            if (f.title == "EOB")
+            {
+                Log.Info("Skip " + f.title + " (End of Book)");
+                continue;
+            }
+            if (f.ext.EndsWith("html"))
+            {
+                Log.Info("Skip HTML File: " + f.title);
+                continue;
+            }
             Log.Info("Processing " + f.title);
-            if (f.title == "EOB") { continue; }
-            if (f.title.StartsWith("SVG")) { continue; }
             string body = GenBody(f.lines);
             if (f.title == "info")
             {

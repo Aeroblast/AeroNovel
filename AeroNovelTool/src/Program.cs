@@ -8,7 +8,8 @@ class Program
     static void Main(string[] args)
     {
         Console.ForegroundColor = ConsoleColor.Cyan;
-        Console.WriteLine("AeroNovelTool by AE Ver." + Version.date);
+        Console.WriteLine("AeroNovelTool Ver." + Version.date);
+        Console.WriteLine("https://github.com/Aeroblast/AeroNovel");
         Console.ForegroundColor = ConsoleColor.White;
         if (args.Length >= 2)
         {
@@ -251,13 +252,12 @@ class Program
     const string usage = @"Usage:
 epub 【项目文件夹】 【输出目录(可选)】
 bbcode 【项目文件夹】 【输出目录(可选)】
-atxt2bbcode 【atxt文件】
+inlinehtml　【atxt或项目文件夹】 【输出目录(可选)】
 epub2comment 【生肉epub文件】 【可选选项...】
 　　选项'Glossary' 【名词表文件】
 　　选项'BlackTranslationMagic' 
-atxt2inlinehtml　【atxt或项目文件夹】
 atxtcc 【txt文件】 【't2s'】
-html2comment 【xhtml文件】
+analyze 【项目文件夹】
 ";
     static bool FileExist(string path)
     {

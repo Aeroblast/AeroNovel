@@ -29,7 +29,7 @@ class GenInlineHTML
             if (f.title == "EOB") { continue; }
             if (f.title.StartsWith("SVG")) { continue; }
             string r = inst.GenContent(f.lines);
-            var outputPath = Path.Combine(outputDir, Path.GetFileNameWithoutExtension(f.xhtmlName) + ".txt");
+            var outputPath = Path.Combine(outputDir, f.no + f.title + ".txt");
             File.WriteAllText(outputPath, r);
             Log.Note("Saved: " + outputPath);
 

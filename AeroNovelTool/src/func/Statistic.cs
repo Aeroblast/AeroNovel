@@ -30,6 +30,10 @@ class Statistic
         {
             Match m = Regex.Match(Path.GetFileName(f), AeroNovel.regStr_filename);
             string title = m.Groups[2].Value;
+            if (title == "EOB")
+            {
+                continue;
+            }
             string no = m.Groups[1].Value;
             string[] lines = File.ReadAllLines(f);
             var (lineCount, translatedCount, rawCount) = Analyse(lines);
