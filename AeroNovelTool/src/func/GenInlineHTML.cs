@@ -9,7 +9,7 @@ class GenInlineHTML
     public GenInlineHTML(string dir)
     {
         project = new AtxtProject(dir);
-        project.LoadMacro();
+        project.LoadMacro(AtxtProject.MacroMode.InlineHTML);
         project.LoadWebImages();
         project.CollectSource();
     }
@@ -50,13 +50,12 @@ class GenInlineHTML
         const string reg_imgchar = "\\[imgchar\\](.*?)\\[\\/imgchar\\]";
         const string reg_class = "\\[class=(.*?)\\](.*?)\\[\\/class\\]";
         const string reg_chapter = "\\[chapter=(.*?)\\](.*?)\\[\\/chapter\\]";
-        Dictionary<string, string> reg_dic = new Dictionary<string, string>
-            {
-                
-                ///优先去除注释
+        Dictionary<string, string> reg_dic_comment = new Dictionary<string, string>{
                 {"/\\*.*?\\*/",""},
                 {"///.*",""},
-
+        };
+        Dictionary<string, string> reg_dic = new Dictionary<string, string>
+            {
                 {"^#center:(.*)","<p style=\"text-align:center;margin:0;\">$1</p>"},
                 {"^#right:(.*)","<p style=\"text-align:right;margin:0;\">$1</p>"},
                 {"^#left:(.*)","<p style=\"text-align:left;margin:0;\">$1</p>"},
@@ -69,7 +68,7 @@ class GenInlineHTML
                 {reg_chapter,"$2"},
                 {"\\[b\\](.*?)\\[\\/b\\]","<b>$1</b>"},
                 {"^#title:(.*)","<p style=\"text-align:center;font-size:1.6em;font-weight:bold\">$1</p>"},
-                {"\\[ruby=(.*?)\\](.*?)\\[\\/ruby\\]","<ruby>$2<rt>$1</rt></ruby>"},
+                {"\\[ruby=(.*?)\\](.*?)\\[\\/ruby\\]","<ruby>$2<rp>(</rp><rt>$1</rt><rp>)</rp></ruby>"},
                 {"^\\[pagebreak\\]$","<p class=\"atxt_pagebreak\"><br/></p>"},
                 {"\\[em\\](.*?)\\[\\/em\\]","<span style=\"-webkit-text-emphasis: dot filled;-webkit-text-emphasis-position: under;\">$1</span>"},
                 {"\\[s\\](.*?)\\[\\/s\\]","<s>$1</s>"},
@@ -82,7 +81,7 @@ class GenInlineHTML
                 {"^#h4:(.*)","<h4>$1</h4>"},
                 {"^#h5:(.*)","<h5>$1</h5>"},
                 {"^#h6:(.*)","<h6>$1</h6>"},
-                {"^#class:(.*)","<div class='$1'>"},
+                {"^#class:(.*)","<div class=\"$1\">"},
                 {"^#/class","</div>"},
                 {"\\[font\\](.*?)\\[\\/font\\]","<span class=\"atxt_font\">$1</span>"},
                 {"\\[url=(.*?)\\](.*?)\\[\\/url\\]","<a href=\"$1\">$2</a>"},
@@ -99,12 +98,28 @@ class GenInlineHTML
             if (line.StartsWith("##")) continue;
 
             string r = EncodeHTML(line);
+
             Match m = Regex.Match("", "1");
+            do
+            {
+                foreach (var pair in reg_dic_comment)
+                {
+                    m = Regex.Match(r, pair.Key);
+                    if (m.Success)
+                    {
+                        Regex reg = new Regex(pair.Key);
+                        r = reg.Replace(r, pair.Value);
+                        break;
+                    }
+                }
+            } while (m.Success);
 
             if (project.macros != null)
             {
+                int executionCount = 0;
                 do
                 {
+                    string safeCheck = r;
                     foreach (var pair in project.macros)
                     {
                         m = Regex.Match(r, pair.Key);
@@ -112,8 +127,17 @@ class GenInlineHTML
                         {
                             Regex reg = new Regex(pair.Key);
                             r = reg.Replace(r, pair.Value);
+                            executionCount++;
+                            if (r == safeCheck) continue;
                             break;
                         }
+                    }
+                    if (r == safeCheck) break;
+                    if (executionCount > 100)
+                    {
+                        Log.Error("Macro: Max count");
+                        Log.Error(r);
+                        break;
                     }
                 } while (m.Success);
             }

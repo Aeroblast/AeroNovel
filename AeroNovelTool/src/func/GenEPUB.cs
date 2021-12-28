@@ -28,6 +28,10 @@ namespace AeroNovelEpub
         {
             get { return Path.Combine(dir, "Images"); }
         }
+        public string fnt_path
+        {
+            get { return Path.Combine(dir, "Fonts"); }
+        }
         public List<string> img_names = new List<string>();
         public ChineseConvertOption cc_option;
         public ConfigValue indentAdjust = 0;
@@ -105,6 +109,7 @@ namespace AeroNovelEpub
             CollectSource();
             GenContent();
             GetImage();
+            GetFont();
             GetCss();
 
             TextEpubItemFile toc = epub.GetFile<TextEpubItemFile>("OEBPS/toc.ncx");
@@ -312,6 +317,31 @@ namespace AeroNovelEpub
                             }
                         }
 
+            }
+
+        }
+        void GetFont()
+        {
+            if (Directory.Exists(fnt_path))
+            {
+                Dictionary<string, string> fnttype = new Dictionary<string, string>
+                {
+                    {".otf","application/font-sfnt"},
+                };
+                foreach (var f in Directory.GetFiles(fnt_path))
+                {
+                    string ext = Path.GetExtension(f.ToLower());
+                    string fn = Path.GetFileName(f);
+                    if (fnttype.ContainsKey(ext))
+                    {
+                        EpubItemFile i = new EpubItemFile("OEBPS/Fonts/" + fn, File.ReadAllBytes(f));
+                        epub.items.Add(i);
+                        string properties = "";
+                        items += $"    <item id=\"{fn}\" href=\"Fonts/{fn}\" media-type=\"{fnttype[ext]}\"{properties}/>\n";
+                        Log.Info("Add font: " + fn);
+                    }
+
+                }
             }
 
         }

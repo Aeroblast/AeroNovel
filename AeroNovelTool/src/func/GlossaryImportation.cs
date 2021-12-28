@@ -74,10 +74,11 @@ class GlossaryImportation : TextTranslation
                 if (t1 != null) { temp[i] = t1; }
                 else
                 {
-                    if (!string.IsNullOrEmpty(temp[i].output))
+                    string tryGetOutput = GetOutput(temp[i]);
+                    if (!string.IsNullOrEmpty(tryGetOutput))
                     {
-                        TryAddSpace(ref result, temp[i].output);
-                        result += temp[i].output;
+                        TryAddSpace(ref result, tryGetOutput);
+                        result += tryGetOutput;
                         temp.Clear();
                         break;
                     }
@@ -105,6 +106,19 @@ class GlossaryImportation : TextTranslation
         {
             if (r.v == c) return r;
         }
+        return null;
+    }
+
+    string GetOutput(CharNode node)
+    {
+        do
+        {
+            if (!string.IsNullOrEmpty(node.output))
+            {
+                return node.output;
+            }
+            node = node.parent;
+        } while (node.parent != null);
         return null;
     }
 
@@ -139,13 +153,16 @@ class GlossaryImportation : TextTranslation
     private class CharNode
     {
         public char v;
+        public CharNode parent = null;
         public CharNode(char c) { v = c; }
         public CharNode AddChild(char c)
         {
             CharNode child = new CharNode(c);
+            child.parent = this;
             children.Add(child);
             return child;
         }
+
         public List<CharNode> children = new List<CharNode>();
         public string output = "";
 

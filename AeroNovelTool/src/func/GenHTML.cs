@@ -24,6 +24,10 @@ namespace AeroNovelEpub
             const string reg_imgchar = "\\[imgchar\\](.*?)\\[\\/imgchar\\]";
             const string reg_class = "\\[class=(.*?)\\](.*?)\\[\\/class\\]";
             const string reg_chapter = "\\[chapter=(.*?)\\](.*?)\\[\\/chapter\\]";
+            Dictionary<string, string> reg_dic_comment = new Dictionary<string, string>{
+                {"/\\*.*?\\*/",""},
+                {"///.*",""},
+            };
             Dictionary<string, string> reg_dic = new Dictionary<string, string>
             {
                 {"^\\[align=(.*?)\\](.*?)\\[\\/align\\]$","<p class=\"atxt_aligned\" style=\"text-align:$1\">$2</p>"},
@@ -39,10 +43,6 @@ namespace AeroNovelEpub
                 {"^\\[h5\\](.*?)\\[\\/h5\\]$","<h5>$1</h5>"},
                 {"^\\[h6\\](.*?)\\[\\/h6\\]$","<h6>$1</h6>"},
                 ///以上做旧版兼容，找个时机扫进垃圾堆
-                
-                ///优先去除注释
-                {"/\\*.*?\\*/",""},
-                {"///.*",""},
 
                 {"^#center:(.*)","<p class=\"atxt_align_center\">$1</p>"},
                 {"^#right:(.*)","<p class=\"atxt_align_right\">$1</p>"},
@@ -56,7 +56,7 @@ namespace AeroNovelEpub
                 {reg_chapter,""},
                 {"\\[b\\](.*?)\\[\\/b\\]","<b>$1</b>"},
                 {"^#title:(.*)","<p class=\"atxt_title\">$1</p>"},
-                {"\\[ruby=(.*?)\\](.*?)\\[\\/ruby\\]","<ruby>$2<rt>$1</rt></ruby>"},
+                {"\\[ruby=(.*?)\\](.*?)\\[\\/ruby\\]","<ruby>$2<rp>(</rp><rt>$1</rt><rp>)</rp></ruby>"},
                 {"^\\[pagebreak\\]$","<p class=\"atxt_pagebreak\"><br/></p>"},
                 {"\\[emphasis\\](.*?)\\[\\/emphasis\\]","<span class=\"atxt_emph\">$1</span>"},
                 {"\\[s\\](.*?)\\[\\/s\\]","<s>$1</s>"},
@@ -79,7 +79,6 @@ namespace AeroNovelEpub
                 {"(?<!<span class=\"atxt_breakall\">)(?<!—)[—]{3,99}","<span class=\"atxt_breakall\">$0</span>"}
             };
 
-
             string html = "";
             foreach (string line in txt)
             {
@@ -87,11 +86,26 @@ namespace AeroNovelEpub
 
                 string r = EncodeHTML(line);
                 Match m = Regex.Match("", "1");
+                do
+                {
+                    foreach (var pair in reg_dic_comment)
+                    {
+                        m = Regex.Match(r, pair.Key);
+                        if (m.Success)
+                        {
+                            Regex reg = new Regex(pair.Key);
+                            r = reg.Replace(r, pair.Value);
+                            break;
+                        }
+                    }
+                } while (m.Success);
 
                 if (context != null & context.macros != null)
                 {
+                    int executionCount = 0;
                     do
                     {
+                        string safeCheck = r;
                         foreach (var pair in context.macros)
                         {
                             m = Regex.Match(r, pair.Key);
@@ -99,8 +113,17 @@ namespace AeroNovelEpub
                             {
                                 Regex reg = new Regex(pair.Key);
                                 r = reg.Replace(r, pair.Value);
+                                executionCount++;
+                                if (r == safeCheck) continue;
                                 break;
                             }
+                        }
+                        if (r == safeCheck) break;
+                        if (executionCount > 100)
+                        {
+                            Log.Error("Macro: Max count");
+                            Log.Error(r);
+                            break;
                         }
                     } while (m.Success);
                 }

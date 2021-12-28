@@ -13,7 +13,7 @@ class GenBbcode
     public GenBbcode(string dir)
     {
         project = new AtxtProject(dir);
-        project.LoadMacro();
+        project.LoadMacro(AtxtProject.MacroMode.Bbcode);
         project.LoadWebImages();
         project.CollectSource();
     }
@@ -71,10 +71,12 @@ class GenBbcode
         const string reg_imgchar = "\\[imgchar\\]((?!http).*?)\\[\\/imgchar\\]";
         const string reg_class = "\\[class=(.*?)\\](.*?)\\[\\/class\\]";
         const string reg_chapter = "\\[chapter=(.*?)\\](.*?)\\[\\/chapter\\]";
-        Dictionary<string, string> reg_dic = new Dictionary<string, string>
-            {
+        Dictionary<string, string> reg_dic_comment = new Dictionary<string, string>{
                 {"/\\*.*?\\*/",""},
                 {"///.*",""},
+            };
+        Dictionary<string, string> reg_dic = new Dictionary<string, string>
+            {
                 //{"\\[align=(.*?)\\](.*?)\\[\\/align\\]","<p class=\"aligned\" style=\"text-align:$1\">$2</p>"},
                 {"^\\[center\\](.*?)\\[\\/center\\]$","[align=center]$1[/align]"},
                 {"^\\[right\\](.*?)\\[\\/right\\]$","[align=right]$1[/align]"},
@@ -118,11 +120,26 @@ class GenBbcode
             string r = line;
             Match m = Regex.Match("", "1");
 
+            do
+            {
+                foreach (var pair in reg_dic_comment)
+                {
+                    m = Regex.Match(r, pair.Key);
+                    if (m.Success)
+                    {
+                        Regex reg = new Regex(pair.Key);
+                        r = reg.Replace(r, pair.Value);
+                        break;
+                    }
+                }
+            } while (m.Success);
             //macros
             if (project.macros != null)
             {
+                int executionCount = 0;
                 do
                 {
+                    string safeCheck = r;
                     foreach (var pair in project.macros)
                     {
                         m = Regex.Match(r, pair.Key);
@@ -130,8 +147,17 @@ class GenBbcode
                         {
                             Regex reg = new Regex(pair.Key);
                             r = reg.Replace(r, pair.Value);
+                            executionCount++;
+                            if (r == safeCheck) continue;
                             break;
                         }
+                    }
+                    if (r == safeCheck) break;
+                    if (executionCount > 100)
+                    {
+                        Log.Error("Macro: Max count");
+                        Log.Error(r);
+                        break;
                     }
                 } while (m.Success);
             }
