@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
-<package version="{3}" unique-identifier="BookId" xmlns="http://www.idpf.org/2007/opf">
+<package version="{3}" unique-identifier="BookId" xmlns="http://www.idpf.org/2007/opf"
+         prefix="ibooks: http://vocabulary.itunes.apple.com/rdf/ibooks/vocabulary-extensions-1.0/">
 {0}
   <manifest>
     <item id="ncx" href="toc.ncx" media-type="application/x-dtbncx+xml"/>

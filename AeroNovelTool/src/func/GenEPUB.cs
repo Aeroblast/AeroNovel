@@ -93,6 +93,7 @@ namespace AeroNovelEpub
             }
 
             string meta = File.ReadAllText(metaPath);
+            meta = meta.Replace("\r\n", "\n");
             meta = meta.Replace("{urn:uuid}", uid);
             uid = Regex.Match(meta, "<dc:identifier id=\"BookId\">(.*?)</dc:identifier>").Groups[1].Value;
             meta = meta.Replace("{date}", DateTime.Today.ToString("yyyy-MM-ddT00:00:00Z"));
@@ -103,6 +104,11 @@ namespace AeroNovelEpub
             if (cc_option == ChineseConvertOption.T2S)
             {
                 meta = meta.Replace("<dc:language>zh-tw</dc:language>", "<dc:language>zh</dc:language>", true, null);
+            }
+            if (!meta.Contains("<meta property=\"ibooks:specified-fonts\">true</meta>"))
+            {
+                Match m = Regex.Match(meta, "\n.*?</metadata>");
+                meta = meta.Insert(m.Index + 1, "    <meta property=\"ibooks:specified-fonts\">true</meta>\n");
             }
             title = Regex.Match(meta, "<dc:title.*?>(.*?)</dc:title>").Groups[1].Value;
 
