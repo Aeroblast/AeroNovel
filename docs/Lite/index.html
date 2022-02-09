@@ -86,7 +86,7 @@
 ##————————————————————————————————
 一般的txt也可以用。
 ##这样的行不会输出，本质是注释，可以不要。
-长一点的文字喔哦哦哦哦哦哦哦哦哦哦哦哦噢噢噢噢啊啊啊嗯嗯嗯嗯嗯嗯嗯嗯嗯啦啦啦啦啦啊啊啊啊。
+长一点的文字喔哦哦哦哦哦哦哦哦哦哦哦哦[note]噢噢噢噢啊啊啊嗯嗯嗯嗯嗯嗯嗯嗯嗯啦啦啦啦啦啊啊啊啊。[note=注释：注释内容。此处采用屏幕宽度单位，具体效果请在实际环境测试，或自行适配。]
 行内样式系列：[ruby=Test]测试[/ruby]这是[b]测试[/b][s]测试[/s][color=#ff0000]测试[/color]。
 #title:标题
 #center:居中
@@ -143,6 +143,14 @@ div不会触发增加p标签，可以加样式（此功能与命令行版不同�
           token: "keyword"
         },
         {
+          regex: /\[note\]/,
+          token: "keyword"
+        },
+        {
+          regex: /\[note=(.*?)\]/,
+          token: "keyword"
+        },
+        {
           regex: /^#(right|left|center|illu|title):(.*)/,
           token: "keyword"
         },
@@ -192,6 +200,7 @@ div不会触发增加p标签，可以加样式（此功能与命令行版不同�
         [/\[ruby=(.*?)\](.*?)\[\/ruby\]/, "<ruby>$2<rt>$1</rt></ruby>"],
         [/\[s\](.*?)\[\/s\]/, "<s>$1</s>"],
         [/\[size=(.*?)\](.*?)\[\/size\]/, "<span style=\"font-size:$1em\">$2</span>"],
+        [/\[url=(.*?)\](.*?)\[\/url\]/, "<a href=\"$1\">$2</a>"],
         [/^#left:(.*)/, "<p style='text-align:left;margin:0;'>$1</p>"],
         [/^#center:(.*)/, "<p style='text-align:center;margin:0;'>$1</p>"],
         [/^#right:(.*)/, "<p style='text-align:right;margin:0;'>$1</p>"],
@@ -199,6 +208,10 @@ div不会触发增加p标签，可以加样式（此功能与命令行版不同�
         [/^#h([1-6]):(.*)/, "<h$1>$2</h$1>"],
         [/\/\/\/.*/, ""],
         [/^#illu:(.*)/, "<p class='aligned' style='text-align:center'><img src=\"$1\" style='max-width:100%;max-height:90vh'></p>"],
+        [/^#class:(.*)/, "<div class=\"$1\">"],
+        [/^#\/class/, "</div>"],
+        [/\[note\]/, "<span class=\"ae_noteref\" style=\"vertical-align:super;font-size:smaller;\">[注]</span>"],
+        [/\[note=(.*?)\]/, "<span class=\"ae_notecontent\" style=\"display:block;text-indent:0;max-width:90vw;width:15em;margin-right:0%;margin-left:auto;\">$1</span>"],
         [/((?<!<span style=\"word-wrap:break-word;word-break:break-all;\">)(?<!…)[…]{3,99})/, "<span style=\"word-wrap:break-word;word-break:break-all;\">$1</span>"],
         [/((?<!<span style=\"word-wrap:break-word;word-break:break-all;\">)(?<!—)[—]{3,99})/, "<span style=\"word-wrap:break-word;word-break:break-all;\">$1</span>"]
       ];
