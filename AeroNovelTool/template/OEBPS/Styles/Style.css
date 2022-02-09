@@ -27,6 +27,10 @@ p {
     text-indent: 0;
 }
 
+.atxt_aligned p{
+    text-indent: 0;
+}
+
 .atxt_align_center {
     text-align: center;
     text-indent: 0;
