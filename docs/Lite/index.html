@@ -210,7 +210,7 @@ div不会触发增加p标签，可以加样式（此功能与命令行版不同�
         [/^#illu:(.*)/, "<p class='aligned' style='text-align:center'><img src=\"$1\" style='max-width:100%;max-height:90vh'></p>"],
         [/^#class:(.*)/, "<div class=\"$1\">"],
         [/^#\/class/, "</div>"],
-        [/\[note\]/, "<span class=\"ae_noteref\" style=\"vertical-align:super;font-size:smaller;\">[注]</span>"],
+        [/\[note\]/, "<span class=\"ae_noteref\" style=\"vertical-align:super;font-size:x-small;\">[注]</span>"],
         [/\[note=(.*?)\]/, "<span class=\"ae_notecontent\" style=\"display:block;text-indent:0;max-width:90vw;width:15em;margin-right:0%;margin-left:auto;\">$1</span>"],
         [/((?<!<span style=\"word-wrap:break-word;word-break:break-all;\">)(?<!…)[…]{3,99})/, "<span style=\"word-wrap:break-word;word-break:break-all;\">$1</span>"],
         [/((?<!<span style=\"word-wrap:break-word;word-break:break-all;\">)(?<!—)[—]{3,99})/, "<span style=\"word-wrap:break-word;word-break:break-all;\">$1</span>"]
