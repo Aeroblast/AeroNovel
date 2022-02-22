@@ -59,7 +59,7 @@ class GenInlineHTML
                 {"^#center:(.*)","<p style=\"text-align:center;margin:0;\">$1</p>"},
                 {"^#right:(.*)","<p style=\"text-align:right;margin:0;\">$1</p>"},
                 {"^#left:(.*)","<p style=\"text-align:left;margin:0;\">$1</p>"},
-                {reg_noteref,"<span class=\"ae_noteref\" style=\"vertical-align:super;font-size:smaller;\">[注]</span>"},
+                {reg_noteref,"<span class=\"ae_noteref\" style=\"vertical-align:super;font-size:x-small;\">[注]</span>"},
                 {reg_notecontent,"<span class=\"ae_notecontent\" style=\"display:block;text-indent:0;max-width:90vw;width:15em;margin-right:0%;margin-left:auto;\">$1</span>"},
                 {reg_img,""},
                 {reg_illu2,""},

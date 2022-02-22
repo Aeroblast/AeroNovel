@@ -279,16 +279,16 @@ namespace AeroNovelEpub
                 int count = 0;
                 foreach (string note in notes)
                 {
-                    int div = note.IndexOf(':');
+                    int div = note.IndexOf('：');
                     if (div > 0)
                     {
                         string noteref_text = note.Substring(0, div);
                         html = html.Replace(string.Format(noteref_temp, count), string.Format(noteref_temp.Replace("注", noteref_text), count));
                         string note_content = note.Substring(div + 1);
-                        html += string.Format(note_temp, count, note_content, noteref_text + ":");
+                        html += string.Format(note_temp, count, note_content, noteref_text + "：");
                     }
                     else
-                        html += string.Format(note_temp, count, note, "注:");
+                        html += string.Format(note_temp, count, note, "注：");
                     count++;
                 }
                 html += "</aside>";
