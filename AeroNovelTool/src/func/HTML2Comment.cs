@@ -149,7 +149,7 @@ public class Html2Comment
             }
             else p = p.NextSibling;
         }
-        comment += lineTemp;
+        comment += "## " + lineTemp;
         if (textTranslation != null)
             if (Util.Trim(pureText).Length != 0)
             {
