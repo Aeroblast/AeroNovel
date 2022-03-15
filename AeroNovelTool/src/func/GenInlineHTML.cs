@@ -42,7 +42,7 @@ class GenInlineHTML
     public string GenBody(string[] txt)
     {
         List<string> notes = new List<string>();
-        const string reg_noteref = "\\[note\\]";
+        //const string reg_noteref = "\\[note\\]";
         const string reg_notecontent = "\\[note=(.*?)\\]";
         const string reg_img = "\\[img\\](.*?)\\[\\/img\\]";
         const string reg_illu = "^\\[illu\\](.*?)\\[\\/illu\\]$";
@@ -59,7 +59,7 @@ class GenInlineHTML
                 {"^#center:(.*)","<p style=\"text-align:center;margin:0;\">$1</p>"},
                 {"^#right:(.*)","<p style=\"text-align:right;margin:0;\">$1</p>"},
                 {"^#left:(.*)","<p style=\"text-align:left;margin:0;\">$1</p>"},
-                {reg_noteref,"<span class=\"ae_noteref\" style=\"vertical-align:super;font-size:x-small;\">[注]</span>"},
+                // {reg_noteref,"<span class=\"ae_noteref\" style=\"vertical-align:super;font-size:x-small;\">[注]</span>"},
                 {reg_notecontent,"<span class=\"ae_notecontent\" style=\"display:block;text-indent:0;max-width:90vw;width:15em;margin-right:0%;margin-left:auto;\">$1</span>"},
                 {reg_img,""},
                 {reg_illu2,""},
@@ -206,6 +206,12 @@ class GenInlineHTML
                                     }
                                 }
                                 break;
+                            case reg_notecontent:
+                                {
+                                    notes.Add(m.Groups[1].Value);
+                                    r = reg.Replace(r, pair.Value);
+                                }
+                                break;
                             default:
                                 r = reg.Replace(r, pair.Value);
                                 break;
@@ -234,6 +240,31 @@ class GenInlineHTML
                     r = "<p style=\"text-indent:2em;margin:0;\">" + r + "</p>";
             }
             html += r + "\n";
+        }
+
+        {
+            string noteref_temp = "<span class=\"ae_noteref\" style=\"vertical-align:super;font-size:x-small;white-space:nowrap;\">[注]</span>";
+            string noteref_expression = "[note]";
+            int pos = html.IndexOf(noteref_expression);
+            int i = 0;
+            while (pos > 0 && i < notes.Count)
+            {
+                var t = "注";
+                var content = notes[i];
+                var colonIndex = content.IndexOf("：");
+                if (colonIndex > 0 && colonIndex <= 4)
+                {
+                    t = content.Substring(0, colonIndex);
+                }
+                var noteref_html = noteref_temp.Replace("注", t);
+                html = html.Remove(pos, noteref_expression.Length).Insert(pos, noteref_html);
+                i++;
+                pos = html.IndexOf(noteref_expression, pos + noteref_html.Length);
+            }
+            if (i != notes.Count)
+            {
+                Log.Warn("注释的引用和内容数量不匹配。");
+            }
         }
 
         return html;

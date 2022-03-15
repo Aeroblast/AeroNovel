@@ -282,6 +282,8 @@ namespace AeroNovelEpub
                     int div = note.IndexOf('：');
                     if (div > 0)
                     {
+                        //to-do: 改进效率……暂时懒得改，也不影响
+
                         string noteref_text = note.Substring(0, div);
                         html = html.Replace(string.Format(noteref_temp, count), string.Format(noteref_temp.Replace("注", noteref_text), count));
                         string note_content = note.Substring(div + 1);

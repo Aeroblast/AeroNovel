@@ -94,9 +94,10 @@
 <div style="line-height:2">
 div不会触发增加p标签，可以加样式（此功能与命令行版不同）
 ## テスト
-长一点的文字喔哦哦哦哦哦哦哦哦哦哦哦哦噢噢噢噢啊啊啊嗯嗯嗯嗯嗯嗯嗯嗯嗯啦啦啦啦啦啊啊啊啊啊
+长一点的[note]文字喔哦哦哦哦哦哦哦哦哦哦哦哦噢噢噢噢啊啊啊嗯嗯嗯嗯嗯嗯嗯嗯嗯啦啦啦啦啦啊啊啊啊啊
 一些文字
 「对话缩进调整」
+[note=注123：注释可以写在任意位置。冒号前的几个字（此版本上限为4，有更长的需求可以自己改代码）会变成注释链接文字。]
 『对话缩进调整』
 对比
 普通省略号……
@@ -192,6 +193,8 @@ div不会触发增加p标签，可以加样式（此功能与命令行版不同�
     Update();
 
     function RenderAtxt(atxt) {
+
+      const reg_notecontent = /\[note=(.*?)\]/;
       const reg = [
         [/\[color=(.*?)\](.*?)\[\/color\]/, "<span style=\"color:$1\">$2</span>"],
         [/\[img\](.*?)\[\/img\]/, "<img src='$1'>"],
@@ -210,13 +213,14 @@ div不会触发增加p标签，可以加样式（此功能与命令行版不同�
         [/^#illu:(.*)/, "<p class='aligned' style='text-align:center'><img src=\"$1\" style='max-width:100%;max-height:90vh'></p>"],
         [/^#class:(.*)/, "<div class=\"$1\">"],
         [/^#\/class/, "</div>"],
-        [/\[note\]/, "<span class=\"ae_noteref\" style=\"vertical-align:super;font-size:x-small;\">[注]</span>"],
-        [/\[note=(.*?)\]/, "<span class=\"ae_notecontent\" style=\"display:block;text-indent:0;max-width:90vw;width:15em;margin-right:0%;margin-left:auto;\">$1</span>"],
+        //[reg_noteref, "<span class=\"ae_noteref\" style=\"vertical-align:super;font-size:x-small;\">[注]</span>"],
+        [reg_notecontent, "<span class=\"ae_notecontent\" style=\"display:block;text-indent:0;max-width:90vw;width:15em;margin-right:0%;margin-left:auto;\">$1</span>"],
         [/((?<!<span style=\"word-wrap:break-word;word-break:break-all;\">)(?<!…)[…]{3,99})/, "<span style=\"word-wrap:break-word;word-break:break-all;\">$1</span>"],
         [/((?<!<span style=\"word-wrap:break-word;word-break:break-all;\">)(?<!—)[—]{3,99})/, "<span style=\"word-wrap:break-word;word-break:break-all;\">$1</span>"]
       ];
       const lines = atxt.split('\n');
       let html = "";
+      let notecontents = [];
       for (const line of lines) {
         if (line.startsWith("##")) continue;
         let renderedLine = line;
@@ -227,7 +231,11 @@ div不会触发增加p标签，可以加样式（此功能与命令行版不同�
             let match = reg[i][0].exec(renderedLine);
             if (match != null) {
               let rep = reg[i][1];
-              switch (i) {
+              switch (reg[i][0]) {
+                case reg_notecontent:
+                  notecontents.push(match[1]);
+                  renderedLine = renderedLine.replace(reg[i][0], rep);
+                  break;
                 default:
                   renderedLine = renderedLine.replace(reg[i][0], rep);
                   break;
@@ -283,6 +291,25 @@ div不会触发增加p标签，可以加样式（此功能与命令行版不同�
         }
         html += renderedLine + "\n";
       }
+      //note ref
+      {
+        const reg_noterefg = /\[note\]/g;
+        const reg_noteref = /\[note\]/;
+        const note_ref_temp = "<span class=\"ae_noteref\" style=\"vertical-align:super;font-size:x-small;\">[注]</span>";
+        let match;
+        let note_index = 0;
+        while ((match = reg_noterefg.exec(html)) !== null) {
+          const notecontent = notecontents[note_index];
+          let notetitle = "注";
+          let i = notecontent.indexOf('：');
+          if (i > 0 && i <= 4) {
+            notetitle = notecontent.substring(0, i);
+          }
+          html = html.replace(reg_noteref, note_ref_temp.replace("[注]", "[" + notetitle + "]"))
+          note_index++;
+        }
+      }
+
       return html;
     }
   </script>
