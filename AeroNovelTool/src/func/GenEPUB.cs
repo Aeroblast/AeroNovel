@@ -113,6 +113,13 @@ namespace AeroNovelEpub
             title = Regex.Match(meta, "<dc:title.*?>(.*?)</dc:title>").Groups[1].Value;
 
             CollectSource();
+            if (config.autoSpace == ConfigValue.active)
+            {
+                foreach (var src in srcs)
+                {
+                    AutoSpace.ProcAtxt(src);
+                }
+            }
             GenContent();
             GetImage();
             GetFont();

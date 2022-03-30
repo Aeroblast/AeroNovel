@@ -62,6 +62,14 @@ public class AtxtProject
 			}
 		}
 	}
+	public void ApplyAutoSpace()
+	{
+		if (config.autoSpace != ConfigValue.active) return;
+		foreach (var atxt in srcs)
+		{
+			AutoSpace.ProcAtxt(atxt);
+		}
+	}
 	public enum MacroMode
 	{
 		Epub,
@@ -279,6 +287,7 @@ public class ProjectConfig
 	public int joinBlankLine = 0;
 	public ConfigValue indentAdjust;
 	public ConfigValue addInfo;
+	public ConfigValue autoSpace;
 
 	public ProjectConfig(string[] content)
 	{
@@ -300,6 +309,8 @@ public class ProjectConfig
 					indentAdjust = GetConfigValue(arg); break;
 				case "add_info":
 					addInfo = GetConfigValue(arg); break;
+				case "auto_space":
+					autoSpace = GetConfigValue(arg); break;
 			}
 		}
 		joinCommands.Sort((c1, c2) => c1.start.CompareTo(c2.start));

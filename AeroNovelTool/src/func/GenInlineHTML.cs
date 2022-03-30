@@ -12,6 +12,7 @@ class GenInlineHTML
         project.LoadMacro(AtxtProject.MacroMode.InlineHTML);
         project.LoadWebImages();
         project.CollectSource();
+        project.ApplyAutoSpace();
     }
     public static void ConvertFile(string path, string outputPath)
     {
