@@ -317,7 +317,7 @@ public class ProjectConfig
 	}
 	ConfigValue GetConfigValue(string s)
 	{
-		s = s.ToLower();
+		s = s.ToLower().Trim();
 		switch (s)
 		{
 			case "true":
