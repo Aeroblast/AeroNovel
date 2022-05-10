@@ -113,7 +113,7 @@ namespace AeroNovelEpub
             title = Regex.Match(meta, "<dc:title.*?>(.*?)</dc:title>").Groups[1].Value;
 
             CollectSource();
-            if (config.autoSpace == ConfigValue.active)
+            if (config != null && config.autoSpace == ConfigValue.active)
             {
                 foreach (var src in srcs)
                 {
@@ -239,7 +239,7 @@ namespace AeroNovelEpub
                         body = Regex.Replace(body, "<p>(.*?：)", "<p class=\"atxt_keyvalue\">$1");
                         body = "<div class=\"atxt_info\" epub:type=\"acknowledgements\">\n" + body;
                         if (addInfo != ConfigValue.disable)
-                            body += "<p>AeroNovelTool EPUB生成器 by AE 生成于" + DateTime.Now + "</p>";
+                            body += "<p>AeroNovelTool EPUB生成器 生成于" + DateTime.Now + "</p>";
                         body += "</div>";
                     }
                     if (src.path.EndsWith("EOB.txt") || src.path.EndsWith("EOB.atxt"))
