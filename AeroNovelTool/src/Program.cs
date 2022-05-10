@@ -1,5 +1,6 @@
 ﻿using System;
 using System.IO;
+using System.Linq;
 using System.Collections.Generic;
 using System.Text.RegularExpressions;
 using AeroEpub.Epub;
@@ -35,25 +36,12 @@ class Program
                         }
 
                         EpubFile e = gen.Gen(args[1]);
-                        List<string> creators = new List<string>();
                         string dateString = DateTime.Today.ToString("yyyyMMdd");
-                        e.dc_creators.ForEach((x) =>
-                        {
-                            if (x.refines.Count > 0)
-                            {
-                                foreach (var refine in x.refines)
-                                {
-                                    if (refine.name == "role")
-                                    {
-                                        if (refine.value != "aut") return;
-                                    }
-                                }
-                            }
-                            creators.Add(x.value);
-                        });
+                        var creators = e.dc_creators.Where(x => x.refines.Find(r => r.name == "role" && r.value == "aut") != null).Select(x => x.value).ToArray();
                         try
                         {
-                            e.meta.ForEach((x) => { if (x.name == "dcterms:modified") dateString = x.value.Replace("-", "").Substring(0, 8); });
+                            var modifiedDate = e.meta.Find(x => x.name == "dcterms:modified");
+                            if (modifiedDate != null) dateString = modifiedDate.value.Replace("-", "").Substring(0, 8);
                         }
                         catch (ArgumentOutOfRangeException)
                         {
@@ -61,6 +49,31 @@ class Program
                         }
 
                         e.filename = $"[{string.Join(",", creators)}] {e.title} [{dateString}]";
+                        if (args.Length >= 3 && DirectoryExist(args[2]))
+                            e.Save(args[2]);
+                        else
+                            e.Save("");
+                    }
+                    break;
+                case "reviewepub":
+                    {
+                        if (!DirectoryExist(args[1])) return;
+                        var gen = new AeroNovelEpub.GenReviewEpub();
+
+                        EpubFile e = gen.Gen(args[1]);
+                        string dateString = DateTime.Today.ToString("yyyyMMdd");
+                        var creators = e.dc_creators.Where(x => x.refines.Find(r => r.name == "role" && r.value == "aut") != null).Select(x => x.value).ToArray();
+                        try
+                        {
+                            var modifiedDate = e.meta.Find(x => x.name == "dcterms:modified");
+                            if (modifiedDate != null) dateString = modifiedDate.value.Replace("-", "").Substring(0, 8);
+                        }
+                        catch (ArgumentOutOfRangeException)
+                        {
+                            Log.Warn("Error at getting modified date in metadata");
+                        }
+
+                        e.filename = $"[{string.Join(",", creators)}] {e.title} [{dateString}][Review]";
                         if (args.Length >= 3 && DirectoryExist(args[2]))
                             e.Save(args[2]);
                         else
@@ -258,6 +271,7 @@ epub2comment 【生肉epub文件】 【可选选项...】
 　　选项'BlackTranslationMagic' 
 atxtcc 【txt文件】 【't2s'】
 analyze 【项目文件夹】
+reviewepub 【项目文件夹】 【输出目录(可选)】
 ";
     static bool FileExist(string path)
     {
