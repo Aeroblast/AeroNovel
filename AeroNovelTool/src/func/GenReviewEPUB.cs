@@ -114,7 +114,7 @@ namespace AeroNovelEpub
             title = Regex.Match(meta, "<dc:title.*?>(.*?)</dc:title>").Groups[1].Value;
 
             CollectSource();
-            if (config.autoSpace == ConfigValue.active)
+            if (config != null && config.autoSpace == ConfigValue.active)
             {
                 foreach (var src in srcs)
                 {
@@ -202,7 +202,7 @@ namespace AeroNovelEpub
                 else
                 {
                     string[] lines = src.lines;
-                    string body = $"<p>{src.path}</p>\n" + GenHTML(lines);
+                    string body = $"<p>{Path.GetFileName(src.path)}</p>\n" + GenHTML(lines);
                     if (src.path.EndsWith("info.txt") || src.path.EndsWith("info.atxt"))
                     {
                         body = Regex.Replace(body, "<p>(.*?：)", "<p class=\"atxt_keyvalue\">$1");
