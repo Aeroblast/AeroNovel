@@ -124,10 +124,10 @@ class AutoSpace
                 result = kv.Value;
             }
         }
-        if (result == CodeType.CJKChar_DontUse)
-            Log.Warn($"Detect CJK Don't Use: U+{v:X4}【{rune}】");
-        if (result == CodeType.Unhandled)
-            Log.Warn($"Unhandled rune: U+{v:X4}【{rune}】");
+        // if (result == CodeType.CJKChar_DontUse)
+        //     Log.Warn($"Detect CJK Don't Use: U+{v:X4}【{rune}】");
+        // if (result == CodeType.Unhandled)
+        //     Log.Warn($"Unhandled rune: U+{v:X4}【{rune}】");
         return result;
 
     }
