@@ -117,6 +117,7 @@ namespace AeroNovelEpub
             {
                 foreach (var src in srcs)
                 {
+                    if (src.title == "info") { continue; }
                     AutoSpace.ProcAtxt(src);
                 }
             }
