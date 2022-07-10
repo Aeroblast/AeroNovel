@@ -64,12 +64,14 @@ public class AtxtProject
     }
     public void ApplyAutoSpace()
     {
+        if (config == null) return;
         if (config.autoSpace != ConfigValue.active) return;
         foreach (var atxt in srcs)
         {
             if (atxt.title == "info") { continue; }
             AutoSpace.ProcAtxt(atxt);
         }
+        Log.Info("Apply autoSpace.");
     }
     public enum MacroMode
     {
