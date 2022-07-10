@@ -48,7 +48,7 @@ public class Html2Comment
                         pureText += "\n";
                         break;
                     case "em":
-                        lineTemp += "[/b]";
+                        lineTemp += "[/em]";
                         break;
                     default:
                         string tagOutput = normalTagEndOutput[normalTagEndOutput.Count - 1];
@@ -84,7 +84,7 @@ public class Html2Comment
                                 lineTemp += $"<image href=\"{((XmlElement)p).GetAttribute("href", "http://www.w3.org/1999/xlink")}\">";
                                 break;
                             case "em":
-                                lineTemp += "[b]";//星海社
+                                lineTemp += "[em]";
                                 break;
                             default:
                                 {
@@ -107,6 +107,11 @@ public class Html2Comment
                                     if (needOutput)
                                     {
                                         if (classTemp == "em-sesame")
+                                        {
+                                            lineTemp += "[em]";
+                                            tagEndOutput = "[/em]";
+                                        }
+                                        else if (classTemp == "bold")
                                         {
                                             lineTemp += "[b]";
                                             tagEndOutput = "[/b]";
