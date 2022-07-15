@@ -244,7 +244,10 @@ public class AtxtSource
                     string chapterNumber = m_num.Groups[1].Value;
                     if (!char.IsDigit(chapterNumber[0])) chapterNumber = "" + Util.FromChineseNumber(chapterNumber);
 
-                    return "atxt" + no + "_chapter" + chapterNumber + ".xhtml";
+                    return
+                        "atxt" + no + "_chapter"
+                        + (chapterNumber.Length == 1 ? "0" : "") + chapterNumber
+                        + ".xhtml";
                 }
             }
         }
