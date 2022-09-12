@@ -4,3 +4,4 @@ obj
 *.epub
 *output*
 AeroNovelTool/kindlegen.bat
+.DS_Store
