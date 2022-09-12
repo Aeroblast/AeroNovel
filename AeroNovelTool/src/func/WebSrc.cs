@@ -71,13 +71,14 @@ class WebSource
     }
     static string GetSource(string url)
     {
-        Log.Info("Try dl " + url);
-        HttpWebRequest req = HttpWebRequest.CreateHttp(url);
-        using (var res = req.GetResponse())
-        using (var s = res.GetResponseStream())
-        using (var reader = new StreamReader(s))
-        {
-            return reader.ReadToEnd();
-        }
+        throw new NotImplementedException();
+        // Log.Info("Try dl " + url);
+        // HttpWebRequest req = HttpWebRequest.CreateHttp(url);
+        // using (var res = req.GetResponse())
+        // using (var s = res.GetResponseStream())
+        // using (var reader = new StreamReader(s))
+        // {
+        //     return reader.ReadToEnd();
+        // }
     }
 }
