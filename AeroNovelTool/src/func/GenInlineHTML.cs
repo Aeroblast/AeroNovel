@@ -38,7 +38,12 @@ class GenInlineHTML
     }
     public string GenContent(string[] txt)
     {
-        return "<div style=\"line-height:1.5;text-align:justify;\">\n" + GenBody(txt) + "</div>";
+        var wrapperStyle = "line-height:1.5;text-align:justify;";
+        if (!string.IsNullOrEmpty(project.config.inlinehtmlWrapperStyle))
+        {
+            wrapperStyle = project.config.inlinehtmlWrapperStyle;
+        }
+        return $"<div style=\"{wrapperStyle}\">\n{GenBody(txt)}</div>";
     }
     public string GenBody(string[] txt)
     {

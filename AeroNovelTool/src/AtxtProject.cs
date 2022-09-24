@@ -294,6 +294,7 @@ public class ProjectConfig
     public ConfigValue indentAdjust;
     public ConfigValue addInfo;
     public ConfigValue autoSpace;
+    public string inlinehtmlWrapperStyle;
 
     public ProjectConfig(string[] content)
     {
@@ -316,7 +317,13 @@ public class ProjectConfig
                 case "add_info":
                     addInfo = GetConfigValue(arg); break;
                 case "auto_space":
-                    autoSpace = GetConfigValue(arg); break;
+                    autoSpace = GetConfigValue(arg);
+                    Log.Info("AutoSpace on.");
+                    break;
+                case "inlinehtml_wrapper_style":
+                    inlinehtmlWrapperStyle = arg.Trim();
+                    Log.Info("Wrapper div style overrided.");
+                    break;
             }
         }
         joinCommands.Sort((c1, c2) => c1.start.CompareTo(c2.start));
