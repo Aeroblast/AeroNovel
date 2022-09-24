@@ -48,17 +48,21 @@
     <input type="checkbox" onchange="ChangeOption()" checked id="input_indent">缩进
     <input type="checkbox" onchange="ChangeOption()" checked id="input_indent_adjust">缩进调整
     <input type="checkbox" onchange="ChangeOption()" checked id="input_margin">消除段间距
+    <input type="checkbox" onchange="ChangeOption()" checked id="add_wrapper">添加Wrapper
     <script>
       var addIndent = true;
       var indentAdjust = true;
       var addMargin = true;
+      var addWrapper = true;
       const input_indent = document.getElementById("input_indent");
       const input_indent_adjust = document.getElementById("input_indent_adjust");
       const input_input_margin = document.getElementById("input_margin");
+      const input_add_wrapper = document.getElementById("add_wrapper");
       function ChangeOption() {
         addIndent = input_indent.checked;
         indentAdjust = input_indent_adjust.checked;
         addMargin = input_input_margin.checked;
+        addWrapper = input_add_wrapper.checked;
         Update()
       }
     </script>
@@ -308,6 +312,10 @@ div不会触发增加p标签，可以加样式（此功能与命令行版不同�
           html = html.replace(reg_noteref, note_ref_temp.replace("[注]", "[" + notetitle + "]"))
           note_index++;
         }
+      }
+
+      if (addWrapper) {
+        html = `<div style="line-height:1.7;text-align:justify;">\n${html}</div>\n`;
       }
 
       return html;
