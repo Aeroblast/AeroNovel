@@ -39,7 +39,7 @@ class GenInlineHTML
     public string GenContent(string[] txt)
     {
         var wrapperStyle = "line-height:1.5;text-align:justify;";
-        if (!string.IsNullOrEmpty(project.config.inlinehtmlWrapperStyle))
+        if (project.config != null && !string.IsNullOrEmpty(project.config.inlinehtmlWrapperStyle))
         {
             wrapperStyle = project.config.inlinehtmlWrapperStyle;
         }
