@@ -240,7 +240,7 @@ namespace AeroNovelEpub
                         body = Regex.Replace(body, "<p>(.*?：)", "<p class=\"atxt_keyvalue\">$1");
                         body = "<div class=\"atxt_info\" epub:type=\"acknowledgements\">\n" + body;
                         if (addInfo != ConfigValue.disable)
-                            body += "<p>AeroNovelTool EPUB生成器 生成于" + DateTime.Now + "</p>";
+                            body += "<p>AeroNovelTool EPUB 生成器 生成于 " + DateTime.Now + "</p>";
                         body += "</div>";
                     }
                     if (src.path.EndsWith("EOB.txt") || src.path.EndsWith("EOB.atxt"))
