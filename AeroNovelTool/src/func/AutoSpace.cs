@@ -18,7 +18,7 @@ class AutoSpace
                 continue;
             }
             bool isInTag = false;
-            CodeType last = CodeType.None;
+            SpaceType last = SpaceType.Other;
             foreach (var rune in line.EnumerateRunes())
             {
                 if (rune == tagStart)
@@ -36,12 +36,12 @@ class AutoSpace
                     }
                     continue;
                 }
-                var current = GetCodeType(rune);
-                if (last == CodeType.CJKChar && current == CodeType.HWLetterNumber)
+                var current = GetSpaceType(rune);
+                if (last == SpaceType.CJKChar && current == SpaceType.Western)
                 {
                     sb.Append(' ');
                 }
-                else if (last == CodeType.HWLetterNumber && current == CodeType.CJKChar)
+                else if (last == SpaceType.Western && current == SpaceType.CJKChar)
                 {
                     sb.Append(' ');
                 }
@@ -53,6 +53,33 @@ class AutoSpace
 
         }
         atxt.content = sb.ToString();
+    }
+
+    public static SpaceType GetSpaceType(Rune r)
+    {
+        var spWesternChar = new List<string> { "." };
+        if (spWesternChar.Exists(e => r.ToString() == e))
+        {
+            return SpaceType.Western;
+        }
+        var type = GetCodeType(r);
+        if (type == CodeType.CJKChar)
+        {
+            return SpaceType.CJKChar;
+        }
+        var acceptType = new List<CodeType> { CodeType.HWLetterNumber };
+        if (acceptType.Exists(e => type == e))
+        {
+            return SpaceType.Western;
+        }
+        return SpaceType.Other;
+    }
+    public enum SpaceType
+    {
+
+        Western,
+        CJKChar,
+        Other
     }
 
     // 也许用作排除可疑字符
