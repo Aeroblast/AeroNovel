@@ -30,6 +30,7 @@ class GenInlineHTML
             if (f.title == "EOB") { continue; }
             if (f.title.StartsWith("SVG")) { continue; }
             string r = inst.GenContent(f.lines);
+            if (f.title == "info") { r = r.Replace("text-indent:1.5em;", "").Replace("text-indent:2em;", ""); }
             var outputPath = Path.Combine(outputDir, f.no + f.title + ".txt");
             File.WriteAllText(outputPath, r);
             Log.Note("Saved: " + outputPath);
