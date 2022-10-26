@@ -190,7 +190,7 @@ namespace AeroNovelEpub
                                             Log.Warn("Cannot find " + img_name);
                                         }
                                         string src = "../Images/" + img_name;
-                                        string img_temp = "<div class=\"atxt_aligned atxt_illu\"><img class=\"atxt_illu\" src=\"{0}\" alt=\"\"/></div>";
+                                        string img_temp = "<div class=\"atxt_illu\"><img class=\"atxt_illu\" src=\"{0}\" alt=\"\"/></div>";
                                         r = reg.Replace(r, string.Format(img_temp, src), 1);
                                     }
                                     break;
