@@ -1,3 +1,5 @@
+/* Start of AeroNovelTool Template CSS */
+/* Version: 2022-10 */
 .atxt_info>p {
     font-size: 0.7em;
     margin: 0;
@@ -27,7 +29,7 @@ p {
     text-indent: 0;
 }
 
-.atxt_aligned p{
+.atxt_aligned p {
     text-indent: 0;
 }
 
@@ -53,9 +55,11 @@ p {
     }
 }
 
-.atxt_illu {
+div.atxt_illu {
+    text-indent: 0;
+    text-align: center;
     width: 100%;
-    height: 99vh;
+    height: 98vh;
     page-break-inside: avoid;
     display: flex;
     align-items: center;
@@ -63,19 +67,14 @@ p {
     flex-flow: column;
 }
 
-.atxt_illu img {
+img.atxt_illu {
     width: auto;
     height: auto;
 }
 
-p.atxt_illu {
-    font-size: 1em;
-    line-height: 1.1;
-}
-
 .atxt_title {
     font-size: 1.5em;
-    text-align: center!important;
+    text-align: center !important;
     text-indent: 0;
     font-weight: bold;
     margin-bottom: 0.5em;
@@ -92,9 +91,9 @@ p.atxt_illu {
     margin-top: 1em;
 }
 
-.atxt_note_p{
-	text-indent: -2em;
-	margin-left: 2em;
+.atxt_note_p {
+    text-indent: -2em;
+    margin-left: 2em;
 }
 
 aside {
@@ -141,4 +140,5 @@ a {
     -webkit-word-break: break-all;
     -epub-word-break: break-all;
 }
+
 /* End of AeroNovelTool Template CSS */

@@ -32,6 +32,10 @@ class GenInlineHTML
             string r = inst.GenContent(f.lines);
             if (f.title == "info") { r = r.Replace("text-indent:1.5em;", "").Replace("text-indent:2em;", ""); }
             var outputPath = Path.Combine(outputDir, f.no + f.title + ".txt");
+            if (inst.project.config != null && inst.project.config.addSourceInfo == ConfigValue.active)
+            {
+                r += $"\n<span style='font-family:monospace;font-size:0.5em;color:#efefef;'>src: {f.no}{f.title} | mod: {f.lastModificationTime} - {f.lastComment}</span><br>";
+            }
             File.WriteAllText(outputPath, r);
             Log.Note("Saved: " + outputPath);
 
