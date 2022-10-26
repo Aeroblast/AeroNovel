@@ -3,6 +3,7 @@ using System.IO;
 using System.Linq;
 using System.Collections.Generic;
 using System.Text.RegularExpressions;
+using System.Diagnostics;
 
 public class AtxtProject
 {
@@ -38,6 +39,10 @@ public class AtxtProject
         foreach (string txt_path in src_paths)
         {
             var src = new AtxtSource(txt_path);
+            if (config != null && config.addSourceInfo == ConfigValue.active)
+            {
+                src.GetHistory();
+            }
             srcs.Add(src);
         }
         if (config != null && config.joinCommands.Count > 0)
@@ -54,9 +59,14 @@ public class AtxtProject
                     continue;
                 }
                 string blankLines = new string('\n', config.joinBlankLine);
-                var contentToJoin = srcs.GetRange(startIndex, endIndex - startIndex + 1).Select(s => s.content);
+                var srcsToJoin = srcs.GetRange(startIndex, endIndex - startIndex + 1);
+                var contentToJoin = srcsToJoin.Select(s => s.content);
                 string content = string.Join(blankLines, contentToJoin);
+                srcsToJoin.Sort((s1, s2) => String.Compare(s1.lastModificationTime, s2.lastModificationTime));
+                // to-do check sort
                 AtxtSource combined = new AtxtSource($"{cmbcmd.start}.atxt", cmbcmd.start, cmbcmd.title, content);
+                combined.lastModificationTime = srcsToJoin[0].lastModificationTime;
+                combined.lastComment = srcsToJoin[0].lastComment + $" from {srcsToJoin[0].no} of {cmbcmd.start}-{cmbcmd.end}";
                 srcs.RemoveRange(startIndex, endIndex - startIndex + 1);
                 srcs.Insert(startIndex, combined);
             }
@@ -156,6 +166,7 @@ public class AtxtSource
 {
     public string content, path;
     public string no, title, ext, xhtmlName;
+    public string lastModificationTime, lastComment;
     public string[] lines
     {
         get
@@ -275,6 +286,87 @@ public class AtxtSource
             return "atxt" + no + name + ".xhtml";
         }
     }
+    static Regex gitOutputParttern = new Regex("^[0-9]{4}-[0-1][0-9]-[0-3][0-9]");
+
+    public void GetHistory()
+    {
+        var gitStatus = GetGitStatus();
+        if (GetGitStatus() != GitStatus.OK)
+        {
+            lastModificationTime = File.GetLastWriteTime(path).ToString("yyyy-MM-dd HH:mm:ss");
+            lastComment = "fs | GitStatus: " + gitStatus;
+            return;
+        }
+        ProcessStartInfo gitCmd = new ProcessStartInfo();
+        gitCmd.CreateNoWindow = false;
+        gitCmd.UseShellExecute = false;
+        gitCmd.FileName = "git";
+        gitCmd.Arguments = $"log -1 --date=format:\"%Y-%m-%d %H:%M:%S\" --pretty=format:\"%cd %s\" -- \"{Path.GetFileName(path)}\"";
+        gitCmd.RedirectStandardOutput = true;
+        gitCmd.WorkingDirectory = Path.GetDirectoryName(path);
+        gitCmd.StandardOutputEncoding = System.Text.Encoding.UTF8;
+        try
+        {
+            using (Process p = Process.Start(gitCmd))
+            {
+                p.WaitForExit();
+                var gitOutput = p.StandardOutput.ReadToEnd().Trim();
+                Match m = gitOutputParttern.Match(gitOutput);
+                if (m.Success)
+                {
+                    lastModificationTime = gitOutput.Substring(0, "XXXX-XX-XX 00:00:00".Length);
+                    lastComment = "git msg '" + gitOutput.Substring("XXXX-XX-XX 00:00:00".Length).Trim() + "'";
+                }
+
+            }
+        }
+        catch
+        {
+            Log.Warn("Git应该不会输出别的吧。不行算了。");
+        }
+    }
+
+    public enum GitStatus
+    {
+        OK,
+        Untracked,
+        HasNotStagedChange,
+        Unknown
+    }
+
+    public GitStatus GetGitStatus()
+    {
+        ProcessStartInfo gitCmd = new ProcessStartInfo();
+        gitCmd.CreateNoWindow = false;
+        gitCmd.UseShellExecute = false;
+        gitCmd.FileName = "git";
+        gitCmd.Arguments = $"status -- \"{Path.GetFileName(path)}\"";
+        gitCmd.RedirectStandardOutput = true;
+        gitCmd.WorkingDirectory = Path.GetDirectoryName(path);
+        gitCmd.StandardOutputEncoding = System.Text.Encoding.UTF8;
+
+        using (Process p = Process.Start(gitCmd))
+        {
+            p.WaitForExit();
+            var gitOutput = p.StandardOutput.ReadToEnd().Trim();
+            if (gitOutput.Contains("nothing to commit, working tree clean"))
+            {
+                return GitStatus.OK;
+            }
+            else if (gitOutput.Contains("Untracked file"))
+            {
+                return GitStatus.Untracked;
+            }
+            else if (gitOutput.Contains("Changes not staged for commit:"))
+            {
+                return GitStatus.HasNotStagedChange;
+            }
+        }
+        throw new Exception("Unknown Git Output");
+
+
+
+    }
 
 }
 
@@ -284,7 +376,7 @@ public enum ConfigValue
 {
     unset = 0,
     active = 1,
-    disable = 2
+    disable = -1
 }
 
 public class ProjectConfig
@@ -294,6 +386,7 @@ public class ProjectConfig
     public ConfigValue indentAdjust;
     public ConfigValue addInfo;
     public ConfigValue autoSpace;
+    public ConfigValue addSourceInfo;
     public string inlinehtmlWrapperStyle;
 
     public ProjectConfig(string[] content)
@@ -316,9 +409,13 @@ public class ProjectConfig
                     indentAdjust = GetConfigValue(arg); break;
                 case "add_info":
                     addInfo = GetConfigValue(arg); break;
+                case "add_source_info":
+                    addSourceInfo = GetConfigValue(arg);
+                    Log.Info("AddSourceInfo: " + addSourceInfo);
+                    break;
                 case "auto_space":
                     autoSpace = GetConfigValue(arg);
-                    Log.Info("AutoSpace on.");
+                    Log.Info("AutoSpace: " + autoSpace);
                     break;
                 case "inlinehtml_wrapper_style":
                     inlinehtmlWrapperStyle = arg.Trim();
