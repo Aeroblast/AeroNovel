@@ -300,6 +300,8 @@ epub2comment 【生肉epub文件】 【可选选项...】
 atxtcc 【txt文件】 【't2s'】
 analyze 【项目文件夹】
 reviewepub 【项目文件夹】 【输出目录(可选)】
+verifyhistory 【项目文件夹】
+verifyuncommitted 【项目文件夹】
 ";
     static bool FileExist(string path)
     {
