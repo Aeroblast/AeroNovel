@@ -12,9 +12,16 @@ public class AtxtProject
     public List<AtxtSource> srcs = new List<AtxtSource>();
 
     public List<string> src_paths = new List<string>();
-    public AtxtProject(string dir)
+    public AtxtProject(string dir, bool loadConfigOnCreation = true)
     {
         this.dir = dir;
+        if (loadConfigOnCreation)
+        {
+            TryLoadConfig();
+        }
+    }
+    public void TryLoadConfig()
+    {
         if (File.Exists(Path.Combine(dir, "config.txt")))
         {
             config = new ProjectConfig(File.ReadAllLines(Path.Combine(dir, "config.txt")));
@@ -162,11 +169,10 @@ public class AtxtProject
     }
 }
 
-public class AtxtSource
+public partial class AtxtSource
 {
-    public string content, path;
+    public string content, path, filename;
     public string no, title, ext, xhtmlName;
-    public string lastModificationTime, lastComment;
     public string[] lines
     {
         get
@@ -177,6 +183,7 @@ public class AtxtSource
     public AtxtSource(string path)
     {
         this.path = path;
+        filename = Path.GetFileName(path);
         Match m = Regex.Match(Path.GetFileNameWithoutExtension(path), AeroNovel.regStr_filename_noext);
         ext = Path.GetExtension(path);
         no = m.Groups[1].Value;
@@ -286,88 +293,6 @@ public class AtxtSource
             return "atxt" + no + name + ".xhtml";
         }
     }
-    static Regex gitOutputParttern = new Regex("^[0-9]{4}-[0-1][0-9]-[0-3][0-9]");
-
-    public void GetHistory()
-    {
-        var gitStatus = GetGitStatus();
-        if (GetGitStatus() != GitStatus.OK)
-        {
-            lastModificationTime = File.GetLastWriteTime(path).ToString("yyyy-MM-dd HH:mm:ss");
-            lastComment = "fs | GitStatus: " + gitStatus;
-            return;
-        }
-        ProcessStartInfo gitCmd = new ProcessStartInfo();
-        gitCmd.CreateNoWindow = false;
-        gitCmd.UseShellExecute = false;
-        gitCmd.FileName = "git";
-        gitCmd.Arguments = $"log -1 --date=format:\"%Y-%m-%d %H:%M:%S\" --pretty=format:\"%cd %s\" -- \"{Path.GetFileName(path)}\"";
-        gitCmd.RedirectStandardOutput = true;
-        gitCmd.WorkingDirectory = Path.GetDirectoryName(path);
-        gitCmd.StandardOutputEncoding = System.Text.Encoding.UTF8;
-        try
-        {
-            using (Process p = Process.Start(gitCmd))
-            {
-                p.WaitForExit();
-                var gitOutput = p.StandardOutput.ReadToEnd().Trim();
-                Match m = gitOutputParttern.Match(gitOutput);
-                if (m.Success)
-                {
-                    lastModificationTime = gitOutput.Substring(0, "XXXX-XX-XX 00:00:00".Length);
-                    lastComment = "git msg '" + gitOutput.Substring("XXXX-XX-XX 00:00:00".Length).Trim() + "'";
-                }
-
-            }
-        }
-        catch
-        {
-            Log.Warn("Git应该不会输出别的吧。不行算了。");
-        }
-    }
-
-    public enum GitStatus
-    {
-        OK,
-        Untracked,
-        HasNotStagedChange,
-        Unknown
-    }
-
-    public GitStatus GetGitStatus()
-    {
-        ProcessStartInfo gitCmd = new ProcessStartInfo();
-        gitCmd.CreateNoWindow = false;
-        gitCmd.UseShellExecute = false;
-        gitCmd.FileName = "git";
-        gitCmd.Arguments = $"status -- \"{Path.GetFileName(path)}\"";
-        gitCmd.RedirectStandardOutput = true;
-        gitCmd.WorkingDirectory = Path.GetDirectoryName(path);
-        gitCmd.StandardOutputEncoding = System.Text.Encoding.UTF8;
-
-        using (Process p = Process.Start(gitCmd))
-        {
-            p.WaitForExit();
-            var gitOutput = p.StandardOutput.ReadToEnd().Trim();
-            if (gitOutput.Contains("nothing to commit, working tree clean"))
-            {
-                return GitStatus.OK;
-            }
-            else if (gitOutput.Contains("Untracked file"))
-            {
-                return GitStatus.Untracked;
-            }
-            else if (gitOutput.Contains("Changes not staged for commit:"))
-            {
-                return GitStatus.HasNotStagedChange;
-            }
-        }
-        throw new Exception("Unknown Git Output");
-
-
-
-    }
-
 }
 
 

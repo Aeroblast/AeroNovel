@@ -252,6 +252,34 @@ class Program
                         break;
                     }
                     break;
+                case "verifyhistory":
+                    Log.Note("Verify raw untouched on Git history");
+                    if (Directory.Exists(args[1]))
+                    {
+                        Log.Note("Project: " + Path.GetFileName(args[1]));
+                        var project = new AtxtProject(args[1], false);
+                        project.CollectSource();
+                        project.srcs.ForEach(s => s.GitVerifyRawUntouchedOnHistory());
+                    }
+                    else
+                    {
+                        Log.Error("The directroy doesn't exist: " + Path.GetFileName(args[1]));
+                    }
+                    break;
+                case "verifyuncommitted":
+                    Log.Note("Verify raw untouched on uncommitted Git changes.");
+                    if (Directory.Exists(args[1]))
+                    {
+                        Log.Note("Project: " + Path.GetFileName(args[1]));
+                        var project = new AtxtProject(args[1], false);
+                        project.CollectSource();
+                        project.srcs.ForEach(s => s.GitVerifyRawUntouchedOnUncommitted());
+                    }
+                    else
+                    {
+                        Log.Error("The directroy doesn't exist: " + Path.GetFileName(args[1]));
+                    }
+                    break;
                 default:
                     Log.Warn("Nothing happens. " + usage);
                     break;
