@@ -34,7 +34,9 @@ class GenInlineHTML
             var outputPath = Path.Combine(outputDir, f.no + f.title + ".txt");
             if (inst.project.config != null && inst.project.config.addSourceInfo == ConfigValue.active)
             {
-                r += $"\n<span style='font-family:monospace;font-size:0.5em;color:#efefef;'>src: {f.no}{f.title} | mod: {f.lastModificationTime} - {f.lastComment}</span><br>";
+                var msg = $"源：{f.no}{f.title}{(f.majorVersionTime != null ? "｜成稿：" + f.majorVersionTime : "")}｜更改：{f.lastModificationTime} - {f.lastComment}";
+                Console.WriteLine(msg);
+                r += $"\n<span style='font-family:monospace;font-size:0.5em;color:#efefef;'>{msg}</span><br>";
             }
             File.WriteAllText(outputPath, r);
             Log.Note("Saved: " + outputPath);

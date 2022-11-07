@@ -6,27 +6,21 @@ using System.Text.RegularExpressions;
 using System.Diagnostics;
 public partial class AtxtSource
 {
-    public string lastModificationTime, lastComment;
+    public string majorVersionTime, lastModificationTime, lastComment;
 
     static Regex gitLogParttern = new Regex("^([0-9]{4}-[0-1][0-9]-[0-3][0-9]) ([0-9]{2}:[0-9]{2}:[0-9]{2})(.*)");
 
-    public void GetHistory()
+    public void GetHistory(string gitMessageRegexMajor)
     {
         var gitStatus = GetGitStatus();
         if (GetGitStatus() != GitStatus.OK)
         {
             lastModificationTime = File.GetLastWriteTime(path).ToString("yyyy-MM-dd HH:mm:ss");
-            lastComment = "fs | GitStatus: " + gitStatus;
+            lastComment = "fs | Git " + gitStatus;
             return;
         }
-        ProcessStartInfo gitCmd = new ProcessStartInfo();
-        gitCmd.CreateNoWindow = false;
-        gitCmd.UseShellExecute = false;
-        gitCmd.FileName = "git";
-        gitCmd.Arguments = $"log -1 --date=format:\"%Y-%m-%d %H:%M:%S\" --pretty=format:\"%cd %s\" -- \"{filename}\"";
-        gitCmd.RedirectStandardOutput = true;
-        gitCmd.WorkingDirectory = Path.GetDirectoryName(path);
-        gitCmd.StandardOutputEncoding = System.Text.Encoding.UTF8;
+        var args = $"log -1 --date=format:\"%Y-%m-%d %H:%M:%S\" --pretty=format:\"%cd %s\" -- \"{filename}\"";
+        var gitCmd = ProcessStartHelper("git", args);
         try
         {
             using (Process p = Process.Start(gitCmd))
@@ -36,7 +30,7 @@ public partial class AtxtSource
                 Match m = gitLogParttern.Match(gitOutput);
                 if (m.Success)
                 {
-                    lastModificationTime = gitOutput.Substring(0, "XXXX-XX-XX 00:00:00".Length);
+                    lastModificationTime = gitOutput.Substring(0, "XXXX-XX-XX 00:00".Length);
                     lastComment = "git msg '" + gitOutput.Substring("XXXX-XX-XX 00:00:00".Length).Trim() + "'";
                 }
 
@@ -46,13 +40,15 @@ public partial class AtxtSource
         {
             Log.Warn("Git应该不会输出别的吧。不行算了。");
         }
+        if (!string.IsNullOrEmpty(gitMessageRegexMajor))
+        { GitSearchMajorCommit(gitMessageRegexMajor); }
     }
 
     public enum GitStatus
     {
         OK,
         Untracked,
-        HasNotStagedChange,
+        HasUnstaged,
         Unknown
     }
 
@@ -74,12 +70,41 @@ public partial class AtxtSource
             }
             else if (gitOutput.Contains("Changes not staged for commit:"))
             {
-                return GitStatus.HasNotStagedChange;
+                return GitStatus.HasUnstaged;
             }
         }
         throw new Exception("Unknown Git Output");
 
     }
+
+    public void GitSearchMajorCommit(string messageRegex)
+    {
+        var args = $"--no-pager log --reverse --date=format:\"%Y-%m-%d %H:%M:%S\" --pretty=format:\"%cd %s\" -- \"{filename}\"";
+        var gitCmd = ProcessStartHelper("git", args);
+        var regex = new Regex(messageRegex);
+        using (Process p = Process.Start(gitCmd))
+        {
+
+            var gitOutput = p.StandardOutput.ReadToEnd(); //Like 2022-06-17 17:19:08 raw
+            var lines = gitOutput.Trim().Split('\n');
+            foreach (var line in lines)
+            {
+                var m = gitLogParttern.Match(line);
+                if (m.Success)
+                {
+                    var msg = m.Groups[3].Value.Trim();
+                    if (regex.IsMatch(msg))
+                    {
+                        majorVersionTime = m.Groups[1].Value;
+                        break;
+                    }
+                }
+            }
+
+            p.WaitForExit();
+        }
+    }
+
     string rawCommit = null;
 
     public void GitVerifyRawUntouchedOnHistory()

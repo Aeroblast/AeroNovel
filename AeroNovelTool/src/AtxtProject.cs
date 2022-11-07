@@ -43,12 +43,16 @@ public class AtxtProject
         }
         src_paths.Sort();
 
+        if (config != null && config.addSourceInfo == ConfigValue.active)
+        {
+            Log.Info("读 git 记录会有点慢，别急");
+        }
         foreach (string txt_path in src_paths)
         {
             var src = new AtxtSource(txt_path);
             if (config != null && config.addSourceInfo == ConfigValue.active)
             {
-                src.GetHistory();
+                src.GetHistory(config.gitMessageRegexMajor);
             }
             srcs.Add(src);
         }
@@ -69,11 +73,13 @@ public class AtxtProject
                 var srcsToJoin = srcs.GetRange(startIndex, endIndex - startIndex + 1);
                 var contentToJoin = srcsToJoin.Select(s => s.content);
                 string content = string.Join(blankLines, contentToJoin);
-                srcsToJoin.Sort((s1, s2) => String.Compare(s1.lastModificationTime, s2.lastModificationTime));
+                srcsToJoin.Sort((s1, s2) => -String.Compare(s1.lastModificationTime, s2.lastModificationTime));
                 // to-do check sort
                 AtxtSource combined = new AtxtSource($"{cmbcmd.start}.atxt", cmbcmd.start, cmbcmd.title, content);
                 combined.lastModificationTime = srcsToJoin[0].lastModificationTime;
                 combined.lastComment = srcsToJoin[0].lastComment + $" from {srcsToJoin[0].no} of {cmbcmd.start}-{cmbcmd.end}";
+                srcsToJoin.Sort((s1, s2) => -String.Compare(s1.majorVersionTime + ".", s2.majorVersionTime + "."));
+                combined.majorVersionTime = srcsToJoin[0].majorVersionTime;
                 srcs.RemoveRange(startIndex, endIndex - startIndex + 1);
                 srcs.Insert(startIndex, combined);
             }
@@ -312,7 +318,7 @@ public class ProjectConfig
     public ConfigValue addInfo;
     public ConfigValue autoSpace;
     public ConfigValue addSourceInfo;
-    public string inlinehtmlWrapperStyle;
+    public string inlinehtmlWrapperStyle, gitMessageRegexMajor;
 
     public ProjectConfig(string[] content)
     {
@@ -345,6 +351,9 @@ public class ProjectConfig
                 case "inlinehtml_wrapper_style":
                     inlinehtmlWrapperStyle = arg.Trim();
                     Log.Info("Wrapper div style overrided.");
+                    break;
+                case "git_message_regex_major":
+                    gitMessageRegexMajor = arg.Trim();
                     break;
             }
         }
