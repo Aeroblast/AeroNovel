@@ -36,7 +36,7 @@ class GenInlineHTML
             {
                 var msg = $"源：{f.no}{f.title}{(f.majorVersionTime != null ? "｜成稿：" + f.majorVersionTime : "")}｜更改：{f.lastModificationTime} - {f.lastComment}";
                 Console.WriteLine(msg);
-                r += $"\n<div style='font-family:monospace;font-size:0.5em;color:#efefef;line-height:1;'>{msg}</div>";
+                r += $"\n<div style=\"font-family:monospace;font-size:0.5em;color:#efefef;line-height:1;\">{msg}</div>";
             }
             File.WriteAllText(outputPath, r);
             Log.Note("Saved: " + outputPath);
