@@ -36,7 +36,7 @@ class GenInlineHTML
             {
                 var msg = $"源：{f.no}{f.title}{(f.majorVersionTime != null ? "｜成稿：" + f.majorVersionTime : "")}｜更改：{f.lastModificationTime} - {f.lastComment}";
                 Console.WriteLine(msg);
-                r += $"\n<span style='font-family:monospace;font-size:0.5em;color:#efefef;'>{msg}</span><br>";
+                r += $"\n<div style='font-family:monospace;font-size:0.5em;color:#efefef;line-height:1;'>{msg}</div>";
             }
             File.WriteAllText(outputPath, r);
             Log.Note("Saved: " + outputPath);
@@ -100,8 +100,8 @@ class GenInlineHTML
                 {"\\[url=(.*?)\\](.*?)\\[\\/url\\]","<a href=\"$1\">$2</a>"},
 
                 //字符处理
-                {"(?<!<span style=\"word-wrap:break-word;word-break:break-all;\">)(?<!…)[…]{3,99}","<span style=\"word-wrap:break-word;word-break:break-all;\">$0</span>"},
-                {"(?<!<span style=\"word-wrap:break-word;word-break:break-all;\">)(?<!—)[—]{3,99}","<span style=\"word-wrap:break-word;word-break:break-all;\">$0</span>"}
+                {"(?<!<span style=\"word-wrap:break-word;line-break:anywhere;\">)(?<!…)[…]{3,99}","<span style=\"word-wrap:break-word;line-break:anywhere;\">$0</span>"},
+                {"(?<!<span style=\"word-wrap:break-word;line-break:anywhere;\">)(?<!—)[—]{3,99}","<span style=\"word-wrap:break-word;line-break:anywhere;\">$0</span>"}
             };
 
 
