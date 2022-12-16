@@ -303,14 +303,3 @@ verifyuncommitted 【项目文件夹】
         Log.Note("Saved:" + p);
     }
 }
-public class AeroNovel
-{
-    public static string regStr_filename = "^([0-9][0-9])(.*?)\\.[a]{0,1}txt$";
-    public static string regStr_filename_xhtml = "^([0-9][0-9])(.*?)\\.xhtml$";
-    public static string regStr_filename_noext = "^([0-9][0-9])(.*)";
-    public static bool isIndexedTxt(string path)
-    {
-        return Regex.Match(Path.GetFileName(path), regStr_filename).Success;
-    }
-
-}

@@ -7,12 +7,15 @@ using System.Diagnostics;
 
 public class AtxtProject
 {
+    public static Regex reg_filename = new Regex("^([0-9]+)(.+)");
     public ProjectConfig config;
     public string dir;
     public List<AtxtSource> srcs = new List<AtxtSource>();
 
     public List<string> src_paths = new List<string>();
     public bool force_skip_git = false;
+    public int id_length = 2;
+    bool id_length_changed = false;
     public AtxtProject(string dir, bool loadConfigOnCreation = true)
     {
         this.dir = dir;
@@ -38,18 +41,33 @@ public class AtxtProject
     }
     public void CollectSource()
     {
-        string[] files = Directory.GetFiles(dir);
+        var files = new List<string>(Directory.GetFiles(dir));
+        string[] acceptExt = new string[] { ".txt", ".atxt", ".xhtml" };
+        files.Sort();
         foreach (string f in files)
         {
-            Match m = Regex.Match(Path.GetFileName(f), AeroNovel.regStr_filename);
-            if (!m.Success)
+            string ext = Path.GetExtension(f);
+            string filename = Path.GetFileNameWithoutExtension(f);
+            if (!acceptExt.Contains(ext)) continue;
+            Match m = reg_filename.Match(filename);
+            if (!m.Success) { continue; }
+            var id = m.Groups[1].Value;
+            if (!id_length_changed && int.Parse(id) == 0)
             {
-                m = Regex.Match(Path.GetFileName(f), AeroNovel.regStr_filename_xhtml);
-                if (!m.Success) { continue; }
+                if (id.Length != 2)
+                {
+                    Log.Info($"The atxt ID length has changed to {id.Length} by {filename}");
+                    id_length = id.Length;
+                    id_length_changed = true;
+                }
+            }
+            if (id_length != id.Length)
+            {
+                Log.Warn($"Expect id length {id_length} but got {filename}");
+                continue;
             }
             src_paths.Add(f);
         }
-        src_paths.Sort();
 
         if (willRunGit)
         {
@@ -217,7 +235,7 @@ public partial class AtxtSource
     {
         this.path = path;
         filename = Path.GetFileName(path);
-        Match m = Regex.Match(Path.GetFileNameWithoutExtension(path), AeroNovel.regStr_filename_noext);
+        Match m = AtxtProject.reg_filename.Match(Path.GetFileNameWithoutExtension(filename));
         ext = Path.GetExtension(path);
         no = m.Groups[1].Value;
         title = Util.UrlDecode(m.Groups[2].Value);
