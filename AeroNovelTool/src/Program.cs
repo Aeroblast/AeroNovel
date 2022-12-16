@@ -43,9 +43,9 @@ class Program
                 case "reviewepub":
                     {
                         if (!DirectoryExist(args[1])) return;
-                        var gen = new AeroNovelEpub.GenReviewEpub();
+                        var gen = new AeroNovelEpub.GenReviewEpub(args[1]);
 
-                        EpubFile e = gen.Gen(args[1]);
+                        EpubFile e = gen.Gen();
                         string dateString = DateTime.Today.ToString("yyyyMMdd");
                         var creators = e.dc_creators.Where(x => x.refines.Find(r => r.name == "role" && r.value == "aut") != null).Select(x => x.value).ToArray();
                         try

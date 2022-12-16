@@ -8,188 +8,14 @@ using System.Text;
 using AeroEpub.Epub;
 namespace AeroNovelEpub
 {
-    public class GenReviewEpub
+    public class GenReviewEpub : GenEpub
     {
-        public List<AtxtSource> srcs = new List<AtxtSource>();
 
-        public List<string> src_paths = new List<string>();
-        public string dir;
-        public Dictionary<string, string> macros;
-
-
-        string spine = "";
-        string items = "";
-        string version = "2.0";
-        string title = "";
-        EpubFile epub = new EpubFile("template.zip");
-        string uid = "urn:uuid:" + Guid.NewGuid().ToString();
-        string xhtml_temp;
-
-        public string img_path
-        {
-            get { return Path.Combine(dir, "Images"); }
-        }
-        public string fnt_path
-        {
-            get { return Path.Combine(dir, "Fonts"); }
-        }
-        public List<string> img_names = new List<string>();
-        public ChineseConvertOption cc_option;
-        public ConfigValue indentAdjust = 0;
-        public ConfigValue addInfo = 0;
-        ChineseConvert cc;
-        public ProjectConfig config;
-        public GenReviewEpub()
-        {
-            TextEpubItemFile t = epub.GetFile<TextEpubItemFile>("OEBPS/Text/template.xhtml");
-            xhtml_temp = t.text;
-            epub.items.Remove(t);
-        }
-        public EpubFile Gen(string dir)
+        public GenReviewEpub(string dir) : base(dir)
         {
 
-            if (File.Exists(Path.Combine(dir, "config.txt")))
-            {
-                config = new ProjectConfig(File.ReadAllLines(Path.Combine(dir, "config.txt")));
-                Log.Info("Read config.txt");
-                indentAdjust = Util.GetConfigValue(indentAdjust, config.indentAdjust);
-                addInfo = Util.GetConfigValue(addInfo, config.addInfo);
-            }
-            if (cc_option == ChineseConvertOption.T2S)
-            {
-                Log.Note("Chinese Convert: T2S");
-                cc = new ChineseConvert();
-                cc.Prepare();
-            }
-            if (indentAdjust == ConfigValue.disable)
-                Log.Note("Option: No indent adjustion.");
-            if (addInfo == ConfigValue.disable)
-                Log.Note("Option: Do not add generation info.");
-
-            this.dir = dir;
-
-            string metaPath = Path.Combine(dir, "meta.txt");
-            if (File.Exists(Path.Combine(dir, "meta3.txt")))
-            {
-                metaPath = Path.Combine(dir, "meta3.txt");
-                version = "3.0";
-                xhtml_temp = Regex.Replace(xhtml_temp, "<!DOCTYPE html([\\s\\S]*?)>", "<!DOCTYPE html>");
-            }
-
-            if (File.Exists(Path.Combine(dir, "macros.txt")))
-            {
-                Log.Info("Read macros.txt");
-                string[] macros_raw = File.ReadAllLines(Path.Combine(dir, "macros.txt"));
-                macros = new Dictionary<string, string>();
-                foreach (string macro in macros_raw)
-                {
-                    string[] s = macro.Split('\t');
-                    if (s.Length < 2)
-                    {
-                        Log.Warn("Macro defination is not complete. Use tab to separate: " + macro);
-                    }
-                    macros.Add(s[0], s[1]);
-                }
-
-            }
-
-            string meta = File.ReadAllText(metaPath);
-            meta = meta.Replace("\r\n", "\n");
-            meta = meta.Replace("{urn:uuid}", uid);
-            uid = Regex.Match(meta, "<dc:identifier id=\"BookId\">(.*?)</dc:identifier>").Groups[1].Value;
-            meta = meta.Replace("{date}", DateTime.Today.ToString("yyyy-MM-ddT00:00:00Z"));
-            if (cc != null)
-            {
-                meta = cc.Convert(meta);
-            }
-            if (cc_option == ChineseConvertOption.T2S)
-            {
-                meta = meta.Replace("<dc:language>zh-tw</dc:language>", "<dc:language>zh</dc:language>", true, null);
-            }
-            if (!meta.Contains("<meta property=\"ibooks:specified-fonts\">true</meta>"))
-            {
-                Match m = Regex.Match(meta, "\n.*?</metadata>");
-                meta = meta.Insert(m.Index + 1, "    <meta property=\"ibooks:specified-fonts\">true</meta>\n");
-            }
-            title = Regex.Match(meta, "<dc:title.*?>(.*?)</dc:title>").Groups[1].Value;
-
-            CollectSource();
-            if (config != null && config.autoSpace == ConfigValue.active)
-            {
-                foreach (var src in srcs)
-                {
-                    AutoSpace.ProcAtxt(src);
-                }
-            }
-            GenContent();
-            GetImage();
-            GetCss();
-
-            TextEpubItemFile toc = epub.GetFile<TextEpubItemFile>("OEBPS/toc.ncx");
-            TextEpubItemFile nav = epub.GetFile<TextEpubItemFile>("OEBPS/nav.xhtml");
-            if (version == "2.0")
-            {
-                epub.items.Remove(nav);
-                var tocDocuments = GenTOC(File.ReadAllLines(Path.Combine(dir, "toc.txt")), uid, title, toc.text);
-                toc.text = tocDocuments.Item1;
-            }
-            else
-            {
-                var tocDocuments = GenTOC(File.ReadAllLines(Path.Combine(dir, "toc.txt")), uid, title, toc.text, nav.text);
-                toc.text = tocDocuments.Item1;
-                nav.text = tocDocuments.Item2;
-                items += "    <item id=\"nav.xhtml\" href=\"nav.xhtml\" media-type=\"application/xhtml+xml\" properties=\"nav\"/>";
-            }
-
-            TextEpubItemFile opf = epub.GetFile<TextEpubItemFile>("OEBPS/content.opf");
-            opf.text = string.Format(opf.text, meta, items, spine, version);
-
-            epub.ReadMeta();
-            return epub;
         }
-
-        void CollectSource()
-        {
-            string[] files = Directory.GetFiles(dir);
-            foreach (string f in files)
-            {
-                Match m = Regex.Match(Path.GetFileName(f), AeroNovel.regStr_filename);
-                if (!m.Success)
-                {
-                    m = Regex.Match(Path.GetFileName(f), AeroNovel.regStr_filename_xhtml);
-                    if (!m.Success) { continue; }
-                }
-                src_paths.Add(f);
-            }
-            src_paths.Sort();
-
-            foreach (string txt_path in src_paths)
-            {
-                var src = new AtxtSource(txt_path);
-                srcs.Add(src);
-            }
-
-            foreach (var src in srcs)
-            {
-                if (src.title.StartsWith("SVG"))
-                {
-                    items += string.Format("    <item id=\"{0}\" href=\"Text/{0}\" media-type=\"application/xhtml+xml\" properties=\"svg\"/>\n", src.xhtmlName);
-                }
-                else
-                {
-                    items += string.Format("    <item id=\"{0}\" href=\"Text/{0}\" media-type=\"application/xhtml+xml\"/>\n", src.xhtmlName);
-                }
-
-                spine += string.Format("    <itemref idref=\"{0}\"/>\n", src.xhtmlName);
-
-                if (cc != null)
-                {
-                    src.title = cc.Convert(src.title);
-                }
-            }
-        }
-
-        void GenContent()
+        public override void GenContent()
         {
             int i = 0;
             foreach (var src in srcs)
@@ -483,7 +309,6 @@ namespace AeroNovelEpub
                     if (div > 0)
                     {
                         //to-do: 改进效率……暂时懒得改，也不影响
-
                         string noteref_text = note.Substring(0, div);
                         html = html.Replace(string.Format(noteref_temp, count), string.Format(noteref_temp.Replace("注", noteref_text), count));
                         string note_content = note.Substring(div + 1);
@@ -527,37 +352,8 @@ namespace AeroNovelEpub
             }
             return s;
         }
-        void GetImage()
-        {
-            if (Directory.Exists(img_path))
-            {
-                Dictionary<string, string> imgtype = new Dictionary<string, string>
-                {
-                    {".jpg","image/jpeg"},
-                    {".png","image/png"}
-                };
-                foreach (var f in Directory.GetFiles(img_path))
-                {
-                    string ext = Path.GetExtension(f.ToLower());
-                    string fn = Path.GetFileName(f);
-                    if (imgtype.ContainsKey(ext))
-                    {
-                        EpubItemFile i = new EpubItemFile("OEBPS/Images/" + fn, File.ReadAllBytes(f));
-                        epub.items.Add(i);
-                        string properties = "";
-                        if (fn == "cover.jpg") { properties = " properties=\"cover-image\""; }
-                        items += $"    <item id=\"{fn}\" href=\"Images/{fn}\" media-type=\"{imgtype[ext]}\"{properties}/>\n";
-                        if (!img_names.Contains(fn))
-                        {
-                            Log.Warn("Unrefered image: " + fn);
-                        }
-                        Log.Info("Add image: " + fn);
-                    }
 
-                }
-            }
-        }
-        void GetCss()
+        protected override void GetCss()
         {
             TextEpubItemFile cssi = epub.GetFile<TextEpubItemFile>("OEBPS/Styles/Style.css");
             cssi.text += "\r\n\r\n .review_comment{text-indent:0; font-size:0.8em;color:#106600;page-break-after:avoid;} p{page-break-inside: avoid;}";
@@ -565,73 +361,9 @@ namespace AeroNovelEpub
             if (css.Length > 0)
             {
                 cssi.text += "\r\n\r\n" + File.ReadAllText(css[0]);
-                Log.Info("Css added:" + css[0]);
+                Log.Info("Css added for review:" + css[0]);
             }
 
-        }
-        public (string, string) GenTOC(string[] lines, string uid, string title, string template, string template3 = "")
-        {
-            //string temp=File.ReadAllText("template/toc.txt");
-            string r = "";
-            string r3 = "<ol>\n";
-            List<string> label = new List<string>();
-            int depth = 1;
-            int count = 0;
-            List<string> refered = new List<string>();//for playOrder
-
-            Match m;
-            foreach (string line in lines)
-            {
-                if (line[0] == '[')
-                {
-                    m = Regex.Match(line, "\\[(.*?)\\]");
-                    if (!m.Success) throw new Exception("目录生成失败：");
-                    string tag = m.Groups[1].Value;
-                    if (tag[0] == '/')
-                    {
-                        label.RemoveAt(label.Count - 1);
-                        r += "</navPoint>\n";
-                        if (template3 != "") r3 += "</ol></li>\n";
-                    }
-                    else
-                    {
-                        label.Add(tag);
-                        if (depth < label.Count + 1) { depth = label.Count + 1; }
-                        count++;
-                        m = Regex.Match(line.Substring(m.Index + m.Length), "([0-9][0-9])");
-                        if (!m.Success) throw new Exception();
-                        int index = srcs.FindIndex(src => src.no == m.Groups[1].Value);
-                        string link = "Text/" + srcs[index].xhtmlName;
-                        if (refered.IndexOf(link) < 0) { refered.Add(link); }
-                        r += $"<navPoint id=\"navPoint-{count}\" playOrder=\"{refered.IndexOf(link) + 1}\"><navLabel><text>{tag}</text></navLabel><content src=\"{link}\"/>\n";
-                        if (template3 != "") r3 += $"<li><a href=\"{link}\">{tag}</a><ol>\n";
-                    }
-                    continue;
-                }
-
-                m = Regex.Match(line, "([0-9][0-9])(.*)");
-                if (m.Success)
-                {
-                    count++;
-                    int index = srcs.FindIndex(src => src.no == m.Groups[1].Value);
-                    string link = "Text/" + srcs[index].xhtmlName;
-                    string navTitle = Util.Trim(m.Groups[2].Value);
-                    if (navTitle.Length == 0)
-                        navTitle = srcs[index].title;
-                    if (refered.IndexOf(link) < 0) { refered.Add(link); }
-                    r += $"<navPoint id=\"navPoint-{count}\" playOrder=\"{refered.IndexOf(link) + 1}\"><navLabel><text>{navTitle}</text></navLabel><content src=\"{link}\"/></navPoint>\n";
-                    if (template3 != "")
-                    {
-                        r3 += $"  <li><a href=\"{link}\">{navTitle}</a></li>\n";
-                    }
-                }
-
-            }
-            r3 += "</ol>";
-            return (
-                string.Format(template, uid, depth, title, r),
-                string.Format(template3, r3)
-            );
         }
     }
 

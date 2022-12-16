@@ -9,16 +9,15 @@ namespace AeroNovelEpub
 {
     public class GenEpub
     {
-        AtxtProject project;
-        string spine = "";
-        string items = "";
-        string version = "2.0";
-        string title = "";
-        EpubFile epub = new EpubFile("template.zip");
-        string uid = "urn:uuid:" + Guid.NewGuid().ToString();
-        string xhtml_temp;
+        protected AtxtProject project;
+        protected string spine = "";
+        protected string items = "";
+        protected string title = "";
+        protected EpubFile epub = new EpubFile("template.zip");
+        protected string uid = "urn:uuid:" + Guid.NewGuid().ToString();
+        protected string xhtml_temp;
 
-        string dir;
+        protected string dir;
 
         public string img_path
         {
@@ -49,17 +48,15 @@ namespace AeroNovelEpub
 
         public Dictionary<string, string> macros
         {
-            get
-            {
-                return project.macros;
-            }
+            get { return project.macros; }
         }
         public List<AtxtSource> srcs
         {
-            get
-            {
-                return project.srcs;
-            }
+            get { return project.srcs; }
+        }
+        public string version
+        {
+            get { return project.epubVersion; }
         }
         public GenEpub(string dir)
         {
@@ -76,6 +73,8 @@ namespace AeroNovelEpub
             {
                 xhtml_temp = Regex.Replace(xhtml_temp, "<!DOCTYPE html([\\s\\S]*?)>", "<!DOCTYPE html>");
             }
+            BuildMeta();
+            title = Regex.Match(meta, "<dc:title.*?>(.*?)</dc:title>").Groups[1].Value;
         }
         public EpubFile Gen()
         {
@@ -107,7 +106,7 @@ namespace AeroNovelEpub
                 nav.text = tocDocuments.Item2;
                 items += "    <item id=\"nav.xhtml\" href=\"nav.xhtml\" media-type=\"application/xhtml+xml\" properties=\"nav\"/>";
             }
-            BuildMeta();
+
             BuildSpine();
 
             TextEpubItemFile opf = epub.GetFile<TextEpubItemFile>("OEBPS/content.opf");
@@ -117,7 +116,7 @@ namespace AeroNovelEpub
             return epub;
         }
 
-        void BuildSpine()
+        protected void BuildSpine()
         {
             foreach (var src in srcs)
             {
@@ -133,8 +132,8 @@ namespace AeroNovelEpub
                 spine += string.Format("    <itemref idref=\"{0}\"/>\n", src.xhtmlName);
             }
         }
-        string meta;
-        void BuildMeta()
+        protected string meta;
+        protected void BuildMeta()
         {
             meta = project.epubMeta;
             meta = meta.Replace("{urn:uuid}", uid);
@@ -149,7 +148,7 @@ namespace AeroNovelEpub
             title = Regex.Match(meta, "<dc:title.*?>(.*?)</dc:title>").Groups[1].Value;
         }
 
-        void GenContent()
+        public virtual void GenContent()
         {
             GenHtml genHtml = new GenHtml(this);
             string patchfile_path = Path.Combine(dir, "patch_t2s/patch.csv");
@@ -191,7 +190,7 @@ namespace AeroNovelEpub
 
         }
 
-        void GetImage()
+        protected void GetImage()
         {
             if (Directory.Exists(img_path))
             {
@@ -222,7 +221,7 @@ namespace AeroNovelEpub
             }
 
         }
-        void GetFont()
+        protected void GetFont()
         {
             if (Directory.Exists(fnt_path))
             {
@@ -247,7 +246,7 @@ namespace AeroNovelEpub
             }
 
         }
-        void GetCss()
+        protected virtual void GetCss()
         {
             var css = Directory.GetFiles(dir, "*.css");
             if (css.Length > 0)
