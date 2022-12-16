@@ -12,6 +12,7 @@ public class AtxtProject
     public List<AtxtSource> srcs = new List<AtxtSource>();
 
     public List<string> src_paths = new List<string>();
+    public bool force_skip_git = false;
     public AtxtProject(string dir, bool loadConfigOnCreation = true)
     {
         this.dir = dir;
@@ -26,6 +27,13 @@ public class AtxtProject
         {
             config = new ProjectConfig(File.ReadAllLines(Path.Combine(dir, "config.txt")));
             Log.Info("Read config.txt");
+        }
+    }
+    bool willRunGit
+    {
+        get
+        {
+            return !force_skip_git && config != null && config.addSourceInfo == ConfigValue.active;
         }
     }
     public void CollectSource()
@@ -43,14 +51,14 @@ public class AtxtProject
         }
         src_paths.Sort();
 
-        if (config != null && config.addSourceInfo == ConfigValue.active)
+        if (willRunGit)
         {
             Log.Info("读 git 记录会有点慢，别急");
         }
         foreach (string txt_path in src_paths)
         {
             var src = new AtxtSource(txt_path);
-            if (config != null && config.addSourceInfo == ConfigValue.active)
+            if (willRunGit)
             {
                 src.GetHistory(config.gitMessageRegexMajor);
             }

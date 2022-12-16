@@ -8,35 +8,32 @@ class Statistic
     public static void AnalyzeProject(string dir, int start = 0)
     {
         Console.WriteLine($"Analyze '{dir}' start from file {start}");
-        string[] files = Directory.GetFiles(dir);
-        List<string> atxts = new List<string>();
-        foreach (string f in files)
+        AtxtProject project = new AtxtProject(dir);
+        project.force_skip_git = true;
+        project.CollectSource();
+        List<AtxtSource> atxts = new List<AtxtSource>();
+        foreach (var atxt in project.srcs)
         {
-            Match m = Regex.Match(Path.GetFileName(f), AeroNovel.regStr_filename);
-            if (!m.Success) continue;
-            string no = m.Groups[1].Value;
-            int chapter = int.Parse(no);
+
+            int chapter = int.Parse(atxt.no);
             if (chapter < start) continue;
-            atxts.Add(f);
+            atxts.Add(atxt);
 
         }
-        atxts.Sort();
         int totalLineCount = 0, totalTranslatedCount = 0, totalRawCount = 0;
         int totalTranslatedRaw = 0;
         int totalTranslated = 0;
         List<AnalyseResult> results = new List<AnalyseResult>();
 
-        foreach (string f in atxts)
+        foreach (var atxt in atxts)
         {
-            Match m = Regex.Match(Path.GetFileName(f), AeroNovel.regStr_filename);
-            string title = m.Groups[2].Value;
+            string title = atxt.title;
             if (title == "EOB")
             {
                 continue;
             }
-            string no = m.Groups[1].Value;
-            string[] lines = File.ReadAllLines(f);
-            var (lineCount, translatedCount, rawCount) = Analyse(lines);
+            string no = atxt.no;
+            var (lineCount, translatedCount, rawCount) = Analyse(atxt.lines);
             var translatedRawRate = ((float)translatedCount) / rawCount;
 
             if (rawCount > 100 && translatedRawRate > translatedRawCharRateThreshold)
