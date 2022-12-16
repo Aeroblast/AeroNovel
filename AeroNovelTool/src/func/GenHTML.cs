@@ -235,7 +235,7 @@ namespace AeroNovelEpub
                                         int chapnum;
                                         if (!int.TryParse(chapnum_s, out chapnum)) { Log.Error("Bad chapter string:" + chapnum_s); continue; }
 
-                                        int index = context.srcs.FindIndex(0, (src) => int.Parse(src.no) == chapnum);
+                                        int index = context.srcs.FindIndex(0, (src) => int.Parse(src.id) == chapnum);
                                         if (index < 0) { Log.Error("Bad chapter number:" + chapnum); continue; }
                                         string path = context.srcs[index].xhtmlName;
                                         r = reg.Replace(r, "<a href=\"" + path + "\">$2</a>");

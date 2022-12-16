@@ -31,10 +31,10 @@ class GenInlineHTML
             if (f.title.StartsWith("SVG")) { continue; }
             string r = inst.GenContent(f.lines);
             if (f.title == "info") { r = r.Replace("text-indent:1.5em;", "").Replace("text-indent:2em;", ""); }
-            var outputPath = Path.Combine(outputDir, f.no + f.title + ".txt");
+            var outputPath = Path.Combine(outputDir, f.id + f.title + ".txt");
             if (inst.project.config != null && inst.project.config.addSourceInfo == ConfigValue.active)
             {
-                var msg = $"源：{f.no}{f.title}{(f.majorVersionTime != null ? "｜成稿：" + f.majorVersionTime : "")}｜更改：{f.lastModificationTime} - {f.lastComment}";
+                var msg = $"源：{f.id}{f.title}{(f.majorVersionTime != null ? "｜成稿：" + f.majorVersionTime : "")}｜更改：{f.lastModificationTime} - {f.lastComment}";
                 Console.WriteLine(msg);
                 r += $"\n<div style=\"font-family:monospace;font-size:0.5em;color:#efefef;line-height:1;\">{msg}</div>";
             }

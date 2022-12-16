@@ -88,8 +88,8 @@ public class AtxtProject
             foreach (var cmbcmd in config.joinCommands)
             {
                 Log.Info($"{cmbcmd}");
-                int startIndex = srcs.FindIndex(0, s => s.no.CompareTo(cmbcmd.start) == 0);
-                int endIndex = srcs.FindIndex(0, s => s.no.CompareTo(cmbcmd.end) == 0);
+                int startIndex = srcs.FindIndex(0, s => s.id.CompareTo(cmbcmd.start) == 0);
+                int endIndex = srcs.FindIndex(0, s => s.id.CompareTo(cmbcmd.end) == 0);
                 if (startIndex < 0 || endIndex < 0)
                 {
                     Log.Error("Failure: " + cmbcmd.ToString());
@@ -103,7 +103,7 @@ public class AtxtProject
                 // to-do check sort
                 AtxtSource combined = new AtxtSource($"{cmbcmd.start}.atxt", cmbcmd.start, cmbcmd.title, content);
                 combined.lastModificationTime = srcsToJoin[0].lastModificationTime;
-                combined.lastComment = srcsToJoin[0].lastComment + $" from {srcsToJoin[0].no} of {cmbcmd.start}-{cmbcmd.end}";
+                combined.lastComment = srcsToJoin[0].lastComment + $" from {srcsToJoin[0].id} of {cmbcmd.start}-{cmbcmd.end}";
                 srcsToJoin.Sort((s1, s2) => -String.Compare(s1.majorVersionTime + ".", s2.majorVersionTime + "."));
                 combined.majorVersionTime = srcsToJoin[0].majorVersionTime;
                 srcs.RemoveRange(startIndex, endIndex - startIndex + 1);
@@ -223,7 +223,7 @@ public class AtxtProject
 public partial class AtxtSource
 {
     public string content, path, filename;
-    public string no, title, ext, xhtmlName;
+    public string id, title, ext, xhtmlName;
     public string[] lines
     {
         get
@@ -237,25 +237,25 @@ public partial class AtxtSource
         filename = Path.GetFileName(path);
         Match m = AtxtProject.reg_filename.Match(Path.GetFileNameWithoutExtension(filename));
         ext = Path.GetExtension(path);
-        no = m.Groups[1].Value;
+        id = m.Groups[1].Value;
         title = Util.UrlDecode(m.Groups[2].Value);
-        xhtmlName = MapFileName(no, title);
+        xhtmlName = MapFileName(id, title);
         content = File.ReadAllText(path);
     }
-    public AtxtSource(string dummy_path, string no, string title, string content)
+    public AtxtSource(string dummy_path, string id, string title, string content)
     {
         this.path = dummy_path;
         ext = ".atxt";
-        this.no = no;
+        this.id = id;
         this.title = Util.UrlDecode(title);
-        xhtmlName = MapFileName(no, title);
+        xhtmlName = MapFileName(id, title);
         this.content = content;
     }
     public override string ToString()
     {
-        return $"{no}{title}{ext}";
+        return $"{id}{title}{ext}";
     }
-    string MapFileName(string no, string readableName)
+    string MapFileName(string id, string readableName)
     {
         string lowered = readableName;
         string numberMap = "１①Ⅰ";
@@ -291,7 +291,7 @@ public partial class AtxtSource
         {
             if (trimmed.Contains(k.Key))
             {
-                return "atxt" + no + "_" + k.Value + ".xhtml";
+                return "atxt" + id + "_" + k.Value + ".xhtml";
 
             }
         }
@@ -314,7 +314,7 @@ public partial class AtxtSource
                     if (!char.IsDigit(chapterNumber[0])) chapterNumber = "" + Util.FromChineseNumber(chapterNumber);
 
                     return
-                        "atxt" + no + "_chapter"
+                        "atxt" + id + "_chapter"
                         + (chapterNumber.Length == 1 ? "0" : "") + chapterNumber
                         + ".xhtml";
                 }
@@ -341,7 +341,7 @@ public partial class AtxtSource
                 }
             }
             if (name.EndsWith('_')) name = name.Substring(0, name.Length - 1);
-            return "atxt" + no + name + ".xhtml";
+            return "atxt" + id + name + ".xhtml";
         }
     }
 }

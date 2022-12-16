@@ -15,7 +15,7 @@ class Statistic
         foreach (var atxt in project.srcs)
         {
 
-            int chapter = int.Parse(atxt.no);
+            int chapter = int.Parse(atxt.id);
             if (chapter < start) continue;
             atxts.Add(atxt);
 
@@ -32,7 +32,7 @@ class Statistic
             {
                 continue;
             }
-            string no = atxt.no;
+            string id = atxt.id;
             var (lineCount, translatedCount, rawCount) = Analyse(atxt.lines);
             var translatedRawRate = ((float)translatedCount) / rawCount;
 
@@ -45,7 +45,7 @@ class Statistic
             totalTranslatedCount += translatedCount;
             totalRawCount += rawCount;
 
-            results.Add(new AnalyseResult(lineCount, translatedCount, rawCount, translatedRawRate, title, no));
+            results.Add(new AnalyseResult(lineCount, translatedCount, rawCount, translatedRawRate, title, id));
         }
         Console.WriteLine($"     line |  trld |   raw |   t/r |  len% |");
         foreach (var r in results)

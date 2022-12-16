@@ -287,7 +287,7 @@ namespace AeroNovelEpub
                         count++;
                         m = Regex.Match(line.Substring(m.Index + m.Length), "([0-9][0-9])");
                         if (!m.Success) throw new Exception();
-                        int index = srcs.FindIndex(src => src.no == m.Groups[1].Value);
+                        int index = srcs.FindIndex(src => src.id == m.Groups[1].Value);
                         string link = "Text/" + srcs[index].xhtmlName;
                         if (refered.IndexOf(link) < 0) { refered.Add(link); }
                         r += $"<navPoint id=\"navPoint-{count}\" playOrder=\"{refered.IndexOf(link) + 1}\"><navLabel><text>{tag}</text></navLabel><content src=\"{link}\"/>\n";
@@ -300,7 +300,7 @@ namespace AeroNovelEpub
                 if (m.Success)
                 {
                     count++;
-                    int index = srcs.FindIndex(src => src.no == m.Groups[1].Value);
+                    int index = srcs.FindIndex(src => src.id == m.Groups[1].Value);
                     string link = "Text/" + srcs[index].xhtmlName;
                     string navTitle = Util.Trim(m.Groups[2].Value);
                     if (navTitle.Length == 0)
