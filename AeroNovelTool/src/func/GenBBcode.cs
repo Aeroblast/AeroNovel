@@ -13,7 +13,7 @@ class GenBbcode
     public GenBbcode(string dir)
     {
         project = new AtxtProject(dir);
-        project.LoadMacro(AtxtProject.MacroMode.Bbcode);
+        project.TryLoadMacro(AtxtProject.MacroMode.Bbcode);
         project.LoadWebImages();
         project.CollectSource();
     }

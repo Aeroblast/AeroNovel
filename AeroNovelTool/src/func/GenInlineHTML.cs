@@ -9,7 +9,7 @@ class GenInlineHTML
     public GenInlineHTML(string dir)
     {
         project = new AtxtProject(dir);
-        project.LoadMacro(AtxtProject.MacroMode.InlineHTML);
+        project.TryLoadMacro(AtxtProject.MacroMode.InlineHTML);
         project.LoadWebImages();
         project.CollectSource();
         project.ApplyAutoSpace();

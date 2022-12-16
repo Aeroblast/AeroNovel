@@ -19,23 +19,8 @@ class Program
                 case "epub":
                     {
                         if (!DirectoryExist(args[1])) return;
-                        var gen = new AeroNovelEpub.GenEpub();
-                        for (int i = 2; i < args.Length; i++)
-                        {
-                            switch (args[i])
-                            {
-                                case "--t2s":
-                                    gen.cc_option = AeroNovelEpub.ChineseConvertOption.T2S; break;
-                                case "--no-info":
-                                    gen.addInfo = ConfigValue.disable;
-                                    break;
-                                case "--no-indent-adjust":
-                                    gen.indentAdjust = ConfigValue.disable;
-                                    break;
-                            }
-                        }
-
-                        EpubFile e = gen.Gen(args[1]);
+                        var gen = new AeroNovelEpub.GenEpub(args[1]);
+                        EpubFile e = gen.Gen();
                         string dateString = DateTime.Today.ToString("yyyyMMdd");
                         var creators = e.dc_creators.Where(x => x.refines.Find(r => r.name == "role" && r.value == "aut") != null).Select(x => x.value).ToArray();
                         try

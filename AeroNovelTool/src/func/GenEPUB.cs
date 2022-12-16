@@ -9,13 +9,7 @@ namespace AeroNovelEpub
 {
     public class GenEpub
     {
-        public List<AtxtSource> srcs = new List<AtxtSource>();
-
-        public List<string> src_paths = new List<string>();
-        public string dir;
-        public Dictionary<string, string> macros;
-
-
+        AtxtProject project;
         string spine = "";
         string items = "";
         string version = "2.0";
@@ -23,6 +17,8 @@ namespace AeroNovelEpub
         EpubFile epub = new EpubFile("template.zip");
         string uid = "urn:uuid:" + Guid.NewGuid().ToString();
         string xhtml_temp;
+
+        string dir;
 
         public string img_path
         {
@@ -33,94 +29,64 @@ namespace AeroNovelEpub
             get { return Path.Combine(dir, "Fonts"); }
         }
         public List<string> img_names = new List<string>();
-        public ChineseConvertOption cc_option;
-        public ConfigValue indentAdjust = 0;
-        public ConfigValue addInfo = 0;
-        ChineseConvert cc;
-        public ProjectConfig config;
-        public GenEpub()
+
+        public ConfigValue indentAdjust
         {
+            get
+            {
+                if (project.config == null) return ConfigValue.active;
+                return project.config.indentAdjust;
+            }
+        }
+        public ConfigValue addInfo
+        {
+            get
+            {
+                if (project.config == null) return ConfigValue.active;
+                return project.config.addInfo;
+            }
+        }
+
+        public Dictionary<string, string> macros
+        {
+            get
+            {
+                return project.macros;
+            }
+        }
+        public List<AtxtSource> srcs
+        {
+            get
+            {
+                return project.srcs;
+            }
+        }
+        public GenEpub(string dir)
+        {
+            this.dir = dir;
+            project = new AtxtProject(dir);
+
             TextEpubItemFile t = epub.GetFile<TextEpubItemFile>("OEBPS/Text/template.xhtml");
             xhtml_temp = t.text;
             epub.items.Remove(t);
+            project.TryLoadMacro(AtxtProject.MacroMode.Epub);
+            project.TryLoadConfig();
+            project.TryLoadEpubMeta();
+            if (project.epubVersion == "3.0")
+            {
+                xhtml_temp = Regex.Replace(xhtml_temp, "<!DOCTYPE html([\\s\\S]*?)>", "<!DOCTYPE html>");
+            }
         }
-        public EpubFile Gen(string dir)
+        public EpubFile Gen()
         {
-
-            if (File.Exists(Path.Combine(dir, "config.txt")))
-            {
-                config = new ProjectConfig(File.ReadAllLines(Path.Combine(dir, "config.txt")));
-                Log.Info("Read config.txt");
-                indentAdjust = Util.GetConfigValue(indentAdjust, config.indentAdjust);
-                addInfo = Util.GetConfigValue(addInfo, config.addInfo);
-            }
-            if (cc_option == ChineseConvertOption.T2S)
-            {
-                Log.Note("Chinese Convert: T2S");
-                cc = new ChineseConvert();
-                cc.Prepare();
-            }
             if (indentAdjust == ConfigValue.disable)
                 Log.Note("Option: No indent adjustion.");
             if (addInfo == ConfigValue.disable)
                 Log.Note("Option: Do not add generation info.");
 
-            this.dir = dir;
+            project.CollectSource();
+            project.ApplyAutoSpace();
 
-            string metaPath = Path.Combine(dir, "meta.txt");
-            if (File.Exists(Path.Combine(dir, "meta3.txt")))
-            {
-                metaPath = Path.Combine(dir, "meta3.txt");
-                version = "3.0";
-                xhtml_temp = Regex.Replace(xhtml_temp, "<!DOCTYPE html([\\s\\S]*?)>", "<!DOCTYPE html>");
-            }
-
-            if (File.Exists(Path.Combine(dir, "macros.txt")))
-            {
-                Log.Info("Read macros.txt");
-                string[] macros_raw = File.ReadAllLines(Path.Combine(dir, "macros.txt"));
-                macros = new Dictionary<string, string>();
-                foreach (string macro in macros_raw)
-                {
-                    string[] s = macro.Split('\t');
-                    if (s.Length < 2)
-                    {
-                        Log.Warn("Macro defination is not complete. Use tab to separate: " + macro);
-                    }
-                    macros.Add(s[0], s[1]);
-                }
-
-            }
-
-            string meta = File.ReadAllText(metaPath);
-            meta = meta.Replace("\r\n", "\n");
-            meta = meta.Replace("{urn:uuid}", uid);
-            uid = Regex.Match(meta, "<dc:identifier id=\"BookId\">(.*?)</dc:identifier>").Groups[1].Value;
-            meta = meta.Replace("{date}", DateTime.Today.ToString("yyyy-MM-ddT00:00:00Z"));
-            if (cc != null)
-            {
-                meta = cc.Convert(meta);
-            }
-            if (cc_option == ChineseConvertOption.T2S)
-            {
-                meta = meta.Replace("<dc:language>zh-tw</dc:language>", "<dc:language>zh</dc:language>", true, null);
-            }
-            if (!meta.Contains("<meta property=\"ibooks:specified-fonts\">true</meta>"))
-            {
-                Match m = Regex.Match(meta, "\n.*?</metadata>");
-                meta = meta.Insert(m.Index + 1, "    <meta property=\"ibooks:specified-fonts\">true</meta>\n");
-            }
-            title = Regex.Match(meta, "<dc:title.*?>(.*?)</dc:title>").Groups[1].Value;
-
-            CollectSource();
-            if (config != null && config.autoSpace == ConfigValue.active)
-            {
-                foreach (var src in srcs)
-                {
-                    if (src.title == "info") { continue; }
-                    AutoSpace.ProcAtxt(src);
-                }
-            }
             GenContent();
             GetImage();
             GetFont();
@@ -141,6 +107,8 @@ namespace AeroNovelEpub
                 nav.text = tocDocuments.Item2;
                 items += "    <item id=\"nav.xhtml\" href=\"nav.xhtml\" media-type=\"application/xhtml+xml\" properties=\"nav\"/>";
             }
+            BuildMeta();
+            BuildSpine();
 
             TextEpubItemFile opf = epub.GetFile<TextEpubItemFile>("OEBPS/content.opf");
             opf.text = string.Format(opf.text, meta, items, spine, version);
@@ -149,47 +117,8 @@ namespace AeroNovelEpub
             return epub;
         }
 
-        void CollectSource()
+        void BuildSpine()
         {
-            string[] files = Directory.GetFiles(dir);
-            foreach (string f in files)
-            {
-                Match m = Regex.Match(Path.GetFileName(f), AeroNovel.regStr_filename);
-                if (!m.Success)
-                {
-                    m = Regex.Match(Path.GetFileName(f), AeroNovel.regStr_filename_xhtml);
-                    if (!m.Success) { continue; }
-                }
-                src_paths.Add(f);
-            }
-            src_paths.Sort();
-
-            foreach (string txt_path in src_paths)
-            {
-                var src = new AtxtSource(txt_path);
-                srcs.Add(src);
-            }
-            if (config != null && config.joinCommands.Count > 0)
-            {
-                Log.Info("Combine Source. Join blank lines: " + config.joinBlankLine);
-                foreach (var cmbcmd in config.joinCommands)
-                {
-                    Log.Info($"{cmbcmd}");
-                    int startIndex = srcs.FindIndex(0, s => s.no.CompareTo(cmbcmd.start) == 0);
-                    int endIndex = srcs.FindIndex(0, s => s.no.CompareTo(cmbcmd.end) == 0);
-                    if (startIndex < 0 || endIndex < 0)
-                    {
-                        Log.Error("Failure: " + cmbcmd.ToString());
-                        continue;
-                    }
-                    string blankLines = new string('\n', config.joinBlankLine);
-                    var contentToJoin = srcs.GetRange(startIndex, endIndex - startIndex + 1).Select(s => s.content);
-                    string content = string.Join(blankLines, contentToJoin);
-                    AtxtSource combined = new AtxtSource($"{cmbcmd.start}.atxt", cmbcmd.start, cmbcmd.title, content);
-                    srcs.RemoveRange(startIndex, endIndex - startIndex + 1);
-                    srcs.Insert(startIndex, combined);
-                }
-            }
             foreach (var src in srcs)
             {
                 if (src.title.StartsWith("SVG"))
@@ -202,12 +131,22 @@ namespace AeroNovelEpub
                 }
 
                 spine += string.Format("    <itemref idref=\"{0}\"/>\n", src.xhtmlName);
-
-                if (cc != null)
-                {
-                    src.title = cc.Convert(src.title);
-                }
             }
+        }
+        string meta;
+        void BuildMeta()
+        {
+            meta = project.epubMeta;
+            meta = meta.Replace("{urn:uuid}", uid);
+            uid = Regex.Match(meta, "<dc:identifier id=\"BookId\">(.*?)</dc:identifier>").Groups[1].Value;
+            meta = meta.Replace("{date}", DateTime.Today.ToString("yyyy-MM-ddT00:00:00Z"));
+
+            if (!meta.Contains("<meta property=\"ibooks:specified-fonts\">true</meta>"))
+            {
+                Match m = Regex.Match(meta, "\n.*?</metadata>");
+                meta = meta.Insert(m.Index + 1, "    <meta property=\"ibooks:specified-fonts\">true</meta>\n");
+            }
+            title = Regex.Match(meta, "<dc:title.*?>(.*?)</dc:title>").Groups[1].Value;
         }
 
         void GenContent()
@@ -215,10 +154,6 @@ namespace AeroNovelEpub
             GenHtml genHtml = new GenHtml(this);
             string patchfile_path = Path.Combine(dir, "patch_t2s/patch.csv");
             string[] patches = new string[0];
-            if (cc_option == ChineseConvertOption.T2S && File.Exists(patchfile_path))
-            {
-                patches = File.ReadAllLines(patchfile_path);
-            }
             int i = 0;
             foreach (var src in srcs)
             {
@@ -230,10 +165,7 @@ namespace AeroNovelEpub
                 else
                 {
                     string[] lines = src.lines;
-                    if (cc != null)
-                    {
-                        CCPatch(lines, patches, i);
-                    }
+
                     string body = genHtml.Gen(lines);
                     if (src.path.EndsWith("info.txt") || src.path.EndsWith("info.atxt"))
                     {
@@ -258,33 +190,7 @@ namespace AeroNovelEpub
             }
 
         }
-        void CCPatch(string[] lines, string[] patches, int i)
-        {
-            for (int j = 0; j < lines.Length; j++)
-                lines[j] = cc.Convert(lines[j]);
-            foreach (var patch in patches)
-            {
-                string[] xx = patch.Split(',');
-                if (xx[0] == srcs[i].no)
-                {
-                    int line_num;
-                    if (
-                        int.TryParse(xx[1], out line_num)
-                     && line_num <= lines.Length
-                     && line_num > 0
-                     )
-                    {
-                        string target = cc.Convert(xx[2]);
-                        int c = Util.CountMatches(lines[line_num - 1], target);
-                        lines[line_num - 1] = lines[line_num - 1].Replace(target, xx[3]);
-                        if (c == 0) Log.Warn("Cannot Find cc patch target:" + xx[2]);
-                        else Log.Info(string.Format("CC patched {0} times for {1}", c, xx[2]));
-                    }
-                    else
-                    { Log.Warn("Bad Line Number:" + xx[1]); }
-                }
-            }
-        }
+
         void GetImage()
         {
             if (Directory.Exists(img_path))
@@ -313,24 +219,6 @@ namespace AeroNovelEpub
                     }
 
                 }
-            }
-            if (cc_option == ChineseConvertOption.T2S)
-            {
-                string patch_dir = Path.Combine(dir, "patch_t2s");
-                string patch_img_dir = Path.Combine(patch_dir, "Images");
-                if (Directory.Exists(patch_dir))
-                    if (Directory.Exists(patch_img_dir))
-                        foreach (var f in Directory.GetFiles(patch_img_dir))
-                        {
-                            string fn = Path.GetFileName(f);
-                            EpubItemFile img = epub.GetFile<EpubItemFile>("OEBPS/Images/" + fn);
-                            if (img != null)
-                            {
-                                img.data = File.ReadAllBytes(f);
-                                Log.Info("T2S:Image Replaced:" + fn);
-                            }
-                        }
-
             }
 
         }

@@ -104,7 +104,7 @@ public class AtxtProject
     }
 
     public Dictionary<string, string> macros;
-    public void LoadMacro(MacroMode mode)
+    public void TryLoadMacro(MacroMode mode)
     {
         int replacement = 1;
         switch (mode)
@@ -172,6 +172,25 @@ public class AtxtProject
             }
         }
 
+    }
+    public string epubVersion = "3.0";
+    public string epubMeta;
+
+    public void TryLoadEpubMeta()
+    {
+        var metaPath = Path.Combine(dir, "meta3.txt");
+        if (File.Exists(metaPath))
+        {
+            epubVersion = "3.0";
+        }
+        else
+        {
+            metaPath = Path.Combine(dir, "meta3.txt");
+            if (!File.Exists(metaPath)) throw new Exception("No meta[3].txt!");
+            epubVersion = "2.0";
+        }
+        string meta = File.ReadAllText(metaPath);
+        epubMeta = meta.Replace("\r\n", "\n");
     }
 }
 
