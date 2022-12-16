@@ -266,13 +266,14 @@ namespace AeroNovelEpub
             int depth = 1;
             int count = 0;
             List<string> refered = new List<string>();//for playOrder
+            var reg_toc = new Regex($"^([0-9]{{{project.id_length}}})(.*)");
 
             Match m;
             foreach (string line in lines)
             {
                 if (line[0] == '[')
                 {
-                    m = Regex.Match(line, "\\[(.*?)\\]");
+                    m = Regex.Match(line, "^\\[(.*?)\\]");
                     if (!m.Success) throw new Exception("目录生成失败：");
                     string tag = m.Groups[1].Value;
                     if (tag[0] == '/')
@@ -286,8 +287,9 @@ namespace AeroNovelEpub
                         label.Add(tag);
                         if (depth < label.Count + 1) { depth = label.Count + 1; }
                         count++;
-                        m = Regex.Match(line.Substring(m.Index + m.Length), "([0-9][0-9])");
-                        if (!m.Success) throw new Exception();
+                        var id = line.Substring(m.Index + m.Length);
+                        m = reg_toc.Match(id);
+                        if (!m.Success) throw new Exception($"Expect {project.id_length}-digit ID after '[Group]': " + line);
                         int index = srcs.FindIndex(src => src.id == m.Groups[1].Value);
                         string link = "Text/" + srcs[index].xhtmlName;
                         if (refered.IndexOf(link) < 0) { refered.Add(link); }
@@ -297,7 +299,7 @@ namespace AeroNovelEpub
                     continue;
                 }
 
-                m = Regex.Match(line, "([0-9][0-9])(.*)");
+                m = reg_toc.Match(line);
                 if (m.Success)
                 {
                     count++;
