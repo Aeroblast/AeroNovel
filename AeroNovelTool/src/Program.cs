@@ -9,7 +9,7 @@ class Program
     static void Main(string[] args)
     {
         Console.ForegroundColor = ConsoleColor.Cyan;
-        Console.WriteLine("AeroNovelTool Ver." + Version.date);
+        Console.WriteLine(Version.Sign());
         Console.WriteLine("https://github.com/Aeroblast/AeroNovel");
         Console.ForegroundColor = ConsoleColor.White;
         if (args.Length >= 2)

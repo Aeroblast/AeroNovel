@@ -137,6 +137,7 @@ namespace AeroNovelEpub
         {
             meta = project.epubMeta;
             meta = meta.Replace("{urn:uuid}", uid);
+            meta = meta.Replace("{tool}", Version.Sign());
             uid = Regex.Match(meta, "<dc:identifier id=\"BookId\">(.*?)</dc:identifier>").Groups[1].Value;
             meta = meta.Replace("{date}", DateTime.Today.ToString("yyyy-MM-ddT00:00:00Z"));
 
@@ -171,7 +172,7 @@ namespace AeroNovelEpub
                         body = Regex.Replace(body, "<p>(.*?：)", "<p class=\"atxt_keyvalue\">$1");
                         body = "<div class=\"atxt_info\" epub:type=\"acknowledgements\">\n" + body;
                         if (addInfo != ConfigValue.disable)
-                            body += "<p>AeroNovelTool EPUB 生成器 生成于 " + DateTime.Now + "</p>";
+                            body += $"<p>AeroNovelTool v{Version.date} EPUB 生成器 生成于 {DateTime.Now}</p>";
                         body += "</div>";
                     }
                     if (src.path.EndsWith("EOB.txt") || src.path.EndsWith("EOB.atxt"))
