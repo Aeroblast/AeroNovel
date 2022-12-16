@@ -65,10 +65,6 @@ class Program
                             e.Save("");
                     }
                     break;
-                case "txt":
-                    if (!DirectoryExist(args[1])) return;
-                    GenTxt.Gen(args[1]);
-                    break;
                 case "bbcode":
                     {
                         var outputPath = "";
