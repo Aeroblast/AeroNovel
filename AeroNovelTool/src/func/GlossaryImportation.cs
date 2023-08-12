@@ -32,11 +32,12 @@ class GlossaryImportation : TextTranslation
     }
     public override string[] Translate(string[] lines)
     {
+        var r = new string[lines.Length];
         for (int i = 0; i < lines.Length; i++)
         {
-            lines[i] = TranslateLine(lines[i]);
+            r[i] = TranslateLine(lines[i]);
         }
-        return lines;
+        return r;
     }
     public override string ToString()
     {

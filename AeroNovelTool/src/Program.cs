@@ -157,6 +157,80 @@ class Program
                     }
                     e2c.Proc();
                     break;
+                case "atxt2comment":
+                    Log.Info("atxt2comment");
+                    var a2c = new Atxt2Comment();
+                    var input = args[1];
+                    var output = Path.GetDirectoryName(input);
+                    output = Path.Combine(output, "output_atxt2comment");
+                    bool defaultOutput = true;
+
+                    for (int i = 2; i < args.Length; i++)
+                    {
+                        switch (args[i])
+                        {
+                            case "Glossary":
+                                if (args.Length > i + 1)
+                                {
+                                    a2c.textTranslation = new GlossaryImportation(args[i + 1]);
+                                    Log.Info("Load glossary: " + args[i + 1]);
+                                    i++;
+                                }
+                                else
+                                    Log.Error("Should give glossary document.");
+                                break;
+                            default:
+                                {
+                                    output = args[i];
+                                    defaultOutput = false;
+                                }
+                                break;
+                        }
+                    }
+
+                    if (defaultOutput)
+                    {
+                        Directory.CreateDirectory(output);
+                    }
+                    else
+                    {
+                        Log.Info("Output: " + output);
+                    }
+
+                    if (File.Exists(input))
+                    {
+                        if (output.EndsWith(".atxt"))
+                        {
+                            // OK
+                        }
+                        else if (Directory.Exists(output))
+                        {
+                            output = Path.Combine(output, Path.GetFileName(input));
+                        }
+                        else
+                        {
+                            throw new Exception("Output path should be atxt file or dir.");
+                        }
+                        Log.Info("ProcFile: " + input);
+                        a2c.ProcessFile(input, output);
+                    }
+                    else if (Directory.Exists(input))
+                    {
+                        if (!Directory.Exists(output))
+                        {
+                            Log.Error("Output dir not exist: " + output);
+                        }
+                        else
+                        {
+                            Log.Info("ProcDir: " + input);
+                            a2c.ProcessDir(input, output);
+                        }
+                    }
+                    else
+                    {
+                        Log.Error("atxt2comment: input not exist.");
+                    }
+                    break;
                 case "epub2atxt":
                     if (!FileExist(args[1])) return;
                     Epub2Atxt.Proc(args[1]);

@@ -181,15 +181,12 @@ class GenInlineHTML
                                     }
                                     else
                                     {
-                                        if (pair.Key == reg_illu2 || pair.Key == reg_illu)
-                                            r = r.Replace(m.Value, "【没传图床的图片：" + a + "】");
-                                        r = r.Replace(m.Value, "");
+                                        r = r.Replace(m.Value, "【没传图床的图片：" + a + "】");
                                         Log.Warn("没传图床的图片：" + a);
                                     }
                                 }
                                 break;
                             case reg_img:
-                            case reg_imgchar:
                                 {
                                     var a = m.Groups[1].Value;
                                     if (project.web_images.ContainsKey(a))
@@ -198,8 +195,20 @@ class GenInlineHTML
                                     }
                                     else
                                     {
-                                        if (pair.Key == reg_illu2 || pair.Key == reg_illu)
-                                            r = r.Replace(m.Value, "【没传图床的图片：" + a + "】");
+                                        r = r.Replace(m.Value, "【没传图床的图片：" + a + "】");
+                                        Log.Warn("没传图床的图片：" + a);
+                                    }
+                                }
+                                break;
+                            case reg_imgchar:
+                                {
+                                    var a = m.Groups[1].Value;
+                                    if (project.web_images.ContainsKey(a))
+                                    {
+                                        r = r.Replace(m.Value, "<img class=\"atxt_imgchar\" src=\"" + project.web_images[a] + "\">");
+                                    }
+                                    else
+                                    {
                                         r = r.Replace(m.Value, "");
                                         Log.Warn("没传图床的图片：" + a);
                                     }
