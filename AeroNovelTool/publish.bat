@@ -1,7 +1,7 @@
 dotnet publish -p:Configuration=Release -r win10-x64
 rd /Q /S app
 md app
-move bin\release\net6.0\win10-x64\publish\AeroNovelTool.exe app\AeroNovelTool.exe
+move bin\release\net7.0\win10-x64\publish\AeroNovelTool.exe app\AeroNovelTool.exe
 del template.zip
 "C:\Program Files\7-Zip\7z.exe" a template.zip ".\template\*"
 copy template.zip app\template.zip
