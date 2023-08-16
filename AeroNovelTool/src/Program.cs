@@ -137,24 +137,38 @@ class Program
                 case "epub2comment":
                     if (!FileExist(args[1])) return;
                     Epub2Comment e2c = new Epub2Comment(args[1]);
-                    if (args.Length > 2)
+                    for (int i = 2; i < args.Length; i++)
                     {
-                        switch (args[2])
+                        switch (args[i])
                         {
+
                             case "BlackMagic-Cloud":
-                                e2c.setTextTranslation = new BlackMagic_Cloud();
+                                e2c.textTranslation.Add(new BlackMagic_Cloud());
                                 break;
                             case "BlackMagic-Dog":
-                                e2c.setTextTranslation = new BlackMagic_Dog();
+                                e2c.textTranslation.Add(new BlackMagic_Dog());
                                 break;
                             case "Glossary":
-                                if (args.Length > 3)
-                                    e2c.glossaryDocPath = args[3];
+                                if (args.Length > i + 1)
+                                    e2c.textTranslation.Add(new GlossaryImportation(args[i + 1]));
                                 else
                                     Log.Error("Should give glossary document.");
+                                i++;
+                                break;
+                            case "Export":
+                                e2c.textTranslation.Add(new TextExport());
+                                break;
+                            case "Import":
+                                e2c.textTranslation.Add(new TextImport());
+                                break;
+                            default:
+                                {
+                                    Log.Warn("Unknow arg:" + args[i]);
+                                }
                                 break;
                         }
                     }
+
                     e2c.Proc();
                     break;
                 case "atxt2comment":

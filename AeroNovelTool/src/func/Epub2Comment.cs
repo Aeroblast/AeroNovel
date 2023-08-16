@@ -2,6 +2,7 @@ using System;
 using System.IO;
 using System.Xml;
 using System.Collections.Generic;
+using System.Linq;
 using System.Text.RegularExpressions;
 using AeroEpub.Epub;
 public class Epub2Comment
@@ -9,9 +10,7 @@ public class Epub2Comment
     string output_path = "output_epub2comment/";
     public EpubFile epub;
 
-    public TextTranslation setTextTranslation = null;
-    public string glossaryDocPath = null;
-
+    public List<TextTranslation> textTranslation = new List<TextTranslation>();
     public Epub2Comment(string path)
     {
         if (!File.Exists(path))
@@ -23,18 +22,14 @@ public class Epub2Comment
     }
     public void Proc()
     {
-        TextTranslation trans = null;
         Log.Note("Epub2Comment");
 
-        if (!string.IsNullOrEmpty(glossaryDocPath))
+
+        if (textTranslation.Count != 0)
         {
-            trans = new GlossaryImportation(glossaryDocPath);
+            var names = textTranslation.Select(x => x.ToString());
+            Log.Note("Text Translation Method: " + string.Join(", ", names));
         }
-        else if (setTextTranslation != null)
-        {
-            trans = setTextTranslation;
-        }
-        if (trans != null) Log.Note("Text Translation Method: " + trans.ToString());
 
 
 
@@ -60,7 +55,7 @@ public class Epub2Comment
         for (int i = 0; i < plain.Length; i++)
         {
             var t = epub.spine[i].item.GetFile() as TextEpubItemFile;
-            var txt = Html2Comment.ProcXHTML(t.text, trans);
+            var txt = Html2Comment.ProcXHTML(t.text, textTranslation);
             var p = output_path + "i" + Util.Number(i, 2) + "_" + Path.GetFileNameWithoutExtension(t.fullName) + Util.FilenameCheck(plain[i]) + ".txt";
             File.WriteAllText(p, txt);
             Log.Note(p);

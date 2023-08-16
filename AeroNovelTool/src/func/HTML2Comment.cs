@@ -20,7 +20,7 @@ public class Html2Comment
         "koboSpan",
         "tcy unified-e-q","tcy unified-e-e"//星海社
         };
-    public static string ProcXHTML(string html, TextTranslation textTranslation = null)
+    public static string ProcXHTML(string html, List<TextTranslation> textTranslation = null)
     {
         XmlDocument doc = new XmlDocument();
         doc.LoadXml(html);
@@ -159,16 +159,22 @@ public class Html2Comment
             if (Util.Trim(pureText).Length != 0)
             {
                 string[] commentLines = comment.Split('\n');
-                while (pureText[pureText.Length - 1] == '\n')
+                for (int i = 0; i * 3 + 1 < commentLines.Length; i++)
                 {
-                    pureText = pureText.Substring(0, pureText.Length - 1);
+                    commentLines[i * 3 + 1] = "";
                 }
+                pureText = pureText.TrimEnd();
                 string[] pureTextLines = pureText.Split('\n');
-                var s = textTranslation.Translate(pureTextLines);
-                for (int i = 0; i < s.Length; i++)
+                foreach (var trans in textTranslation)
                 {
-                    if (s[i] == "") continue;
-                    commentLines[i * 3 + 1] = s[i];
+                    var s = trans.Translate(pureTextLines);
+                    for (int i = 0; i < s.Length; i++)
+                    {
+                        if (!string.IsNullOrEmpty(commentLines[i * 3 + 1])
+                            && !string.IsNullOrEmpty(s[i].Trim()))
+                        { commentLines[i * 3 + 1] += "/"; }
+                        commentLines[i * 3 + 1] += s[i];
+                    }
                 }
                 comment = string.Join('\n', commentLines);
             }
