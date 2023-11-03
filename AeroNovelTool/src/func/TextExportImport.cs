@@ -55,11 +55,16 @@ abstract class TextSpliteProcess : TextTranslation
                 doneLines[i] = "";
             else
             {
-                doneLines[i] = "w⚠w" + doneLines[i]
+                doneLines[i] = doneLines[i].Trim();
+
+                doneLines[i] = (!String.IsNullOrEmpty(doneLines[i]) ? "w⚠w" : "")
+                 + doneLines[i]
                 .Replace("“", "「")
                 .Replace("”", "」")
                 .Replace("?", "？")
-                .Replace("!", "！");
+                .Replace("!", "！")
+                .Replace("(", "（")
+                .Replace(")", "）");
             }
 
         }
