@@ -1,3 +1,4 @@
+chcp 65001
 dotnet publish -p:Configuration=Release -r win10-x64
 rd /Q /S app
 md app
