@@ -156,6 +156,34 @@ class Util
         return lower;
     }
 
+
+    public static string RemainSigns(string s)
+    {
+        string r = "";
+        foreach (char c in s)
+        {
+            switch (c)
+            {
+                case '「':
+                case '」':
+                case '『':
+                case '』':
+                case '〈':
+                case '〉':
+                    r += c;
+                    break;
+                case '《':
+                    r += '〔';
+                    break;
+                case '》':
+                    r += '〕';
+                    break;
+
+            }
+        }
+        return r;
+    }
+
 }
 
 

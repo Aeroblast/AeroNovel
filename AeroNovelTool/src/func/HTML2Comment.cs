@@ -42,7 +42,7 @@ public class Html2Comment
                 switch (p.Name)
                 {
                     case "p":
-                        comment += "##" + lineTemp + rubyTemp + "\n" + RemainSigns(lineTemp) + "\n" + "##————————————————\n";
+                        comment += "##" + lineTemp + rubyTemp + "\n" + Util.RemainSigns(lineTemp) + "\n" + "##————————————————\n";
                         lineTemp = "";
                         rubyTemp = "";
                         pureText += "\n";
@@ -234,34 +234,6 @@ public class Html2Comment
             else p = p.NextSibling;
         }
     }
-
-    static string RemainSigns(string s)
-    {
-        string r = "";
-        foreach (char c in s)
-        {
-            switch (c)
-            {
-                case '「':
-                case '」':
-                case '『':
-                case '』':
-                case '〈':
-                case '〉':
-                    r += c;
-                    break;
-                case '《':
-                    r += '〔';
-                    break;
-                case '》':
-                    r += '〕';
-                    break;
-
-            }
-        }
-        return r;
-    }
-
 
 }
 

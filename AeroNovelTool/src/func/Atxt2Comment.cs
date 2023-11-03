@@ -46,6 +46,10 @@ public class Atxt2Comment
                 {
                     sb.Append(trans[i]);
                 }
+                else
+                {
+                    sb.Append(Util.RemainSigns(line));
+                }
                 sb.Append("\n");
 
                 sb.Append("##————————————————\n");
