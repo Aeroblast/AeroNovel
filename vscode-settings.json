@@ -3,22 +3,19 @@
         "editor.wordWrap": "on",
         "editor.fontSize": 18,
         "editor.lineHeight": 26,
-        "editor.wordBasedSuggestions": false,
+        "editor.wordBasedSuggestions": "off",
         "editor.fontFamily":"宋体",
         "editor.minimap.enabled":false
 
     },
     "[aeronoveltxt]": {
         "editor.wordWrap": "bounded",
-        "editor.wordWrapColumn": 60,
+        "editor.wordWrapColumn": 58,
         "editor.fontSize": 18,
         "editor.lineHeight": 26,
-        "editor.wordBasedSuggestions": false,
+        "editor.wordBasedSuggestions": "off",
         "editor.fontFamily":"宋体",
         "editor.minimap.enabled":false,
-        "editor.wordSeparators":"[]",
-
-
-    },
-
+        "editor.wordSeparators":"[]"
+    }
 }
