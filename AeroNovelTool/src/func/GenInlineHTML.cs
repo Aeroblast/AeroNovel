@@ -55,6 +55,7 @@ class GenInlineHTML
     public string GenBody(string[] txt)
     {
         List<string> notes = new List<string>();
+        Stack<string> classRegionNames = new Stack<string>();
         //const string reg_noteref = "\\[note\\]";
         const string reg_notecontent = "\\[note=(.*?)\\]";
         const string reg_img = "\\[img\\](.*?)\\[\\/img\\]";
@@ -63,6 +64,9 @@ class GenInlineHTML
         const string reg_imgchar = "\\[imgchar\\](.*?)\\[\\/imgchar\\]";
         const string reg_class = "\\[class=(.*?)\\](.*?)\\[\\/class\\]";
         const string reg_chapter = "\\[chapter=(.*?)\\](.*?)\\[\\/chapter\\]";
+        const string reg_class_region_start = "^#class:(.*)";
+        const string reg_class_region_end = "^#/class";
+        bool no_indent = false;
         Dictionary<string, string> reg_dic_comment = new Dictionary<string, string>{
                 {"/\\*.*?\\*/",""},
                 {"///.*",""},
@@ -94,8 +98,8 @@ class GenInlineHTML
                 {"^#h4:(.*)","<h4>$1</h4>"},
                 {"^#h5:(.*)","<h5>$1</h5>"},
                 {"^#h6:(.*)","<h6>$1</h6>"},
-                {"^#class:(.*)","<div class=\"$1\">"},
-                {"^#/class","</div>"},
+                {reg_class_region_start,"<div class=\"$1\">"},
+                {reg_class_region_end,"</div>"},
                 {"\\[font\\](.*?)\\[\\/font\\]","<span class=\"atxt_font\">$1</span>"},
                 {"\\[url=(.*?)\\](.*?)\\[\\/url\\]","<a href=\"$1\">$2</a>"},
 
@@ -234,6 +238,27 @@ class GenInlineHTML
                                     r = reg.Replace(r, pair.Value);
                                 }
                                 break;
+                            case reg_class_region_start:
+                                {
+                                    var classname = m.Groups[1].Value;
+                                    r = reg.Replace(r, pair.Value);
+                                    classRegionNames.Push(classname);
+                                    if (classname == "no_indent")
+                                    {
+                                        no_indent = true;
+                                    }
+                                }
+                                break;
+                            case reg_class_region_end:
+                                {
+                                    r = reg.Replace(r, pair.Value);
+                                    var classname = classRegionNames.Pop();
+                                    if (classname == "no_indent")
+                                    {
+                                        no_indent = false;
+                                    }
+                                }
+                                break;
                             default:
                                 r = reg.Replace(r, pair.Value);
                                 break;
@@ -254,12 +279,18 @@ class GenInlineHTML
             {
                 var temptrimed = Util.TrimTag(r);
                 var first = (temptrimed.Length > 0) ? temptrimed[0] : '\0';
-                if (Util.IsNeedAdjustIndent(first))
+                if (no_indent)
+                {
+                    r = "<p style=\"text-indent:0;margin:0;\">" + r + "</p>";
+                }
+                else if (Util.IsNeedAdjustIndent(first))
                 {
                     r = "<p style=\"text-indent:1.5em;margin:0;\">" + r + "</p>";
                 }
                 else
+                {
                     r = "<p style=\"text-indent:2em;margin:0;\">" + r + "</p>";
+                }
             }
             html += r + "\n";
         }
