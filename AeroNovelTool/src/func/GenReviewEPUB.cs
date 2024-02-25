@@ -109,15 +109,17 @@ namespace AeroNovelEpub
             };
 
             string html = "";
+            int lineNumber = 0;
             foreach (string line in txt)
             {
+                lineNumber++;
                 if (line.StartsWith("##"))
                 {
                     if (reg_comment_seperator.Match(line).Success)
                     { html += "<p class=\"review_comment\"><br/></p>"; }
                     else
                     {
-                        html += $"<p class=\"review_comment\">{line.Replace("<", "&lt;").Replace(">", "&gt;")}</p>\n";
+                        html += $"<p class=\"review_comment\">{lineNumber}{line.Replace("<", "&lt;").Replace(">", "&gt;")}</p>\n";
                     }
 
                     continue;
