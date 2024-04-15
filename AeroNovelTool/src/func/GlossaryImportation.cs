@@ -3,8 +3,8 @@ using System.IO;
 using System.Text.RegularExpressions;
 class GlossaryImportation : TextTranslation
 {
-    string docPath;
-    CharNode tree = new CharNode('\0');
+    public string docPath;
+    protected CharNode tree = new CharNode('\0');
 
     // 迫真字典（笑）
     Dictionary<string, string> dictionary = new Dictionary<string, string>();
@@ -101,7 +101,7 @@ class GlossaryImportation : TextTranslation
         return result;
     }
 
-    CharNode FindNodeByChar(List<CharNode> nodes, char c)
+    protected CharNode FindNodeByChar(List<CharNode> nodes, char c)
     {
         foreach (var r in nodes)
         {
@@ -110,7 +110,7 @@ class GlossaryImportation : TextTranslation
         return null;
     }
 
-    string GetOutput(CharNode node)
+    protected string GetOutput(CharNode node)
     {
         do
         {
@@ -123,7 +123,7 @@ class GlossaryImportation : TextTranslation
         return null;
     }
 
-    void TryAddSpace(ref string result, string added)
+    protected void TryAddSpace(ref string result, string added)
     {
         if (result != "")
         {
@@ -151,7 +151,7 @@ class GlossaryImportation : TextTranslation
     }
 
 
-    private class CharNode
+    protected class CharNode
     {
         public char v;
         public CharNode parent = null;
