@@ -12,43 +12,62 @@ using System.Collections.Generic;
 abstract class TextSpliteProcess : TextTranslation
 {
 
-    public int maxLengthPerCall = 4500;
+    public int maxLengthPerCall = 0;
     public override string[] Translate(string[] rawLines)
     {
         string[] doneLines = new string[rawLines.Length];
         int start = 0, end = 0;
         string rawTemp = "";
         int magicCount = 0;
-        for (; end < rawLines.Length;)
+        if (maxLengthPerCall == 0)
         {
-            string t = rawLines[end] + "\n";
-            if (rawTemp.Length + t.Length > maxLengthPerCall || end == rawLines.Length - 1)
+            var r = TranslateCall(string.Join("\n", rawLines));
+            for (int i = 0; i < r.Length; i++)
             {
-                magicCount++;
-                if (end == rawLines.Length - 1)
+                if (i >= doneLines.Length)
                 {
-                    end++;
-                    rawTemp += t;
+                    Log.Warn("Did not process after: " + r[0]);
+                    break;
                 }
-                //范围index：start <= i < end
-                var r = TranslateCall(rawTemp);
-                if (r.Length != end - start)
-                {
-                    Log.Warn($"Length not match: {r.Length}-{end - start}");
-                }
-                for (int i = start; i < start + r.Length; i++)
-                {
-                    // set result
-                    doneLines[i] = r[i - start];
-                }
-
-                //准备下一批
-                start = end;
-                rawTemp = "";
+                // set result
+                doneLines[i] = r[i];
             }
-            rawTemp += t;
-            end++;
+
         }
+        else
+        {
+            for (; end < rawLines.Length;)
+            {
+                string t = rawLines[end] + "\n";
+                if (rawTemp.Length + t.Length > maxLengthPerCall || end == rawLines.Length - 1)
+                {
+                    magicCount++;
+                    if (end == rawLines.Length - 1)
+                    {
+                        end++;
+                        rawTemp += t;
+                    }
+                    //范围index：start <= i < end
+                    var r = TranslateCall(rawTemp);
+                    if (r.Length != end - start)
+                    {
+                        Log.Warn($"Length not match: {r.Length}-{end - start}");
+                    }
+                    for (int i = start; i < start + r.Length; i++)
+                    {
+                        // set result
+                        doneLines[i] = r[i - start];
+                    }
+
+                    //准备下一批
+                    start = end;
+                    rawTemp = "";
+                }
+                rawTemp += t;
+                end++;
+            }
+        }
+
         for (int i = 0; i < doneLines.Length; i++)
         {
             if (doneLines[i] == null)
@@ -80,6 +99,7 @@ abstract class TextSpliteProcess : TextTranslation
 
 class TextExport : TextSpliteProcess
 {
+    public GlossaryReplacement gloss;
     public static string i2name(int i, string dir)
     {
         return Path.Combine(dir, $"{i.ToString().PadLeft(3, '0')}.txt");
@@ -94,7 +114,13 @@ class TextExport : TextSpliteProcess
 
     public override string[] TranslateCall(string content)
     {
-        File.WriteAllText(i2name(fileCount, dir), content);
+        if (gloss != null)
+        {
+            content = gloss.TranslateLine(content);
+        }
+        var p = i2name(fileCount, dir);
+        File.WriteAllText(p, content);
+        Log.Info("[TextExport] " + p);
         fileCount++;
         return new string[content.Trim().Split("\n").Length];
     }
@@ -119,6 +145,7 @@ class TextImport : TextSpliteProcess
             Log.Warn("Not exist: " + path);
             return new string[content.Trim().Split("\n").Length];
         }
+        Log.Info("[TextImport] " + path);
         var r = File.ReadAllLines(path);
         for (int i = 0; i < r.Length; i++)
         {

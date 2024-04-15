@@ -156,10 +156,48 @@ class Program
                                 i++;
                                 break;
                             case "Export":
-                                e2c.textTranslation.Add(new TextExport());
+                                {
+                                    var textProc = new TextExport();
+                                    e2c.textTranslation.Add(textProc);
+                                    if (i + 1 < args.Length)
+                                    {
+                                        if (args[i + 1] == "-Glossary")
+                                        {
+                                            if (args.Length > i + 2)
+                                            {
+                                                textProc.gloss = new GlossaryReplacement(args[i + 2]);
+                                                i += 2;
+                                                break;
+                                            }
+                                            else
+                                            {
+                                                Log.Error("Should give glossary document.");
+                                                throw new Exception("Should give glossary document.");
+                                            }
+                                        }
+                                        int t;
+                                        if (int.TryParse(args[i + 1], out t))
+                                        {
+                                            textProc.maxLengthPerCall = t;
+                                            i++;
+                                        }
+                                    }
+                                }
                                 break;
                             case "Import":
-                                e2c.textTranslation.Add(new TextImport());
+                                {
+                                    var textProc = new TextImport();
+                                    e2c.textTranslation.Add(textProc);
+                                    if (i + 1 < args.Length)
+                                    {
+                                        int t;
+                                        if (int.TryParse(args[i + 1], out t))
+                                        {
+                                            textProc.maxLengthPerCall = t;
+                                        }
+
+                                    }
+                                }
                                 break;
                             default:
                                 {
