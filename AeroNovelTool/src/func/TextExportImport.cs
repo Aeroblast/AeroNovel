@@ -118,6 +118,15 @@ class TextExport : TextSpliteProcess
         {
             content = gloss.TranslateLine(content);
         }
+        var lines = content.Split("\n");
+        for (int i = 0; i < lines.Length; i++)
+        {
+            if (lines[i].Trim() == "")
+            {
+                lines[i] = "【BR】";
+            }
+        }
+        content = string.Join("\n", lines);
         var p = i2name(fileCount, dir);
         File.WriteAllText(p, content);
         Log.Info("[TextExport] " + p);
