@@ -1,5 +1,6 @@
 using System.Text;
 using System.Collections.Generic;
+using System.Linq;
 
 
 class AutoSpace
@@ -10,14 +11,15 @@ class AutoSpace
     public static void ProcAtxt(AtxtSource atxt)
     {
         StringBuilder sb = new StringBuilder();
-        foreach (var line in atxt.lines)
+
+        string[] resultLines = atxt.lines.Select(line =>
         {
             if (line.StartsWith("##"))
             {
-                sb.AppendLine(line);
-                continue;
+                return line;
             }
             bool isInTag = false;
+            sb.Clear();
             SpaceType last = SpaceType.Other;
             foreach (var rune in line.EnumerateRunes())
             {
@@ -49,10 +51,11 @@ class AutoSpace
                 sb.Append(rune);
                 last = current;
             }
-            sb.AppendLine();
+            return sb.ToString();
 
-        }
-        atxt.content = sb.ToString();
+        }).ToArray();
+
+        atxt.content = string.Join("\n", resultLines);
     }
 
     public static SpaceType GetSpaceType(Rune r)
