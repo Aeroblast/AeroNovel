@@ -79,7 +79,7 @@ namespace AeroNovelEpub
                 {"(?<!<span class=\"atxt_breakall\">)(?<!—)[—]{3,99}","<span class=\"atxt_breakall\">$0</span>"}
             };
 
-            string html = "";
+            string html = "\n";
             foreach (string line in txt)
             {
                 if (line.StartsWith("##")) continue;
