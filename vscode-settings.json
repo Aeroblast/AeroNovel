@@ -5,7 +5,8 @@
         "editor.lineHeight": 26,
         "editor.wordBasedSuggestions": "off",
         "editor.fontFamily":"宋体",
-        "editor.minimap.enabled":false
+        "editor.minimap.enabled":false,
+        "editor.glyphMargin":false,
 
     },
     "[aeronoveltxt]": {
@@ -17,6 +18,7 @@
         "editor.fontFamily":"宋体",
         "editor.minimap.enabled":false,
         "editor.wordSeparators":"[]",
-        "editor.folding":false
+        "editor.folding":false,
+        "editor.glyphMargin":false,
     }
 }
